@@ -21,7 +21,7 @@ export abstract class Camera extends Component {
 
   public scenes?: Entity[];
 
-  public clear: Array<number | undefined> | false = [];
+  public clear: Array<number | undefined> | false;
 
   public materialTag: MaterialTag;
 
@@ -38,7 +38,7 @@ export abstract class Camera extends Component {
     this.scenes = options.scenes;
     this.projectionMatrix = options.projectionMatrix;
     this.materialTag = options.materialTag;
-    if ( options.clear !== undefined ) { this.clear = options.clear; }
+    this.clear = options.clear ?? [];
   }
 
   protected __updateImpl( event: ComponentUpdateEvent ): void {

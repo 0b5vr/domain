@@ -1,4 +1,4 @@
-import { Entity } from '../heck/Entity';
+import { Entity, EntityOptions } from '../heck/Entity';
 import { Geometry } from '../heck/Geometry';
 import { Lambda } from '../heck/components/Lambda';
 import { Material } from '../heck/Material';
@@ -10,8 +10,8 @@ import objectVert from '../shaders/object.vert';
 import uvFrag from '../shaders/uv.frag';
 
 export class Plane extends Entity {
-  public constructor() {
-    super();
+  public constructor( options?: EntityOptions ) {
+    super( options );
 
     // -- geometry ---------------------------------------------------------------------------------
     const bufferPos = glCat.createBuffer();

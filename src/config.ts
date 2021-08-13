@@ -1,2 +1,4 @@
 export const
+  RANDOM_RESOLUTION = [ 64, 64 ],
+  STATIC_RANDOM_RESOLUTION = [ 2048, 2048 ],
   RESOLUTION = [ 1280, 720 ];
