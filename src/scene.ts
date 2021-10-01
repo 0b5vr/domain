@@ -1,12 +1,10 @@
 import { Bloom } from './entities/Bloom';
 import { BufferRenderTarget } from './heck/BufferRenderTarget';
 import { CanvasRenderTarget } from './heck/CanvasRenderTarget';
-import { Component } from './heck/components/Component';
 import { Dog } from './heck/Dog';
 import { Fluid } from './entities/Fluid';
 import { ForwardCamera } from './entities/ForwardCamera';
 import { Lambda } from './heck/components/Lambda';
-import { Plane } from './entities/Plane';
 import { Post } from './entities/Post';
 import { RTInspector } from './entities/RTInspector';
 import { Swap, Vector3 } from '@fms-cat/experimental';
@@ -22,10 +20,6 @@ const canvasRenderTarget = new CanvasRenderTarget();
 // Mr. Update Everything
 dog.root.components.push( new Lambda( {
   onUpdate: () => {
-    if ( process.env.DEV ) {
-      Component.gpuTimer!.update();
-    }
-
     randomTexture.update();
     automaton.update( clock.time );
   },

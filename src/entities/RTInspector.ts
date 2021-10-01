@@ -1,12 +1,13 @@
 import { Blit } from '../heck/components/Blit';
 import { BufferRenderTarget } from '../heck/BufferRenderTarget';
 import { Entity } from '../heck/Entity';
+import { Lambda } from '../heck/components/Lambda';
 import { Material } from '../heck/Material';
 import { Quad } from '../heck/components/Quad';
-import { RTINSPECTOR_CAPTURE_INDEX, RTINSPECTOR_CAPTURE_NAME, RTINSPECTOR_MULTIPLE } from '../config-hot';
 import { RenderTarget } from '../heck/RenderTarget';
 import { canvas, gl } from '../globals/canvas';
 import { dummyRenderTarget } from '../globals/dummyRenderTarget';
+import { gui } from '../globals/gui';
 import { quadGeometry } from '../globals/quadGeometry';
 import inspectorFrag from '../shaders/inspector.frag';
 import quadVert from '../shaders/quad.vert';
@@ -102,33 +103,29 @@ export class RTInspector extends Entity {
     }
 
     // -- see the config ---------------------------------------------------------------------------
-    this.__updateTarget();
-
-    // -- hot hot hot hot hot ----------------------------------------------------------------------
-    if ( process.env.DEV ) {
-      if ( module.hot ) {
-        module.hot.accept( '../config-hot', () => {
-          this.__updateTarget();
-        } );
+    this.components.push( new Lambda( {
+      onUpdate: () => {
+        this.__updateTarget();
       }
-    }
+    } ) );
   }
 
   private __updateTarget(): void {
-    if ( RTINSPECTOR_MULTIPLE ) {
+    const guiFolder = gui.folder( 'RTInspector' );
+
+    const single = guiFolder.value( 'single', '' );
+    const singleIndex = guiFolder.value( 'index', 0, { step: 1 } );
+
+    if ( guiFolder.value( 'multiple', false ) ) {
       this.entityMultiple.active = true;
       this.entitySingle.active = false;
-    } else if ( RTINSPECTOR_CAPTURE_NAME != null ) {
+    } else if ( single !== '' ) {
       this.entityMultiple.active = false;
 
-      const target = BufferRenderTarget.nameMap.get( RTINSPECTOR_CAPTURE_NAME ?? '' ) ?? null;
-      const attachment = gl.COLOR_ATTACHMENT0 + ( RTINSPECTOR_CAPTURE_INDEX ?? 0 );
+      const target = BufferRenderTarget.nameMap.get( single ?? '' ) ?? null;
+      const attachment = gl.COLOR_ATTACHMENT0 + ( singleIndex ?? 0 );
 
       if ( !target ) {
-        if ( process.env.DEV ) {
-          console.warn( `RTInspector: Cannot retrieve a render target texture, RTINSPECTOR_CAPTURE_NAME: ${ RTINSPECTOR_CAPTURE_NAME }, RTINSPECTOR_CAPTURE_INDEX: ${ RTINSPECTOR_CAPTURE_INDEX }` );
-        }
-
         this.entitySingle.active = false;
         return;
       }

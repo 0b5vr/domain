@@ -1,5 +1,5 @@
-import { Pool } from '../utils/Pool';
-import { gl, glCat } from '../globals/canvas';
+import { Pool } from '../../utils/Pool';
+import { gl, glCat } from '../canvas';
 
 export class GPUTimer {
   public queries: Pool<WebGLQuery>;
@@ -17,6 +17,13 @@ export class GPUTimer {
     this.ext = glCat.getExtension( 'EXT_disjoint_timer_query_webgl2', true );
 
     this.__loopTasks = new Set();
+
+    // loop
+    const update = (): void => {
+      this.update();
+      requestAnimationFrame( update );
+    };
+    update();
   }
 
   public update(): void {

@@ -1,4 +1,3 @@
-import { Component } from './components/Component';
 import { Entity } from './Entity';
 import { Transform } from './Transform';
 import { clock } from '../globals/clock';
@@ -31,11 +30,6 @@ export class Dog {
           parent: null,
           path: process.env.DEV && '',
         } );
-      }
-
-      if ( process.env.DEV ) {
-        Component.resetUpdateBreakpoint();
-        Component.resetDrawBreakpoint();
       }
 
       requestAnimationFrame( update );

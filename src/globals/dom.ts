@@ -43,7 +43,7 @@ export function getDivCanvasContainer(): HTMLDivElement {
     'div',
     {
       position: 'fixed',
-      width: 'calc( 100% - 420px )',
+      width: '100%',
       height: 'calc( 100% - 240px )',
       left: '0',
       top: '0',
@@ -62,46 +62,6 @@ export function getDivAutomaton(): HTMLDivElement {
       height: '240px',
       right: '0',
       bottom: '0',
-    },
-  );
-}
-
-export function getDivComponentsUpdate(): HTMLDivElement {
-  return getElement<HTMLDivElement>(
-    'divComponentsUpdate',
-    'div',
-    {
-      whiteSpace: 'pre',
-      color: '#ffffff',
-      font: '500 10px Wt-Position-Mono',
-      position: 'fixed',
-      padding: '0',
-      boxSizing: 'border-box',
-      width: '420px',
-      height: 'calc( ( 100% - 240px ) * 0.5 )',
-      right: '0',
-      top: '0',
-      overflowY: 'scroll',
-    },
-  );
-}
-
-export function getDivComponentsDraw(): HTMLDivElement {
-  return getElement<HTMLDivElement>(
-    'divComponentsDraw',
-    'div',
-    {
-      whiteSpace: 'pre',
-      color: '#ffffff',
-      font: '500 10px Wt-Position-Mono',
-      position: 'fixed',
-      padding: '0',
-      boxSizing: 'border-box',
-      width: '420px',
-      height: 'calc( ( 100% - 240px ) * 0.5 )',
-      right: '0',
-      top: 'calc( ( 100% - 240px ) * 0.5 )',
-      overflowY: 'scroll',
     },
   );
 }

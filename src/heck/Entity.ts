@@ -4,6 +4,7 @@ import { MaterialTag } from './Material';
 import { Matrix4 } from '@fms-cat/experimental';
 import { RenderTarget } from './RenderTarget';
 import { Transform } from './Transform';
+import { guiMeasureDraw, guiMeasureUpdate } from '../globals/gui';
 
 export interface EntityUpdateEvent {
   frameCount: number;
@@ -34,26 +35,34 @@ export interface EntityOptions {
 }
 
 export class Entity {
-  public readonly transform = new Transform();
-  public globalTransformCache = new Transform();
+  public transform: Transform;
+  public globalTransformCache: Transform;
 
-  public lastUpdateFrame = 0;
+  public lastUpdateFrame;
 
-  public active = true;
-  public visible = true;
+  public active;
+  public visible;
 
   public name?: string;
 
-  public children: Entity[] = [];
-  public components: Component[] = [];
+  public children: Entity[];
+  public components: Component[];
 
   public constructor( options?: EntityOptions ) {
+    this.transform = new Transform();
+    this.globalTransformCache = new Transform();
+
+    this.lastUpdateFrame = 0;
+
     this.active = options?.active ?? true;
     this.visible = options?.visible ?? true;
 
     if ( process.env.DEV ) {
       this.name = options?.name ?? ( this as any ).constructor.name;
     }
+
+    this.children = [];
+    this.components = [];
   }
 
   public update( event: EntityUpdateEvent ): void {
@@ -61,75 +70,77 @@ export class Entity {
     if ( this.lastUpdateFrame === event.frameCount ) { return; }
     this.lastUpdateFrame = event.frameCount;
 
-    const globalTransform = event.globalTransform.multiply( this.transform );
+    const measured = (): void => {
+      const globalTransform = event.globalTransform.multiply( this.transform );
 
-    let path: string;
+      this.components.forEach( ( component ) => {
+        component.update( {
+          frameCount: event.frameCount,
+          time: event.time,
+          deltaTime: event.deltaTime,
+          globalTransform,
+          entity: this,
+        } );
+      } );
+
+      this.children.forEach( ( child ) => {
+        child.update( {
+          frameCount: event.frameCount,
+          time: event.time,
+          deltaTime: event.deltaTime,
+          globalTransform,
+          parent: this,
+        } );
+      } );
+    };
+
     if ( process.env.DEV ) {
-      path = `${ event.path }/${ this.name }`;
+      guiMeasureUpdate( this.name ?? this.constructor.name, measured );
+    } else {
+      measured();
     }
-
-    this.components.forEach( ( component ) => {
-      component.update( {
-        frameCount: event.frameCount,
-        time: event.time,
-        deltaTime: event.deltaTime,
-        globalTransform,
-        entity: this,
-        path,
-      } );
-    } );
-
-    this.children.forEach( ( child ) => {
-      child.update( {
-        frameCount: event.frameCount,
-        time: event.time,
-        deltaTime: event.deltaTime,
-        globalTransform,
-        parent: this,
-        path,
-      } );
-    } );
   }
 
   public draw( event: EntityDrawEvent ): void {
     if ( !this.visible ) { return; }
 
-    this.globalTransformCache = event.globalTransform.multiply( this.transform );
+    const measured = (): void => {
+      this.globalTransformCache = event.globalTransform.multiply( this.transform );
 
-    let path: string;
+      this.components.forEach( ( component ) => {
+        component.draw( {
+          frameCount: event.frameCount,
+          time: event.time,
+          renderTarget: event.renderTarget,
+          globalTransform: this.globalTransformCache,
+          camera: event.camera,
+          cameraTransform: event.cameraTransform,
+          viewMatrix: event.viewMatrix,
+          projectionMatrix: event.projectionMatrix,
+          entity: this,
+          materialTag: event.materialTag,
+        } );
+      } );
+
+      this.children.forEach( ( child ) => {
+        child.draw( {
+          frameCount: event.frameCount,
+          time: event.time,
+          renderTarget: event.renderTarget,
+          globalTransform: this.globalTransformCache,
+          viewMatrix: event.viewMatrix,
+          projectionMatrix: event.projectionMatrix,
+          camera: event.camera,
+          cameraTransform: event.cameraTransform,
+          materialTag: event.materialTag,
+        } );
+      } );
+    };
+
     if ( process.env.DEV ) {
-      path = `${ event.path }/${ this.name }`;
+      guiMeasureDraw( this.name ?? this.constructor.name, measured );
+    } else {
+      measured();
     }
-
-    this.components.forEach( ( component ) => {
-      component.draw( {
-        frameCount: event.frameCount,
-        time: event.time,
-        renderTarget: event.renderTarget,
-        globalTransform: this.globalTransformCache,
-        camera: event.camera,
-        cameraTransform: event.cameraTransform,
-        viewMatrix: event.viewMatrix,
-        projectionMatrix: event.projectionMatrix,
-        entity: this,
-        materialTag: event.materialTag,
-        path,
-      } );
-    } );
-
-    this.children.forEach( ( child ) => {
-      child.draw( {
-        frameCount: event.frameCount,
-        time: event.time,
-        renderTarget: event.renderTarget,
-        globalTransform: this.globalTransformCache,
-        viewMatrix: event.viewMatrix,
-        projectionMatrix: event.projectionMatrix,
-        camera: event.camera,
-        cameraTransform: event.cameraTransform,
-        materialTag: event.materialTag,
-        path,
-      } );
-    } );
   }
 }
