@@ -38,10 +38,10 @@ vec3 resolveVorticity( vec3 pos ) {
   vec4 center = sample3DNearest( samplerCurl, pos );
   vec4 nx = sample3DNearest( samplerCurl, clampToGrid( pos - d.yxx ) );
   vec4 px = sample3DNearest( samplerCurl, clampToGrid( pos + d.yxx ) );
-  vec4 ny = sample3DNearest( samplerCurl, clampToGrid( pos - d.yxx ) );
-  vec4 py = sample3DNearest( samplerCurl, clampToGrid( pos + d.yxx ) );
-  vec4 nz = sample3DNearest( samplerCurl, clampToGrid( pos - d.yxx ) );
-  vec4 pz = sample3DNearest( samplerCurl, clampToGrid( pos + d.yxx ) );
+  vec4 ny = sample3DNearest( samplerCurl, clampToGrid( pos - d.xyx ) );
+  vec4 py = sample3DNearest( samplerCurl, clampToGrid( pos + d.xyx ) );
+  vec4 nz = sample3DNearest( samplerCurl, clampToGrid( pos - d.xxy ) );
+  vec4 pz = sample3DNearest( samplerCurl, clampToGrid( pos + d.xxy ) );
 
   vec3 force = vec3( 0.0 );
   force.xy += safeNormalize( 0.25 * vec2( py.z - ny.z, nx.z - px.z ) );
