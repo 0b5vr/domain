@@ -153,7 +153,7 @@ export class Fluid extends Entity {
     );
     materialPressureInit.addUniform( 'color', '4f', 0.5, 0.0, 0.0, 1.0 );
 
-    gui.folder( 'Fluid' ).input( 'pressure', 0.5 ).on( 'change', ( { value } ) => {
+    gui.input( 'Fluid/pressure', 0.5 )?.on( 'change', ( { value } ) => {
       materialPressureInit.addUniform( 'color', '4f', value, 0.0, 0.0, 1.0 );
     } );
 
@@ -202,7 +202,7 @@ export class Fluid extends Entity {
     materialResolvePressure.addUniformTextures( 'samplerPressure', swapPressure.o.texture );
     materialResolvePressure.addUniformTextures( 'samplerVelocity', swapVelocity.o.texture );
 
-    gui.folder( 'Fluid' ).input( 'curl', 5.0 ).on( 'change', ( { value } ) => {
+    gui.input( 'Fluid/curl', 5.0 )?.on( 'change', ( { value } ) => {
       materialResolvePressure.addUniform( 'curl', '1f', value );
     } );
 
@@ -227,7 +227,7 @@ export class Fluid extends Entity {
     materialAdvectionVelocity.addUniformTextures( 'samplerVelocity', swapVelocity.o.texture );
     materialAdvectionVelocity.addUniformTextures( 'samplerSource', swapVelocity.o.texture );
 
-    gui.folder( 'Fluid' ).input( 'velocity dissipation', 0.1 ).on( 'change', ( { value } ) => {
+    gui.input( 'Fluid/velocity dissipation', 0.1 )?.on( 'change', ( { value } ) => {
       materialAdvectionVelocity.addUniform( 'dissipation', '1f', value );
     } );
 
@@ -251,7 +251,7 @@ export class Fluid extends Entity {
     materialAdvectionDensity.addUniformTextures( 'samplerVelocity', swapVelocity.o.texture );
     materialAdvectionDensity.addUniformTextures( 'samplerSource', swapDensity.o.texture );
 
-    gui.folder( 'Fluid' ).input( 'density dissipation', 0.1 ).on( 'change', ( { value } ) => {
+    gui.input( 'Fluid/density dissipation', 0.1 )?.on( 'change', ( { value } ) => {
       materialAdvectionDensity.addUniform( 'dissipation', '1f', value );
     } );
 

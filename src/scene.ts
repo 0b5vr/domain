@@ -10,6 +10,7 @@ import { RTInspector } from './entities/RTInspector';
 import { Swap, Vector3 } from '@fms-cat/experimental';
 import { automaton } from './globals/automaton';
 import { clock } from './globals/clock';
+import { gui } from './globals/gui';
 import { randomTexture } from './globals/randomTexture';
 
 // == dog ==========================================================================================
@@ -25,6 +26,10 @@ dog.root.components.push( new Lambda( {
   },
   name: process.env.DEV && 'update-everything',
 } ) );
+
+gui.input( 'active', true )?.on( 'change', ( { value } ) => {
+  dog.active = value;
+} );
 
 // == render buffer ================================================================================
 const swapOptions = {

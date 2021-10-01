@@ -111,12 +111,10 @@ export class RTInspector extends Entity {
   }
 
   private __updateTarget(): void {
-    const guiFolder = gui.folder( 'RTInspector' );
+    const single = gui.value( 'RTInspector/single', '' );
+    const singleIndex = gui.value( 'RTInspector/index', 0, { step: 1 } );
 
-    const single = guiFolder.value( 'single', '' );
-    const singleIndex = guiFolder.value( 'index', 0, { step: 1 } );
-
-    if ( guiFolder.value( 'multiple', false ) ) {
+    if ( gui.value( 'RTInspector/multiple', false ) ) {
       this.entityMultiple.active = true;
       this.entitySingle.active = false;
     } else if ( single !== '' ) {

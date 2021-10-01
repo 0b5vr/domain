@@ -11,10 +11,8 @@ const gpuTimer = new GPUTimer();
 
 gui.pane.registerPlugin( { plugin } as any );
 
-const profilers = gui.folder( 'profilers' );
-
-const updateProfilers = profilers.folder( 'update' );
-const drawProfilers = profilers.folder( 'draw' );
+const updateProfilers = gui.folder( 'profilers/update' );
+const drawProfilers = gui.folder( 'profilers/draw' );
 
 const cpuUpdateProfiler = updateProfilers.blade( 'cpu-profiler', {
   view: 'profiler',
