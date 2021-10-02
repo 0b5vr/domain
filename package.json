@@ -13,8 +13,8 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "@0b5vr/tweakpane-plugin-profiler": "v0.2.0",
     "@0b5vr/imtweakpane": "^0.1.3",
+    "@0b5vr/tweakpane-plugin-profiler": "v0.2.0",
     "@fms-cat/automaton": "^4.2.0",
     "@fms-cat/automaton-with-gui": "^4.2.0",
     "@fms-cat/experimental": "^0.6.1",

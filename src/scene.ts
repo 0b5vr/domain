@@ -2,6 +2,7 @@ import { Bloom } from './entities/Bloom';
 import { BufferRenderTarget } from './heck/BufferRenderTarget';
 import { CanvasRenderTarget } from './heck/CanvasRenderTarget';
 import { Dog } from './heck/Dog';
+import { EntityReplacer } from './utils/EntityReplacer';
 import { Fluid } from './entities/Fluid';
 import { ForwardCamera } from './entities/ForwardCamera';
 import { Lambda } from './heck/components/Lambda';
@@ -53,16 +54,19 @@ const swap = new Swap(
 // dog.root.children.push( plane );
 
 const fluid = new Fluid();
-dog.root.children.push( fluid );
+if ( process.env.DEV && module.hot ) {
+  const replacer = new EntityReplacer( fluid, () => new Fluid() );
+  module.hot.accept( './entities/Fluid', () => {
+    replacer.replace( dog.root );
+  } );
+}
 
 const forwardCamera = new ForwardCamera( {
   scenes: [ dog.root ],
   target: swap.i,
   clear: [ 0, 0, 0, 1 ],
-  // lights: [],
 } );
 forwardCamera.transform.position = new Vector3( [ 0.0, 0.0, 5.0 ] );
-dog.root.children.push( forwardCamera );
 
 swap.swap();
 
@@ -70,7 +74,6 @@ const bloom = new Bloom( {
   input: swap.o,
   target: swap.i,
 } );
-dog.root.children.push( bloom );
 
 swap.swap();
 
@@ -78,7 +81,13 @@ const post = new Post( {
   input: swap.o,
   target: canvasRenderTarget
 } );
-dog.root.children.push( post );
+
+dog.root.children.push(
+  fluid,
+  forwardCamera,
+  bloom,
+  post,
+);
 
 if ( process.env.DEV ) {
   const rtInspector = new RTInspector( {
