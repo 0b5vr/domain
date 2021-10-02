@@ -1,4 +1,5 @@
 import { Entity } from './Entity';
+import { MapOfSet } from '../utils/MapOfSet';
 import { Transform } from './Transform';
 import { clock } from '../globals/clock';
 
@@ -27,6 +28,7 @@ export class Dog {
           time: clock.time,
           deltaTime: clock.deltaTime,
           globalTransform: new Transform(),
+          entitiesByComponent: new MapOfSet(),
           parent: null,
           path: process.env.DEV && '',
         } );

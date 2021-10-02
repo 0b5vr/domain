@@ -1,5 +1,6 @@
 import { Camera } from './Camera';
 import { Entity } from '../Entity';
+import { MapOfSet } from '../../utils/MapOfSet';
 import { MaterialTag } from '../Material';
 import { Matrix4 } from '@fms-cat/experimental';
 import { RenderTarget } from '../RenderTarget';
@@ -12,6 +13,7 @@ export interface ComponentUpdateEvent {
   deltaTime: number;
   globalTransform: Transform;
   entity: Entity;
+  entitiesByComponent: MapOfSet<string, Entity>;
 }
 
 export interface ComponentDrawEvent {
@@ -25,6 +27,7 @@ export interface ComponentDrawEvent {
   viewMatrix: Matrix4;
   projectionMatrix: Matrix4;
   entity: Entity;
+  entitiesByComponent: MapOfSet<string, Entity>;
 }
 
 export interface ComponentOptions {

@@ -1,5 +1,6 @@
 import { Camera } from './components/Camera';
 import { Component } from './components/Component';
+import { MapOfSet } from '../utils/MapOfSet';
 import { MaterialTag } from './Material';
 import { Matrix4 } from '@fms-cat/experimental';
 import { RenderTarget } from './RenderTarget';
@@ -11,6 +12,7 @@ export interface EntityUpdateEvent {
   time: number;
   deltaTime: number;
   globalTransform: Transform;
+  entitiesByComponent: MapOfSet<string, Entity>;
   parent: Entity | null;
   path?: string;
 }
@@ -22,6 +24,7 @@ export interface EntityDrawEvent {
   globalTransform: Transform;
   viewMatrix: Matrix4;
   projectionMatrix: Matrix4;
+  entitiesByComponent: MapOfSet<string, Entity>;
   camera: Camera;
   cameraTransform: Transform;
   materialTag: MaterialTag;
@@ -69,16 +72,19 @@ export class Entity {
     if ( !this.active ) { return; }
     if ( this.lastUpdateFrame === event.frameCount ) { return; }
     this.lastUpdateFrame = event.frameCount;
+    const { entitiesByComponent } = event;
 
     const measured = (): void => {
       const globalTransform = event.globalTransform.multiply( this.transform );
 
       this.components.forEach( ( component ) => {
+        entitiesByComponent.add( component.constructor.name, this );
         component.update( {
           frameCount: event.frameCount,
           time: event.time,
           deltaTime: event.deltaTime,
           globalTransform,
+          entitiesByComponent,
           entity: this,
         } );
       } );
@@ -89,6 +95,7 @@ export class Entity {
           time: event.time,
           deltaTime: event.deltaTime,
           globalTransform,
+          entitiesByComponent,
           parent: this,
         } );
       } );
@@ -103,6 +110,7 @@ export class Entity {
 
   public draw( event: EntityDrawEvent ): void {
     if ( !this.visible ) { return; }
+    const { entitiesByComponent } = event;
 
     const measured = (): void => {
       this.globalTransformCache = event.globalTransform.multiply( this.transform );
@@ -118,6 +126,7 @@ export class Entity {
           viewMatrix: event.viewMatrix,
           projectionMatrix: event.projectionMatrix,
           entity: this,
+          entitiesByComponent,
           materialTag: event.materialTag,
         } );
       } );
@@ -130,6 +139,7 @@ export class Entity {
           globalTransform: this.globalTransformCache,
           viewMatrix: event.viewMatrix,
           projectionMatrix: event.projectionMatrix,
+          entitiesByComponent,
           camera: event.camera,
           cameraTransform: event.cameraTransform,
           materialTag: event.materialTag,
