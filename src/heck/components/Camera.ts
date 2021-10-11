@@ -1,5 +1,6 @@
 import { Component, ComponentOptions, ComponentUpdateEvent } from './Component';
 import { Entity } from '../Entity';
+import { MapOfSet } from '../../utils/MapOfSet';
 import { MaterialTag } from '../Material';
 import { Matrix4 } from '@fms-cat/experimental';
 import { RenderTarget } from '../RenderTarget';
@@ -67,6 +68,7 @@ export abstract class Camera extends Component {
         renderTarget: renderTarget,
         cameraTransform: event.globalTransform,
         globalTransform: new Transform(),
+        entitiesByComponent: new MapOfSet(),
         viewMatrix,
         projectionMatrix: this.projectionMatrix,
         camera: this,
