@@ -2,21 +2,21 @@ import { Component, ComponentOptions, ComponentUpdateEvent } from './Component';
 import { Entity } from '../Entity';
 import { MapOfSet } from '../../utils/MapOfSet';
 import { MaterialTag } from '../Material';
-import { Matrix4 } from '@0b5vr/experimental';
+import { RawMatrix4, mat4Inverse } from '@0b5vr/experimental';
 import { RenderTarget } from '../RenderTarget';
 import { Transform } from '../Transform';
 import { glCat } from '../../globals/canvas';
 
 export interface CameraOptions extends ComponentOptions {
   renderTarget?: RenderTarget;
-  projectionMatrix: Matrix4;
+  projectionMatrix: RawMatrix4;
   materialTag: MaterialTag;
   scenes?: Entity[];
   clear?: Array<number | undefined> | false;
 }
 
 export abstract class Camera extends Component {
-  public projectionMatrix: Matrix4;
+  public projectionMatrix: RawMatrix4;
 
   public renderTarget?: RenderTarget;
 
@@ -53,7 +53,7 @@ export abstract class Camera extends Component {
       throw process.env.DEV && new Error( 'You must assign scenes to the Camera' );
     }
 
-    const viewMatrix = event.globalTransform.matrix.inverse!;
+    const viewMatrix = mat4Inverse( event.globalTransform.matrix );
 
     renderTarget.bind();
 

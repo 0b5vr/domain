@@ -3,19 +3,19 @@ import { ComponentOptions, ComponentUpdateEvent } from './Component';
 import { CubemapRenderTarget } from '../CubemapRenderTarget';
 import { Entity } from '../Entity';
 import { MaterialTag } from '../Material';
-import { Matrix4, Quaternion, Vector3 } from '@0b5vr/experimental';
+import { RawQuaternion, mat4Compose, mat4Perspective } from '@0b5vr/experimental';
 import { Transform } from '../Transform';
 import { gl } from '../../globals/canvas';
 
 const INV_SQRT2 = 1.0 / Math.sqrt( 2.0 );
 
-const CUBEMAP_ROTATIONS = [ // 🔥
-  new Quaternion( [ 0.0, INV_SQRT2, 0.0, INV_SQRT2 ] ), // PX
-  new Quaternion( [ 0.0, -INV_SQRT2, 0.0, INV_SQRT2 ] ), // NX
-  new Quaternion( [ 0.0, INV_SQRT2, INV_SQRT2, 0.0 ] ), // PY
-  new Quaternion( [ 0.0, INV_SQRT2, -INV_SQRT2, 0.0 ] ), // NY
-  new Quaternion( [ 0.0, 1.0, 0.0, 0.0 ] ), // PZ
-  new Quaternion( [ 0.0, 0.0, 0.0, 1.0 ] ), // NZ
+const CUBEMAP_ROTATIONS: RawQuaternion[] = [ // 🔥
+  [ 0.0, INV_SQRT2, 0.0, INV_SQRT2 ], // PX
+  [ 0.0, -INV_SQRT2, 0.0, INV_SQRT2 ], // NX
+  [ 0.0, INV_SQRT2, INV_SQRT2, 0.0 ], // PY
+  [ 0.0, INV_SQRT2, -INV_SQRT2, 0.0 ], // NY
+  [ 0.0, 1.0, 0.0, 0.0 ], // PZ
+  [ 0.0, 0.0, 0.0, 1.0 ], // NZ
 ];
 
 export interface CubemapCameraOptions extends ComponentOptions {
@@ -33,7 +33,7 @@ export class CubemapCamera extends Camera {
   public readonly far: number;
 
   public constructor( options: CubemapCameraOptions ) {
-    const projectionMatrix = Matrix4.perspective(
+    const projectionMatrix = mat4Perspective(
       90.0,
       options.near ?? 0.1,
       options.far ?? 20.0,
@@ -66,10 +66,10 @@ export class CubemapCamera extends Camera {
       );
 
       const globalTransform = new Transform();
-      globalTransform.matrix = Matrix4.compose(
+      globalTransform.matrix = mat4Compose(
         event.globalTransform.position,
         CUBEMAP_ROTATIONS[ i ],
-        new Vector3( [ 1.0, 1.0, 1.0 ] ),
+        [ 1.0, 1.0, 1.0 ],
       );
 
       super.__updateImpl( {

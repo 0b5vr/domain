@@ -3,7 +3,7 @@ import { Geometry } from '../heck/Geometry';
 import { Lambda } from '../heck/components/Lambda';
 import { Material } from '../heck/Material';
 import { Mesh, MeshCull } from '../heck/components/Mesh';
-import { Quaternion, TRIANGLE_STRIP_QUAD_3D, TRIANGLE_STRIP_QUAD_NORMAL, TRIANGLE_STRIP_QUAD_UV, Vector3 } from '@0b5vr/experimental';
+import { RawVector3, TRIANGLE_STRIP_QUAD_3D, TRIANGLE_STRIP_QUAD_NORMAL, TRIANGLE_STRIP_QUAD_UV, quatFromAxisAngle, vecNormalize } from '@0b5vr/experimental';
 import { dummyRenderTarget } from '../globals/dummyRenderTarget';
 import { gl, glCat } from '../globals/canvas';
 import objectVert from '../shaders/object.vert';
@@ -49,11 +49,11 @@ export class Plane extends Entity {
     mesh.cull = MeshCull.None;
 
     // -- speen ------------------------------------------------------------------------------------
-    const speenAxis = new Vector3( [ 0.0, 1.0, 0.0 ] ).normalized;
+    const speenAxis = vecNormalize( [ 0.0, 1.0, 0.0 ] ) as RawVector3;
 
     const lambdaSpeen = new Lambda( {
       onUpdate: ( { time } ) => {
-        this.transform.rotation = Quaternion.fromAxisAngle( speenAxis, time );
+        this.transform.rotation = quatFromAxisAngle( speenAxis, time );
       },
       name: process.env.DEV && 'speen',
     } );

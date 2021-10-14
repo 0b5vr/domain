@@ -6,7 +6,7 @@ import { Lambda } from '../heck/components/Lambda';
 import { Material } from '../heck/Material';
 import { Mesh } from '../heck/components/Mesh';
 import { Quad } from '../heck/components/Quad';
-import { Quaternion, Swap, Vector3 } from '@0b5vr/experimental';
+import { RawVector3, Swap, mat4Inverse, mat4Multiply, quatFromAxisAngle, vecNormalize } from '@0b5vr/experimental';
 import { dummyRenderTarget } from '../globals/dummyRenderTarget';
 import { genCube } from '../geometries/genCube';
 import { gl } from '../globals/canvas';
@@ -280,14 +280,16 @@ export class Fluid extends Entity {
           event.camera.far
         );
 
+        const pvm = mat4Multiply(
+          event.projectionMatrix,
+          event.viewMatrix,
+          event.globalTransform.matrix
+        );
+
         forward.addUniformMatrixVector(
           'inversePVM',
           'Matrix4fv',
-          event.projectionMatrix
-            .multiply( event.viewMatrix )
-            .multiply( event.globalTransform.matrix )
-            .inverse!
-            .elements
+          mat4Inverse( pvm ),
         );
       },
       name: process.env.DEV && 'lambdaSetCameraUniforms',
@@ -298,16 +300,16 @@ export class Fluid extends Entity {
       materials: { forward },
       name: process.env.DEV && 'mesh',
     } );
-    this.transform.scale = Vector3.one.scale( 1.0 );
+    this.transform.scale = [ 1.0, 1.0, 1.0 ];
     mesh.depthTest = false;
     mesh.depthWrite = false;
 
     // -- speen ------------------------------------------------------------------------------------
-    const speenAxis = new Vector3( [ 1.0, 1.0, 1.0 ] ).normalized;
+    const speenAxis = vecNormalize( [ 1.0, 1.0, 1.0 ] ) as RawVector3;
 
     const lambdaSpeen = new Lambda( {
       onUpdate: ( { time } ) => {
-        this.transform.rotation = Quaternion.fromAxisAngle( speenAxis, 0.1 * time );
+        this.transform.rotation = quatFromAxisAngle( speenAxis, 0.1 * time );
       },
       name: process.env.DEV && 'speen',
     } );
@@ -329,7 +331,7 @@ export class Fluid extends Entity {
 
     // -- bounding box -----------------------------------------------------------------------------
     const boundingBox = new BoundingBox();
-    boundingBox.transform.scale = Vector3.one.scale( 0.5 );
+    boundingBox.transform.scale = [ 0.5, 0.5, 0.5 ];
     this.children.push( boundingBox );
   }
 }

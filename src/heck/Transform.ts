@@ -1,73 +1,78 @@
-import { Matrix4, Quaternion, Vector3 } from '@0b5vr/experimental';
+import { RawMatrix4, RawQuaternion, RawVector3, mat4Compose, mat4Decompose, mat4LookAt, mat4Multiply } from '@0b5vr/experimental';
 
 export class Transform {
-  protected __position: Vector3;
+  protected __position: RawVector3;
 
-  public get position(): Vector3 {
+  public get position(): RawVector3 {
     return this.__position;
   }
 
-  public set position( vector: Vector3 ) {
+  public set position( vector: RawVector3 ) {
     this.__position = vector;
 
-    this.__matrix = Matrix4.compose( this.__position, this.__rotation, this.__scale );
+    this.__matrix = mat4Compose( this.__position, this.__rotation, this.__scale );
     this.__isIdentity = false;
   }
 
-  protected __rotation: Quaternion;
+  protected __rotation: RawQuaternion;
 
-  public get rotation(): Quaternion {
+  public get rotation(): RawQuaternion {
     return this.__rotation;
   }
 
-  public set rotation( quaternion: Quaternion ) {
+  public set rotation( quaternion: RawQuaternion ) {
     this.__rotation = quaternion;
 
-    this.__matrix = Matrix4.compose( this.__position, this.__rotation, this.__scale );
+    this.__matrix = mat4Compose( this.__position, this.__rotation, this.__scale );
     this.__isIdentity = false;
   }
 
-  protected __scale: Vector3;
+  protected __scale: RawVector3;
 
-  public get scale(): Vector3 {
+  public get scale(): RawVector3 {
     return this.__scale;
   }
 
-  public set scale( vector: Vector3 ) {
+  public set scale( vector: RawVector3 ) {
     this.__scale = vector;
 
-    this.__matrix = Matrix4.compose( this.__position, this.__rotation, this.__scale );
+    this.__matrix = mat4Compose( this.__position, this.__rotation, this.__scale );
     this.__isIdentity = false;
   }
 
-  protected __matrix: Matrix4;
+  protected __matrix: RawMatrix4;
 
-  public get matrix(): Matrix4 {
+  public get matrix(): RawMatrix4 {
     return this.__matrix;
   }
 
-  public set matrix( matrix: Matrix4 ) {
+  public set matrix( matrix: RawMatrix4 ) {
     this.__matrix = matrix;
 
-    const decomposed = this.__matrix.decompose();
-    this.__position = decomposed.position;
-    this.__rotation = decomposed.rotation;
-    this.__scale = decomposed.scale;
+    const { position, rotation, scale } = mat4Decompose( this.__matrix );
+    this.__position = position;
+    this.__rotation = rotation;
+    this.__scale = scale;
     this.__isIdentity = false;
   }
 
   protected __isIdentity: boolean;
 
   public constructor() {
-    this.__position = Vector3.zero;
-    this.__rotation = Quaternion.identity;
-    this.__scale = Vector3.one;
-    this.__matrix = Matrix4.identity;
+    this.__position = [ 0.0, 0.0, 0.0 ];
+    this.__rotation = [ 0.0, 0.0, 0.0, 1.0 ];
+    this.__scale = [ 1.0, 1.0, 1.0 ];
+    this.__matrix = [
+      1.0, 0.0, 0.0, 0.0,
+      0.0, 1.0, 0.0, 0.0,
+      0.0, 0.0, 1.0, 0.0,
+      0.0, 0.0, 0.0, 1.0,
+    ];
     this.__isIdentity = true;
   }
 
-  public lookAt( position: Vector3, target?: Vector3, up?: Vector3, roll?: number ): void {
-    this.matrix = Matrix4.lookAt( position, target, up, roll );
+  public lookAt( position: RawVector3, target?: RawVector3, up?: RawVector3, roll?: number ): void {
+    this.matrix = mat4LookAt( position, target, up, roll );
   }
 
   public multiply( transform: Transform ): Transform {
@@ -76,7 +81,7 @@ export class Transform {
     }
 
     const result = new Transform();
-    result.matrix = this.matrix.multiply( transform.matrix );
+    result.matrix = mat4Multiply( this.__matrix, transform.__matrix );
     return result;
   }
 }

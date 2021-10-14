@@ -2,8 +2,8 @@ import { Camera } from './Camera';
 import { ComponentOptions } from './Component';
 import { Entity } from '../Entity';
 import { MaterialTag } from '../Material';
-import { Matrix4 } from '@0b5vr/experimental';
 import { RenderTarget } from '../RenderTarget';
+import { mat4Perspective } from '@0b5vr/experimental';
 
 export interface PerspectiveCameraOptions extends ComponentOptions {
   materialTag: MaterialTag;
@@ -48,7 +48,7 @@ export class PerspectiveCamera extends Camera {
     const near = options.near ?? 0.01;
     const far = options.far ?? 100.0;
 
-    const projectionMatrix = Matrix4.perspective( fov, near, far );
+    const projectionMatrix = mat4Perspective( fov, near, far );
 
     super( {
       ...options,
@@ -64,6 +64,6 @@ export class PerspectiveCamera extends Camera {
   }
 
   protected __updatePerspectiveCamera(): void {
-    this.projectionMatrix = Matrix4.perspective( this.fov, this.near, this.far );
+    this.projectionMatrix = mat4Perspective( this.fov, this.near, this.far );
   }
 }

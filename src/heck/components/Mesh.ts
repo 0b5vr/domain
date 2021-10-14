@@ -2,6 +2,7 @@ import { Component, ComponentDrawEvent, ComponentOptions } from './Component';
 import { Geometry } from '../Geometry';
 import { MaterialMap } from '../Material';
 import { glCat } from '../../globals/canvas';
+import { mat4Inverse } from '@0b5vr/experimental';
 
 export enum MeshCull {
   None,
@@ -71,13 +72,13 @@ export class Mesh extends Component {
     program.uniform( 'time', '1f', event.time );
     program.uniform( 'frameCount', '1f', event.frameCount );
     program.uniform( 'resolution', '2f', event.renderTarget.width, event.renderTarget.height );
-    program.uniform( 'cameraPos', '3f', ...event.cameraTransform.position.elements );
+    program.uniform( 'cameraPos', '3f', ...event.cameraTransform.position );
     program.uniform( 'cameraNearFar', '2f', event.camera.near, event.camera.far );
 
-    program.uniformMatrixVector( 'normalMatrix', 'Matrix4fv', event.globalTransform.matrix.inverse!.elements, true );
-    program.uniformMatrixVector( 'modelMatrix', 'Matrix4fv', event.globalTransform.matrix.elements );
-    program.uniformMatrixVector( 'viewMatrix', 'Matrix4fv', event.viewMatrix.elements );
-    program.uniformMatrixVector( 'projectionMatrix', 'Matrix4fv', event.projectionMatrix.elements );
+    program.uniformMatrixVector( 'normalMatrix', 'Matrix4fv', mat4Inverse( event.globalTransform.matrix ), true );
+    program.uniformMatrixVector( 'modelMatrix', 'Matrix4fv', event.globalTransform.matrix );
+    program.uniformMatrixVector( 'viewMatrix', 'Matrix4fv', event.viewMatrix );
+    program.uniformMatrixVector( 'projectionMatrix', 'Matrix4fv', event.projectionMatrix );
 
     this.geometry.draw();
   }

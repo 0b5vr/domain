@@ -8,7 +8,7 @@ import { ForwardCamera } from './entities/ForwardCamera';
 import { Lambda } from './heck/components/Lambda';
 import { Post } from './entities/Post';
 import { RTInspector } from './entities/RTInspector';
-import { Swap, Vector3 } from '@0b5vr/experimental';
+import { Swap } from '@0b5vr/experimental';
 import { automaton } from './globals/automaton';
 import { clock } from './globals/clock';
 import { gui } from './globals/gui';
@@ -68,7 +68,7 @@ const forwardCamera = new ForwardCamera( {
   target: swap.i,
   clear: [ 0, 0, 0, 1 ],
 } );
-forwardCamera.transform.position = new Vector3( [ 0.0, 0.0, 5.0 ] );
+forwardCamera.transform.position = [ 0.0, 0.0, 5.0 ];
 
 swap.swap();
 
