@@ -102,7 +102,12 @@ void main() {
 
   col = aces( max( 2.0 * col, 0.0 ) ) / aces( vec3( 11.2 ) );
   col += ( pow( random(), 2.2 ) - 0.25 ) * 0.002;
-  col = pow( saturate( col ), vec3( 0.4545 ) );
+  col = saturate( col );
+  col = mix(
+    col * 12.92,
+    pow( col, vec3( 0.4167 ) ) * 1.055 - 0.055,
+    step( 0.0031308, col )
+  );
   col = mix( col, 1.0 - 1.0 * col, mixInvert );
   col = liftGammaGain( col );
 
