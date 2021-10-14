@@ -1,4 +1,4 @@
-import { Xorshift } from '@fms-cat/experimental';
+import { Xorshift } from '@0b5vr/experimental';
 import { gl } from '../globals/canvas';
 import GLCat, { GLCatTexture } from '@fms-cat/glcat-ts';
 

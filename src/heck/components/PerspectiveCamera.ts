@@ -2,7 +2,7 @@ import { Camera } from './Camera';
 import { ComponentOptions } from './Component';
 import { Entity } from '../Entity';
 import { MaterialTag } from '../Material';
-import { Matrix4 } from '@fms-cat/experimental';
+import { Matrix4 } from '@0b5vr/experimental';
 import { RenderTarget } from '../RenderTarget';
 
 export interface PerspectiveCameraOptions extends ComponentOptions {

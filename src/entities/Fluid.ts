@@ -6,7 +6,7 @@ import { Lambda } from '../heck/components/Lambda';
 import { Material } from '../heck/Material';
 import { Mesh } from '../heck/components/Mesh';
 import { Quad } from '../heck/components/Quad';
-import { Quaternion, Swap, Vector3 } from '@fms-cat/experimental';
+import { Quaternion, Swap, Vector3 } from '@0b5vr/experimental';
 import { dummyRenderTarget } from '../globals/dummyRenderTarget';
 import { genCube } from '../geometries/genCube';
 import { gl } from '../globals/canvas';

@@ -8,7 +8,7 @@ import { ForwardCamera } from './entities/ForwardCamera';
 import { Lambda } from './heck/components/Lambda';
 import { Post } from './entities/Post';
 import { RTInspector } from './entities/RTInspector';
-import { Swap, Vector3 } from '@fms-cat/experimental';
+import { Swap, Vector3 } from '@0b5vr/experimental';
 import { automaton } from './globals/automaton';
 import { clock } from './globals/clock';
 import { gui } from './globals/gui';

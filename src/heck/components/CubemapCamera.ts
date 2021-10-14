@@ -3,7 +3,7 @@ import { ComponentOptions, ComponentUpdateEvent } from './Component';
 import { CubemapRenderTarget } from '../CubemapRenderTarget';
 import { Entity } from '../Entity';
 import { MaterialTag } from '../Material';
-import { Matrix4, Quaternion, Vector3 } from '@fms-cat/experimental';
+import { Matrix4, Quaternion, Vector3 } from '@0b5vr/experimental';
 import { Transform } from '../Transform';
 import { gl } from '../../globals/canvas';
 

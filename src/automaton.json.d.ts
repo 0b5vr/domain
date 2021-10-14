@@ -1,4 +1,4 @@
-import type { SerializedAutomatonWithGUI } from '@fms-cat/automaton-with-gui';
+import type { SerializedAutomatonWithGUI } from '@0b5vr/automaton-with-gui';
 
 declare module './automaton.json' {
   const data: SerializedAutomatonWithGUI;

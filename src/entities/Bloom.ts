@@ -4,7 +4,7 @@ import { Entity } from '../heck/Entity';
 import { Material } from '../heck/Material';
 import { Quad } from '../heck/components/Quad';
 import { RenderTarget } from '../heck/RenderTarget';
-import { Swap } from '@fms-cat/experimental';
+import { Swap } from '@0b5vr/experimental';
 import { dummyRenderTarget } from '../globals/dummyRenderTarget';
 import { gl } from '../globals/canvas';
 import { quadGeometry } from '../globals/quadGeometry';

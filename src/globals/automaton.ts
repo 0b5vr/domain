@@ -1,6 +1,6 @@
-import { Automaton } from '@fms-cat/automaton';
-import { AutomatonWithGUI } from '@fms-cat/automaton-with-gui';
-import { Clock } from '@fms-cat/experimental';
+import { Automaton } from '@0b5vr/automaton';
+import { AutomatonWithGUI } from '@0b5vr/automaton-with-gui';
+import { Clock } from '@0b5vr/experimental';
 import { fxDefinitions } from './automaton-fxs/fxDefinitions';
 import { getDivAutomaton } from './dom';
 import automatonData from '../automaton.json';

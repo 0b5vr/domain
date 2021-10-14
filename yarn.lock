@@ -2,6 +2,23 @@
 # yarn lockfile v1
 
 
+"@0b5vr/automaton-with-gui@^4.2.1":
+  version "4.2.1"
+  resolved "https://registry.yarnpkg.com/@0b5vr/automaton-with-gui/-/automaton-with-gui-4.2.1.tgz#21d2de5cb6ed21a474e6294b1f3678b8d4a32d4f"
+  integrity sha512-geV9rf392z7GOvcMPJi5jt+sD+tQwQVZlhn5WEi+o+fkbPD4+ORzqLDcWjsraNz17Bam8GDZ+2xb/zU7Cq4L+A==
+  dependencies:
+    "@0b5vr/automaton" "4.2.1"
+
+"@0b5vr/automaton@4.2.1", "@0b5vr/automaton@^4.2.1":
+  version "4.2.1"
+  resolved "https://registry.yarnpkg.com/@0b5vr/automaton/-/automaton-4.2.1.tgz#9ba2fe920421102940254918ceaa7d5aade747e4"
+  integrity sha512-+co+9owRVycY3EqQhlCQ5iIhnt4Rh4zQOfdbEXN+WRFPfjXhlnwW6ZXA7WRXz9qFQqimuFKZfZLZxy30B/ZnOg==
+
+"@0b5vr/experimental@^0.7.0":
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/@0b5vr/experimental/-/experimental-0.7.0.tgz#3ba9af74791a0101fd1cd1f7864982383d74f359"
+  integrity sha512-XHaDH14gFu0Kmq7TJDMqGwAyYGZaxVLcU32diGYnVdVx21+eZSvRSEXHvrbhDvHQJOed6tCCqx7kyMM0tFimrA==
+
 "@0b5vr/imtweakpane@^0.1.3":
   version "0.1.3"
   resolved "https://registry.yarnpkg.com/@0b5vr/imtweakpane/-/imtweakpane-0.1.3.tgz#101f4ed43ae2d782f817b078d981c08a1ed7ddcd"
@@ -52,23 +69,6 @@
     js-yaml "^3.13.1"
     minimatch "^3.0.4"
     strip-json-comments "^3.1.1"
-
-"@fms-cat/automaton-with-gui@^4.2.0":
-  version "4.2.0"
-  resolved "https://registry.yarnpkg.com/@fms-cat/automaton-with-gui/-/automaton-with-gui-4.2.0.tgz#a75a3bce38c3516b95f6a3a740ed901ab762fe8d"
-  integrity sha512-lO2iLSdHVWfa/rawSlepyrMYg7nDkbe3iK4vY8mV4Kl41Rxq3YLn1WxDoMTk0Wl7ENwlhSatqRBNAoPoQDU8Xw==
-  dependencies:
-    "@fms-cat/automaton" "^4.2.0-beta.0"
-
-"@fms-cat/automaton@^4.2.0", "@fms-cat/automaton@^4.2.0-beta.0":
-  version "4.2.0"
-  resolved "https://registry.yarnpkg.com/@fms-cat/automaton/-/automaton-4.2.0.tgz#e052fb1dcd31edfdc913864ad4869796675db2ae"
-  integrity sha512-DxBpmBSY7UbqmdlJjzP7at5gSCjCWDzMSIjguRTUb3U7yKqP/bGzk5lwpXf1nZc6hw8+Ui+dFyZsHvkoaXIDlg==
-
-"@fms-cat/experimental@^0.6.1":
-  version "0.6.1"
-  resolved "https://registry.yarnpkg.com/@fms-cat/experimental/-/experimental-0.6.1.tgz#c13e69db4d7faca3fed3cc29e75cbe3ac465f6c0"
-  integrity sha512-qgpn2ITe2hR79BUPVnU3w9JqGGcmmKAvknYLK+yqPfCAIhPy5Gh+LKpT20Jx3Vp/jmbRhDghHfRbFIA9S4NrmA==
 
 "@fms-cat/glcat-ts@^0.15.0":
   version "0.15.0"
