@@ -28,9 +28,11 @@ dog.root.components.push( new Lambda( {
   name: process.env.DEV && 'update-everything',
 } ) );
 
-gui.input( 'active', true )?.on( 'change', ( { value } ) => {
-  dog.active = value;
-} );
+if ( process.env.DEV && gui != null ) {
+  gui.input( 'active', true )?.on( 'change', ( { value } ) => {
+    dog.active = value;
+  } );
+}
 
 // == render buffer ================================================================================
 const swapOptions = {

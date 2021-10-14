@@ -10,7 +10,6 @@ import { Quaternion, Swap, Vector3 } from '@fms-cat/experimental';
 import { dummyRenderTarget } from '../globals/dummyRenderTarget';
 import { genCube } from '../geometries/genCube';
 import { gl } from '../globals/canvas';
-import { gui } from '../globals/gui';
 import { quadGeometry } from '../globals/quadGeometry';
 import { randomTexture } from '../globals/randomTexture';
 import colorFrag from '../shaders/color.frag';
@@ -153,10 +152,6 @@ export class Fluid extends Entity {
     );
     materialPressureInit.addUniform( 'color', '4f', 0.5, 0.0, 0.0, 1.0 );
 
-    gui.input( 'Fluid/pressure', 0.5 )?.on( 'change', ( { value } ) => {
-      materialPressureInit.addUniform( 'color', '4f', value, 0.0, 0.0, 1.0 );
-    } );
-
     const quadPressureInit = new Quad( {
       target: swapPressure.i,
       material: materialPressureInit,
@@ -202,10 +197,6 @@ export class Fluid extends Entity {
     materialResolvePressure.addUniformTextures( 'samplerPressure', swapPressure.o.texture );
     materialResolvePressure.addUniformTextures( 'samplerVelocity', swapVelocity.o.texture );
 
-    gui.input( 'Fluid/curl', 5.0 )?.on( 'change', ( { value } ) => {
-      materialResolvePressure.addUniform( 'curl', '1f', value );
-    } );
-
     const quadResolvePressure = new Quad( {
       target: swapVelocity.i,
       material: materialResolvePressure,
@@ -227,10 +218,6 @@ export class Fluid extends Entity {
     materialAdvectionVelocity.addUniformTextures( 'samplerVelocity', swapVelocity.o.texture );
     materialAdvectionVelocity.addUniformTextures( 'samplerSource', swapVelocity.o.texture );
 
-    gui.input( 'Fluid/velocity dissipation', 0.1 )?.on( 'change', ( { value } ) => {
-      materialAdvectionVelocity.addUniform( 'dissipation', '1f', value );
-    } );
-
     const quadAdvectionVelocity = new Quad( {
       target: swapVelocity.i,
       material: materialAdvectionVelocity,
@@ -250,10 +237,6 @@ export class Fluid extends Entity {
     materialAdvectionDensity.addUniform( 'dissipation', '1f', 1.0 );
     materialAdvectionDensity.addUniformTextures( 'samplerVelocity', swapVelocity.o.texture );
     materialAdvectionDensity.addUniformTextures( 'samplerSource', swapDensity.o.texture );
-
-    gui.input( 'Fluid/density dissipation', 0.1 )?.on( 'change', ( { value } ) => {
-      materialAdvectionDensity.addUniform( 'dissipation', '1f', value );
-    } );
 
     const quadAdvectionDensity = new Quad( {
       target: swapDensity.i,
@@ -315,7 +298,7 @@ export class Fluid extends Entity {
       materials: { forward },
       name: process.env.DEV && 'mesh',
     } );
-    this.transform.scale = Vector3.one.scale( 3.0 );
+    this.transform.scale = Vector3.one.scale( 1.0 );
     mesh.depthTest = false;
     mesh.depthWrite = false;
 
