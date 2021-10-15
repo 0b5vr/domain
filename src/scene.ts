@@ -3,12 +3,13 @@ import { BufferRenderTarget } from './heck/BufferRenderTarget';
 import { CanvasRenderTarget } from './heck/CanvasRenderTarget';
 import { Dog } from './heck/Dog';
 import { EntityReplacer } from './utils/EntityReplacer';
+import { Floor } from './entities/Floor';
 import { Fluid } from './entities/Fluid';
 import { ForwardCamera } from './entities/ForwardCamera';
 import { Lambda } from './heck/components/Lambda';
 import { Post } from './entities/Post';
 import { RTInspector } from './entities/RTInspector';
-import { Swap } from '@0b5vr/experimental';
+import { Swap, quatFromAxisAngle } from '@0b5vr/experimental';
 import { automaton } from './globals/automaton';
 import { clock } from './globals/clock';
 import { gui } from './globals/gui';
@@ -55,6 +56,35 @@ const swap = new Swap(
 // const plane = new Plane();
 // dog.root.children.push( plane );
 
+const forwardCamera = new ForwardCamera( {
+  scenes: [ dog.root ],
+  target: swap.i,
+  clear: [ 0, 0, 0, 1 ],
+} );
+forwardCamera.transform.position = [ 0.0, 1.0, 5.0 ];
+forwardCamera.components.push( new Lambda( {
+  onUpdate: () => {
+    forwardCamera.transform.rotation = quatFromAxisAngle(
+      [ 1.0, 0.0, 0.0 ],
+      gui?.value( 'haha', 0.0 ) ?? 0.0,
+    );
+  },
+} ) );
+
+const floor = new Floor(
+  forwardCamera,
+  forwardCamera.camera,
+);
+if ( process.env.DEV && module.hot ) {
+  const replacer = new EntityReplacer( floor, () => new Floor(
+    forwardCamera,
+    forwardCamera.camera
+  ) );
+  module.hot.accept( './entities/Floor', () => {
+    replacer.replace( dog.root );
+  } );
+}
+
 const fluid = new Fluid();
 if ( process.env.DEV && module.hot ) {
   const replacer = new EntityReplacer( fluid, () => new Fluid() );
@@ -62,13 +92,7 @@ if ( process.env.DEV && module.hot ) {
     replacer.replace( dog.root );
   } );
 }
-
-const forwardCamera = new ForwardCamera( {
-  scenes: [ dog.root ],
-  target: swap.i,
-  clear: [ 0, 0, 0, 1 ],
-} );
-forwardCamera.transform.position = [ 0.0, 0.0, 5.0 ];
+fluid.transform.position = [ 0.0, 1.0, 0.0 ];
 
 swap.swap();
 
@@ -85,6 +109,7 @@ const post = new Post( {
 } );
 
 dog.root.children.push(
+  floor,
   fluid,
   forwardCamera,
   bloom,

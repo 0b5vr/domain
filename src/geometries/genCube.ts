@@ -1,4 +1,5 @@
 import { GLCatBuffer } from '@fms-cat/glcat-ts';
+import { HALF_PI, PI } from '../utils/constants';
 import { gl, glCat } from '../globals/canvas';
 
 interface ResultGenCube {
@@ -37,12 +38,12 @@ export function genCube( options?: {
       const vt: number[] = [];
 
       if ( i < 4 ) {
-        const t = i * Math.PI / 2.0;
+        const t = i * HALF_PI;
         vt[ 0 ] = Math.cos( t ) * v[ 0 ] - Math.sin( t ) * v[ 2 ];
         vt[ 1 ] = v[ 1 ];
         vt[ 2 ] = Math.sin( t ) * v[ 0 ] + Math.cos( t ) * v[ 2 ];
       } else {
-        const t = ( i - 0.5 ) * Math.PI;
+        const t = ( i - 0.5 ) * PI;
         vt[ 0 ] = v[ 0 ];
         vt[ 1 ] = Math.cos( t ) * v[ 1 ] - Math.sin( t ) * v[ 2 ];
         vt[ 2 ] = Math.sin( t ) * v[ 1 ] + Math.cos( t ) * v[ 2 ];
