@@ -5,11 +5,11 @@ import { Material } from '../heck/Material';
 import { Quad } from '../heck/components/Quad';
 import { RenderTarget } from '../heck/RenderTarget';
 import { Swap } from '@0b5vr/experimental';
+import { bloomDownFrag } from '../shaders/bloomDownFrag';
+import { bloomUpFrag } from '../shaders/bloomUpFrag';
 import { dummyRenderTarget } from '../globals/dummyRenderTarget';
 import { gl } from '../globals/canvas';
 import { quadGeometry } from '../globals/quadGeometry';
-import bloomDownFrag from '../shaders/bloom-down.frag';
-import bloomUpFrag from '../shaders/bloom-up.frag';
 import quadVert from '../shaders/quad.vert';
 
 export interface BloomOptions {

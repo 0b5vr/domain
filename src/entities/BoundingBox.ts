@@ -2,10 +2,10 @@ import { Entity } from '../heck/Entity';
 import { Geometry } from '../heck/Geometry';
 import { Material } from '../heck/Material';
 import { Mesh } from '../heck/components/Mesh';
+import { boundingBoxFrag } from '../shaders/boundingBoxFrag';
+import { boundingBoxVert } from '../shaders/boundingBoxVert';
 import { dummyRenderTarget } from '../globals/dummyRenderTarget';
 import { gl, glCat } from '../globals/canvas';
-import boundingBoxFrag from '../shaders/bounding-box.frag';
-import boundingBoxVert from '../shaders/bounding-box.vert';
 
 export class BoundingBox extends Entity {
   public constructor() {
@@ -56,18 +56,16 @@ export class BoundingBox extends Entity {
     // -- create materials -------------------------------------------------------------------------
     const forward = new Material(
       boundingBoxVert,
-      boundingBoxFrag,
+      boundingBoxFrag( 'forward' ),
       {
-        defines: [ 'FORWARD 1' ],
         initOptions: { geometry, target: dummyRenderTarget },
       },
     );
 
     const depth = new Material(
       boundingBoxVert,
-      boundingBoxFrag,
+      boundingBoxFrag( 'shadow' ),
       {
-        defines: [ 'SHADOW 1' ],
         initOptions: { geometry, target: dummyRenderTarget },
       },
     );
@@ -78,12 +76,12 @@ export class BoundingBox extends Entity {
       if ( module.hot ) {
         module.hot.accept(
           [
-            '../shaders/bounding-box.vert',
-            '../shaders/bounding-box.frag',
+            '../shaders/boundingBoxVert',
+            '../shaders/boundingBoxFrag',
           ],
           () => {
-            forward.replaceShader( boundingBoxVert, boundingBoxFrag );
-            depth.replaceShader( boundingBoxVert, boundingBoxFrag );
+            forward.replaceShader( boundingBoxVert, boundingBoxFrag( 'forward' ) );
+            depth.replaceShader( boundingBoxVert, boundingBoxFrag( 'shadow' ) );
           },
         );
       }
