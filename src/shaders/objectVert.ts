@@ -4,34 +4,45 @@ import { shaderBuilder } from '../shader-builder/shaderBuilder';
 const { glPosition, insert, num, def, defIn, defInNamed, defOut, defOutNamed, defUniform, assign, addAssign, subAssign, mulAssign, divAssign, add, sub, mul, div, pow, length, normalize, mix, clamp, texture, float, vec2, vec3, vec4, swizzle, retFn, defFn, main, build } = shaderBuilder;
 /* eslint-enable max-len, @typescript-eslint/no-unused-vars */
 
-export const objectVert = build( () => {
-  const position = defIn( 'vec3', 0 );
-  const normal = defIn( 'vec3', 1 );
-  const uv = defIn( 'vec2', 2 );
+export const objectVert = ( { locationPosition, locationNormal, locationUv }: {
+  locationPosition?: number,
+  locationNormal?: number,
+  locationUv?: number,
+} = {} ): string => build( () => {
+  const position = defIn( 'vec3', locationPosition ?? 0 );
+  const normal = locationNormal != null ? defIn( 'vec3', locationNormal ) : null;
+  const uv = locationUv != null ? defIn( 'vec2', locationUv ) : null;
 
+  const vPositionWithoutModel = defOutNamed( 'vec4', 'vPositionWithoutModel' );
   const vPosition = defOutNamed( 'vec4', 'vPosition' );
-  const vNormal = defOutNamed( 'vec3', 'vNormal' );
-  const vUv = defOutNamed( 'vec2', 'vUv' );
+  const vNormal = normal != null ? defOutNamed( 'vec3', 'vNormal' ) : null;
+  const vUv = uv != null ? defOutNamed( 'vec2', 'vUv' ) : null;
 
   const resolution = defUniform( 'vec2', 'resolution' );
   const projectionMatrix = defUniform( 'mat4', 'projectionMatrix' );
   const viewMatrix = defUniform( 'mat4', 'viewMatrix' );
   const modelMatrix = defUniform( 'mat4', 'modelMatrix' );
-  const normalMatrix = defUniform( 'mat4', 'normalMatrix' );
+  const normalMatrix = normal != null ? defUniform( 'mat4', 'normalMatrix' ) : null;
 
   main( () => {
-    assign(
-      vNormal,
-      normalize( swizzle( mul( normalMatrix, vec4( normal, 1.0 ) ), 'xyz' ) ),
-    );
+    assign( vPositionWithoutModel, vec4( position, 1.0 ) );
 
-    assign( vUv, uv );
-
-    assign( vPosition, mul( modelMatrix, vec4( position, 1.0 ) ) );
+    assign( vPosition, mul( modelMatrix, vPositionWithoutModel ) );
     const outPos = def( 'vec4', mul( projectionMatrix, viewMatrix, vPosition ) );
 
     const aspect = div( swizzle( resolution, 'x' ), swizzle( resolution, 'y' ) );
     divAssign( swizzle( outPos, 'x' ), aspect );
     assign( glPosition, outPos );
+
+    if ( normal != null ) {
+      assign(
+        vNormal!,
+        normalize( swizzle( mul( normalMatrix!, vec4( normal, 1.0 ) ), 'xyz' ) ),
+      );
+    }
+
+    if ( uv != null ) {
+      assign( vUv!, uv );
+    }
   } );
 } );

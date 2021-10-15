@@ -9,8 +9,8 @@ import { canvas, gl } from '../globals/canvas';
 import { dummyRenderTarget } from '../globals/dummyRenderTarget';
 import { gui } from '../globals/gui';
 import { quadGeometry } from '../globals/quadGeometry';
+import { quadVert } from '../shaders/quadVert';
 import inspectorFrag from '../shaders/inspector.frag';
-import quadVert from '../shaders/quad.vert';
 
 export interface RTInspectorOptions {
   target: RenderTarget;

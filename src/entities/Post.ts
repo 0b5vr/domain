@@ -6,9 +6,9 @@ import { RenderTarget } from '../heck/RenderTarget';
 import { auto } from '../globals/automaton';
 import { dummyRenderTarget } from '../globals/dummyRenderTarget';
 import { quadGeometry } from '../globals/quadGeometry';
+import { quadVert } from '../shaders/quadVert';
 import { randomTexture } from '../globals/randomTexture';
 import postFrag from '../shaders/post.frag';
-import quadVert from '../shaders/quad.vert';
 
 export interface PostOptions {
   input: BufferRenderTarget;

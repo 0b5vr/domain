@@ -10,7 +10,7 @@ import { bloomUpFrag } from '../shaders/bloomUpFrag';
 import { dummyRenderTarget } from '../globals/dummyRenderTarget';
 import { gl } from '../globals/canvas';
 import { quadGeometry } from '../globals/quadGeometry';
-import quadVert from '../shaders/quad.vert';
+import { quadVert } from '../shaders/quadVert';
 
 export interface BloomOptions {
   input: BufferRenderTarget;

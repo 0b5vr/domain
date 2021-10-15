@@ -11,7 +11,9 @@ import { colorFrag } from '../shaders/colorFrag';
 import { dummyRenderTarget } from '../globals/dummyRenderTarget';
 import { genCube } from '../geometries/genCube';
 import { gl } from '../globals/canvas';
+import { objectVert } from '../shaders/objectVert';
 import { quadGeometry } from '../globals/quadGeometry';
+import { quadVert } from '../shaders/quadVert';
 import { randomTexture } from '../globals/randomTexture';
 import fluidAdvectionFrag from '../shaders/fluid-advection.frag';
 import fluidCurlFrag from '../shaders/fluid-curl.frag';
@@ -20,8 +22,6 @@ import fluidPokeDensityFrag from '../shaders/fluid-poke-density.frag';
 import fluidPressureFrag from '../shaders/fluid-pressure.frag';
 import fluidRenderFrag from '../shaders/fluid-render.frag';
 import fluidResolvePressureFrag from '../shaders/fluid-resolve-pressure.frag';
-import quadVert from '../shaders/quad.vert';
-import raymarchObjectVert from '../shaders/raymarch-object.vert';
 
 const GRID_RESO_SQRT = 8;
 const GRID_RESO = GRID_RESO_SQRT * GRID_RESO_SQRT;
@@ -258,8 +258,12 @@ export class Fluid extends Entity {
     geometry.mode = cube.mode;
     geometry.indexType = cube.indexType;
 
+    const locations = {
+      locationPosition: 0,
+    };
+
     const forward = new Material(
-      raymarchObjectVert,
+      objectVert( { ...locations } ),
       fluidRenderFrag,
       {
         defines: [ `GRID_RESO ${ GRID_RESO }`, `GRID_RESO_SQRT ${ GRID_RESO_SQRT }` ],

@@ -85,8 +85,14 @@ export class Floor extends Entity {
     geometry.mode = gl.TRIANGLE_STRIP;
 
     // -- create materials -------------------------------------------------------------------------
+    const locations = {
+      locationPosition: 0,
+      locationNormal: 1,
+      locationUv: 2,
+    };
+
     const forward = new Material(
-      objectVert,
+      objectVert( { ...locations } ),
       floorFrag,
       {
         initOptions: { geometry, target: dummyRenderTarget },
@@ -105,7 +111,7 @@ export class Floor extends Entity {
             '../shaders/floorFrag',
           ],
           () => {
-            forward.replaceShader( objectVert, floorFrag );
+            forward.replaceShader( objectVert( { ...locations } ), floorFrag );
           },
         );
       }
