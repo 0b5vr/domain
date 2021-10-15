@@ -23,7 +23,9 @@ export class Floor extends Entity {
     super();
 
     // -- funky part -------------------------------------------------------------------------------
-    this.mirrorCameraEntity = new Entity();
+    this.mirrorCameraEntity = new Entity( {
+      name: process.env.DEV && 'mirrorCameraEntity',
+    } );
     this.children.push( this.mirrorCameraEntity );
 
     this.primaryCameraEntity = primaryCameraEntity;
