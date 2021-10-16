@@ -18,6 +18,8 @@ if ( process.env.DEV ) {
   canvas.style.maxWidth = '100%';
   canvas.style.maxHeight = '100%';
 } else {
+  document.body.appendChild( canvas );
+
   canvas.style.position = 'fixed';
   canvas.style.left = '0';
   canvas.style.top = '0';
