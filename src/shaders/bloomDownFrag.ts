@@ -1,8 +1,4 @@
-import { GLSLExpression, GLSLFloatExpression, shaderBuilder } from '../shader-builder/shaderBuilder';
-
-/* eslint-disable max-len, @typescript-eslint/no-unused-vars */
-const { glPosition, insert, num, def, defIn, defInNamed, defOut, defOutNamed, defUniform, assign, addAssign, subAssign, mulAssign, divAssign, add, sub, mul, div, pow, tern, length, normalize, dot, min, max, mix, clamp, step, texture, eq, neq, lt, lte, gt, gte, float, vec2, vec3, vec4, swizzle, retFn, ifThen, defFn, main, build } = shaderBuilder;
-/* eslint-enable max-len, @typescript-eslint/no-unused-vars */
+import { GLSLExpression, GLSLFloatExpression, add, addAssign, assign, build, clamp, def, defFn, defInNamed, defOut, defUniform, div, dot, eq, ifThen, insert, lt, main, max, mix, mul, pow, retFn, step, sub, swizzle, tern, texture, vec2, vec3, vec4 } from '../shader-builder/shaderBuilder';
 
 export const bloomDownFrag = build( () => {
   insert( 'precision highp float;' );

@@ -1,8 +1,4 @@
-import { shaderBuilder } from '../shader-builder/shaderBuilder';
-
-/* eslint-disable max-len, @typescript-eslint/no-unused-vars */
-const { glPosition, glFragCoord, insert, num, def, defIn, defInNamed, defOut, defOutNamed, defUniform, assign, addAssign, subAssign, mulAssign, divAssign, add, sub, mul, div, pow, length, normalize, mix, clamp, texture, float, vec2, vec3, vec4, swizzle, retFn, defFn, main, build } = shaderBuilder;
-/* eslint-enable max-len, @typescript-eslint/no-unused-vars */
+import { assign, build, def, defOutNamed, defUniform, div, glFragCoord, insert, main, mulAssign, sub, swizzle, texture } from '../shader-builder/shaderBuilder';
 
 export const floorFrag = build( () => {
   insert( 'precision highp float;' );

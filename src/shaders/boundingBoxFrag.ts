@@ -1,9 +1,5 @@
+import { add, assign, build, def, defInNamed, defOut, defUniform, discard, exp, ifThen, insert, length, lt, main, max, mul, mulAssign, sin, sub, swizzle, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcDepth } from './modules/calcDepth';
-import { shaderBuilder } from '../shader-builder/shaderBuilder';
-
-/* eslint-disable max-len, @typescript-eslint/no-unused-vars */
-const { glPosition, insert, num, def, defIn, defInNamed, defOut, defOutNamed, defUniform, assign, addAssign, subAssign, mulAssign, divAssign, add, sub, mul, div, pow, sqrt, exp, sin, cos, tan, tern, length, normalize, dot, min, max, mix, clamp, step, texture, eq, neq, lt, lte, gt, gte, float, vec2, vec3, vec4, swizzle, discard, retFn, ifThen, defFn, main, build } = shaderBuilder;
-/* eslint-enable max-len, @typescript-eslint/no-unused-vars */
 
 export const boundingBoxFrag = ( tag: 'forward' | 'shadow' ): string => build( () => {
   insert( 'precision highp float;' );

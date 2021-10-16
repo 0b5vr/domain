@@ -9,12 +9,12 @@ import { ForwardCamera } from './entities/ForwardCamera';
 import { Lambda } from './heck/components/Lambda';
 import { Post } from './entities/Post';
 import { RTInspector } from './entities/RTInspector';
+import { SSSBox } from './entities/SSSBox';
 import { Swap, quatFromAxisAngle } from '@0b5vr/experimental';
 import { automaton } from './globals/automaton';
 import { clock } from './globals/clock';
 import { gui } from './globals/gui';
 import { randomTexture } from './globals/randomTexture';
-import { SSSBox } from './entities/SSSBox';
 
 // == dog ==========================================================================================
 export const dog = new Dog();
