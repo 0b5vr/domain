@@ -1,15 +1,19 @@
 import { GLSLExpression, GLSLToken, add, assign, cache, def, defConst, defFn, defGlobal, div, dot, floor, fract, insert, mul, neg, retFn, sign, sub, unrollLoop, vec4 } from '../../shader-builder/shaderBuilder';
 
+const symbolSeed = Symbol();
+const symbolRandom = Symbol();
+const symbolInitRandom = Symbol();
+
 // Ref: https://cs.uwaterloo.ca/~thachisu/tdf2015.pdf
 export function glslDefRandom(): {
   random: () => GLSLExpression<'float'>,
   seed: GLSLToken<'vec4'>,
   init: ( seed: GLSLExpression<'vec4'> ) => void,
 } {
-  const seed = cache( 'seed', () => defGlobal( 'vec4' ) );
+  const seed = cache( symbolSeed, () => defGlobal( 'vec4' ) );
 
   const random = cache(
-    'random',
+    symbolRandom,
     () => defFn( 'float', [], () => {
       const q = defConst( 'vec4', vec4( 1225, 1585, 2457, 2098 ) );
       const r = defConst( 'vec4', vec4( 1112, 367, 92, 265 ) );
@@ -24,7 +28,7 @@ export function glslDefRandom(): {
   );
 
   const init = cache(
-    'initRandom',
+    symbolInitRandom,
     () => ( _seed: GLSLExpression<'vec4'> ) => {
       assign( seed, _seed );
       unrollLoop( 3, () => insert( `${ random() };` ) );

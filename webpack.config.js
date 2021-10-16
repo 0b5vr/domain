@@ -19,6 +19,7 @@ const terserOptions = {
     passes: 2,
     unsafe_arrows: true,
     unsafe_math: true,
+    unsafe_symbols: true,
   },
   mangle: {
     properties: {

@@ -27,7 +27,7 @@ export type Swizzle4ComponentsVec4 = `${ Swizzle3ComponentsVec4 }${ SwizzleCompo
 // †† the sacred zone of global state ††††††††††††††††††††††††††††††††††††††††††††††††††††††††††††††
 const __stack: string[] = [];
 
-const __cache: Map<string, any> = new Map();
+const __cache: Map<symbol, any> = new Map();
 
 let __charIndex = 0;
 // †† end of the sacred zone of global state †††††††††††††††††††††††††††††††††††††††††††††††††††††††
@@ -43,7 +43,7 @@ export function genToken(): string {
   return token;
 }
 
-export function cache<T>( id: string, create: () => T ): T {
+export function cache<T>( id: symbol, create: () => T ): T {
   let func = __cache.get( id ) as T | undefined;
   if ( func == null ) {
     func = create();
