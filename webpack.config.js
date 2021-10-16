@@ -92,7 +92,6 @@ module.exports = ( env, argv ) => {
       usedExports: !DEV,
     },
     devServer: {
-      inline: true,
       hot: true
     },
     devtool: DEV ? 'inline-source-map' : 'source-map',
