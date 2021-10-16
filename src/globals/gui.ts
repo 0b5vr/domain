@@ -1,46 +1,60 @@
 import { GPUMeasureHandler } from './gui/GPUMeasureHandler';
 import { GPUTimer } from './gui/GPUTimer';
-import { ImPane } from '@0b5vr/imtweakpane';
-import { plugin } from '@0b5vr/tweakpane-plugin-profiler';
+import type { ImPane } from '@0b5vr/imtweakpane';
 
-export let gui: ImPane | null = null;
+export let gui: ImPane | undefined;
+let profilerUpdateCpu: any | undefined;
+let profilerUpdateGpu: any | undefined;
+let profilerDrawCpu: any | undefined;
+let profilerDrawGpu: any | undefined;
 
-if ( process.env.DEV ) {
-  gui = new ImPane( { title: 'gui' } );
-  const tpDfwv = gui.pane.element.parentNode! as HTMLDivElement;
-  tpDfwv.style.zIndex = '100';
+export const promiseGui = new Promise( ( resolve ) => {
+  if ( process.env.DEV ) {
+    import( '@0b5vr/imtweakpane' ).then( ( { ImPane } ) => {
+      const gui_ = gui = new ImPane( { title: 'gui' } );
 
-  const gpuTimer = new GPUTimer();
+      const tpDfwv = gui.pane.element.parentNode! as HTMLDivElement;
+      tpDfwv.style.zIndex = '100';
 
-  gui.pane.registerPlugin( { plugin } as any );
+      const gpuTimer = new GPUTimer();
 
-  gui.blade( 'profilers/update/cpu', {
-    view: 'profiler',
-    label: 'cpu',
-  } );
+      resolve( gui );
 
-  gui.blade( 'profilers/update/gpu', {
-    view: 'profiler',
-    label: 'gpu',
-    measureHandler: new GPUMeasureHandler( gpuTimer ),
-  } );
+      import( '@0b5vr/tweakpane-plugin-profiler' ).then( ( plugin ) => {
+        gui_.pane.registerPlugin( plugin as any );
 
-  gui.blade( 'profilers/draw/cpu', {
-    view: 'profiler',
-    label: 'cpu',
-  } );
+        profilerUpdateCpu = gui_.blade( 'profilers/update/cpu', {
+          view: 'profiler',
+          label: 'cpu',
+        } );
 
-  gui.blade( 'profilers/draw/gpu', {
-    view: 'profiler',
-    label: 'gpu',
-    measureHandler: new GPUMeasureHandler( gpuTimer ),
-  } );
-}
+        profilerUpdateGpu = gui_.blade( 'profilers/update/gpu', {
+          view: 'profiler',
+          label: 'gpu',
+          measureHandler: new GPUMeasureHandler( gpuTimer ),
+        } );
+
+        profilerDrawCpu = gui_.blade( 'profilers/draw/cpu', {
+          view: 'profiler',
+          label: 'cpu',
+        } );
+
+        profilerDrawGpu = gui_.blade( 'profilers/draw/gpu', {
+          view: 'profiler',
+          label: 'gpu',
+          measureHandler: new GPUMeasureHandler( gpuTimer ),
+        } );
+      } );
+    } );
+  } else {
+    // no promise resolution for you!
+  }
+} );
 
 export function guiMeasureUpdate( name: string, fn: () => void ): void {
-  if ( process.env.DEV && gui != null ) {
-    ( gui.blade( 'profilers/update/cpu' ) as any ).measure( name, () => {
-      ( gui?.blade( 'profilers/update/gpu' ) as any ).measure( name, () => {
+  if ( process.env.DEV && profilerUpdateCpu != null && profilerUpdateGpu != null ) {
+    profilerUpdateCpu.measure( name, () => {
+      profilerUpdateGpu.measure( name, () => {
         fn();
       } );
     } );
@@ -50,9 +64,9 @@ export function guiMeasureUpdate( name: string, fn: () => void ): void {
 }
 
 export function guiMeasureDraw( name: string, fn: () => void ): void {
-  if ( process.env.DEV ) {
-    ( gui?.blade( 'profilers/draw/cpu' ) as any ).measure( name, () => {
-      ( gui?.blade( 'profilers/draw/gpu' ) as any ).measure( name, () => {
+  if ( process.env.DEV && profilerDrawCpu != null && profilerDrawGpu != null ) {
+    profilerDrawCpu.measure( name, () => {
+      profilerDrawGpu.measure( name, () => {
         fn();
       } );
     } );

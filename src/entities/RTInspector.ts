@@ -111,10 +111,12 @@ export class RTInspector extends Entity {
   }
 
   private __updateTarget(): void {
-    const single = gui!.value( 'RTInspector/single', '' );
-    const singleIndex = gui!.value( 'RTInspector/index', 0, { step: 1 } );
+    const ha = gui; // FIXME: weird error that prevents me using optional chaining...
 
-    if ( gui!.value( 'RTInspector/multiple', false ) ) {
+    const single = ha?.value( 'RTInspector/single', '' );
+    const singleIndex = ha?.value( 'RTInspector/index', 0, { step: 1 } );
+
+    if ( ha?.value( 'RTInspector/multiple', false ) ) {
       this.entityMultiple.active = true;
       this.entitySingle.active = false;
     } else if ( single !== '' ) {
