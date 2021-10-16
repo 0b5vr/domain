@@ -14,6 +14,7 @@ import { automaton } from './globals/automaton';
 import { clock } from './globals/clock';
 import { gui } from './globals/gui';
 import { randomTexture } from './globals/randomTexture';
+import { SSSBox } from './entities/SSSBox';
 
 // == dog ==========================================================================================
 export const dog = new Dog();
@@ -94,6 +95,15 @@ if ( process.env.DEV && module.hot ) {
 }
 fluid.transform.position = [ 0.0, 1.0, 0.0 ];
 
+const sssBox = new SSSBox();
+if ( process.env.DEV && module.hot ) {
+  const replacer = new EntityReplacer( sssBox, () => new SSSBox() );
+  module.hot.accept( './entities/SSSBox', () => {
+    replacer.replace( dog.root );
+  } );
+}
+sssBox.transform.position = [ 0.0, 1.0, 0.0 ];
+
 swap.swap();
 
 const bloom = new Bloom( {
@@ -110,7 +120,8 @@ const post = new Post( {
 
 dog.root.children.push(
   floor,
-  fluid,
+  // fluid,
+  sssBox,
   forwardCamera,
   bloom,
   post,

@@ -2,7 +2,7 @@ import { Component, ComponentDrawEvent, ComponentOptions } from './Component';
 import { Geometry } from '../Geometry';
 import { MaterialMap } from '../Material';
 import { glCat } from '../../globals/canvas';
-import { mat4Inverse } from '@0b5vr/experimental';
+import { mat3FromMat4Transpose, mat3Inverse } from '@0b5vr/experimental';
 
 export enum MeshCull {
   None,
@@ -75,7 +75,12 @@ export class Mesh extends Component {
     program.uniform( 'cameraPos', '3f', ...event.cameraTransform.position );
     program.uniform( 'cameraNearFar', '2f', event.camera.near, event.camera.far );
 
-    program.uniformMatrixVector( 'normalMatrix', 'Matrix4fv', mat4Inverse( event.globalTransform.matrix ), true );
+    program.uniformMatrixVector(
+      'normalMatrix',
+      'Matrix3fv',
+      mat3Inverse( mat3FromMat4Transpose( event.globalTransform.matrix ) )
+    );
+    program.uniformMatrixVector( 'modelMatrixT', 'Matrix4fv', event.globalTransform.matrix, true );
     program.uniformMatrixVector( 'modelMatrix', 'Matrix4fv', event.globalTransform.matrix );
     program.uniformMatrixVector( 'viewMatrix', 'Matrix4fv', event.viewMatrix );
     program.uniformMatrixVector( 'projectionMatrix', 'Matrix4fv', event.projectionMatrix );

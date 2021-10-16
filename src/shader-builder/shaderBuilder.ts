@@ -7,30 +7,60 @@ type Ex<T extends string> = GLSLExpression<T>;
 type Exf = GLSLFloatExpression;
 type Tok<T extends string> = GLSLToken<T>;
 
-const stack: string[] = [];
+export type SwizzleComponentVec1 = 'x' | 'r' | 's';
+export type SwizzleComponentVec2 = SwizzleComponentVec1 | 'y' | 'g' | 't';
+export type SwizzleComponentVec3 = SwizzleComponentVec2 | 'z' | 'b' | 'p';
+export type SwizzleComponentVec4 = SwizzleComponentVec3 | 'w' | 'a' | 'q';
+export type Swizzle2ComponentsVec1 = `${ SwizzleComponentVec1 }${ SwizzleComponentVec1 }`;
+export type Swizzle3ComponentsVec1 = `${ Swizzle2ComponentsVec1 }${ SwizzleComponentVec1 }`;
+export type Swizzle4ComponentsVec1 = `${ Swizzle3ComponentsVec1 }${ SwizzleComponentVec1 }`;
+export type Swizzle2ComponentsVec2 = `${ SwizzleComponentVec2 }${ SwizzleComponentVec2 }`;
+export type Swizzle3ComponentsVec2 = `${ Swizzle2ComponentsVec2 }${ SwizzleComponentVec2 }`;
+export type Swizzle4ComponentsVec2 = `${ Swizzle3ComponentsVec2 }${ SwizzleComponentVec2 }`;
+export type Swizzle2ComponentsVec3 = `${ SwizzleComponentVec3 }${ SwizzleComponentVec3 }`;
+export type Swizzle3ComponentsVec3 = `${ Swizzle2ComponentsVec3 }${ SwizzleComponentVec3 }`;
+export type Swizzle4ComponentsVec3 = `${ Swizzle3ComponentsVec3 }${ SwizzleComponentVec3 }`;
+export type Swizzle2ComponentsVec4 = `${ SwizzleComponentVec4 }${ SwizzleComponentVec4 }`;
+export type Swizzle3ComponentsVec4 = `${ Swizzle2ComponentsVec4 }${ SwizzleComponentVec4 }`;
+export type Swizzle4ComponentsVec4 = `${ Swizzle3ComponentsVec4 }${ SwizzleComponentVec4 }`;
 
-let charIndex = 0;
+// †† the sacred zone of global state ††††††††††††††††††††††††††††††††††††††††††††††††††††††††††††††
+const __stack: string[] = [];
+
+const __cache: Map<string, any> = new Map();
+
+let __charIndex = 0;
+// †† end of the sacred zone of global state †††††††††††††††††††††††††††††††††††††††††††††††††††††††
 
 function genToken(): string {
-  let i = charIndex;
+  let i = __charIndex;
   let token = '_';
   do {
     token += String.fromCharCode( 97 + ( i % 26 ) );
     i = ( i / 26 ) | 0;
   } while ( i > 0 );
-  charIndex ++;
+  __charIndex ++;
   return token;
+}
+
+function cache<T>( id: string, create: () => T ): T {
+  let func = __cache.get( id ) as T | undefined;
+  if ( func == null ) {
+    func = create();
+    __cache.set( id, func );
+  }
+  return func;
 }
 
 const glPosition = 'gl_Position' as Tok<'vec4'>;
 const glFragCoord = 'gl_FragCoord' as Tok<'vec4'>;
 
 function insert( code: string ): void {
-  stack[ 0 ] += code;
+  __stack[ 0 ] += code;
 }
 
 function insertTop( code: string ): void {
-  stack[ stack.length - 1 ] += code;
+  __stack[ __stack.length - 1 ] += code;
 }
 
 function num( val: string | number ): Ex<'float'> {
@@ -45,42 +75,61 @@ function num( val: string | number ): Ex<'float'> {
   return str as Ex<'float'>;
 }
 
-function def<T extends string>( type: T, init?: Ex<T> ): Tok<T> {
+function def( type: 'float', init?: Exf ): Tok<'float'>;
+function def<T extends string>( type: T, init?: Ex<T> ): Tok<T>;
+function def( type: string, init?: number | string ): string {
   const token = genToken();
-  const initAssign = init != null ? `=${init}` : '';
-  stack[ 0 ] += `${type} ${token}${initAssign};`;
-  return token as Tok<T>;
+  const initAssign = init != null ? `=${ num( init ) }` : '';
+  insert( `${type} ${token}${initAssign};` );
+  return token;
+}
+
+function defGlobal( type: 'float', init?: Exf ): Tok<'float'>;
+function defGlobal<T extends string>( type: T, init?: Ex<T> ): Tok<T>;
+function defGlobal( type: string, init?: number | string ): string {
+  const token = genToken();
+  const initAssign = init != null ? `=${ num( init ) }` : '';
+  insertTop( `${type} ${token}${initAssign};` );
+  return token;
+}
+
+function defConst( type: 'float', init: Exf ): Tok<'float'>;
+function defConst<T extends string>( type: T, init: Ex<T> ): Tok<T>;
+function defConst( type: string, init: number | string ): string {
+  const token = genToken();
+  insertTop( `const ${type} ${token}=${ num( init ) };` );
+  return token;
 }
 
 function defIn<T extends string>( type: T, location: number = 0 ): Tok<T> {
   const token = genToken();
-  stack[ 0 ] += `layout (location = ${location}) in ${type} ${token};`;
+  insertTop( `layout (location = ${location}) in ${type} ${token};` );
   return token as Tok<T>;
 }
 
 function defInNamed<T extends string>( type: T, name: string ): Tok<T> {
-  stack[ 0 ] += `in ${type} ${name};`;
+  insertTop( `in ${type} ${name};` );
   return name as Tok<T>;
 }
 
 function defOut<T extends string>( type: T, location: number = 0 ): Tok<T> {
   const token = genToken();
-  stack[ 0 ] += `layout (location = ${location}) out ${type} ${token};`;
+  insertTop( `layout (location = ${location}) out ${type} ${token};` );
   return token as Tok<T>;
 }
 
 function defOutNamed<T extends string>( type: T, name: string ): Tok<T> {
-  stack[ 0 ] += `out ${type} ${name};`;
+  insertTop( `out ${type} ${name};` );
   return name as Tok<T>;
 }
 
 function defUniform<T extends string>( type: T, name: string ): Tok<T> {
-  stack[ 0 ] += `uniform ${type} ${name};`;
+  insertTop( `uniform ${type} ${name};` );
   return name as Tok<T>;
 }
 
 function assign<T extends string>( dst: Tok<T>, src: Ex<T> ): void {
-  stack[ 0 ] += `${dst}=${src};`;
+  insert( `${dst}=${src};` );
 }
 
 function addAssign( dst: Tok<'float'> | Tok<'vec2'> | Tok<'vec3'> | Tok<'vec4'>, src: Exf ): void;
@@ -88,7 +137,7 @@ function addAssign( dst: Tok<'vec2'>, src: Ex<'vec2'> ): void;
 function addAssign( dst: Tok<'vec3'>, src: Ex<'vec3'> ): void;
 function addAssign( dst: Tok<'vec4'>, src: Ex<'vec4'> ): void;
 function addAssign( dst: string, src: string | number ): void {
-  stack[ 0 ] += `${dst}+=${num( src )};`;
+  insert( `${dst}+=${num( src )};` );
 }
 
 function subAssign( dst: Tok<'float'> | Tok<'vec2'> | Tok<'vec3'> | Tok<'vec4'>, src: Exf ): void;
@@ -96,15 +145,15 @@ function subAssign( dst: Tok<'vec2'>, src: Ex<'vec2'> ): void;
 function subAssign( dst: Tok<'vec3'>, src: Ex<'vec3'> ): void;
 function subAssign( dst: Tok<'vec4'>, src: Ex<'vec4'> ): void;
 function subAssign( dst: string, src: string | number ): void {
-  stack[ 0 ] += `${dst}-=${num( src )};`;
+  insert( `${dst}-=${num( src )};` );
 }
 
 function mulAssign( dst: Tok<'float'> | Tok<'vec2'> | Tok<'vec3'> | Tok<'vec4'>, src: Exf ): void;
-function mulAssign( dst: Tok<'vec2'>, src: Ex<'vec2'> ): void;
-function mulAssign( dst: Tok<'vec3'>, src: Ex<'vec3'> ): void;
-function mulAssign( dst: Tok<'vec4'>, src: Ex<'vec4'> ): void;
+function mulAssign( dst: Tok<'vec2'>, src: Ex<'vec2'> | Ex<'mat2'> ): void;
+function mulAssign( dst: Tok<'vec3'>, src: Ex<'vec3'> | Ex<'mat3'> ): void;
+function mulAssign( dst: Tok<'vec4'>, src: Ex<'vec4'> | Ex<'mat4'> ): void;
 function mulAssign( dst: string, src: string | number ): void {
-  stack[ 0 ] += `${dst}*=${num( src )};`;
+  insert( `${dst}*=${num( src )};` );
 }
 
 function divAssign( dst: Tok<'float'> | Tok<'vec2'> | Tok<'vec3'> | Tok<'vec4'>, src: Exf ): void;
@@ -112,7 +161,7 @@ function divAssign( dst: Tok<'vec2'>, src: Ex<'vec2'> ): void;
 function divAssign( dst: Tok<'vec3'>, src: Ex<'vec3'> ): void;
 function divAssign( dst: Tok<'vec4'>, src: Ex<'vec4'> ): void;
 function divAssign( dst: string, src: string | number ): void {
-  stack[ 0 ] += `${dst}/=${num( src )};`;
+  insert( `${dst}/=${num( src )};` );
 }
 
 function add( ...args: Exf[] ): Ex<'float'>;
@@ -147,6 +196,14 @@ function div( ...args: ( string | number )[] ): string {
   return `(${args.map( ( val ) => num( val ) ).join( '/' )})`;
 }
 
+function neg( x: Exf ): Ex<'float'>;
+function neg( x: Ex<'vec2'> ): Ex<'vec2'>;
+function neg( x: Ex<'vec3'> ): Ex<'vec3'>;
+function neg( x: Ex<'vec4'> ): Ex<'vec4'>;
+function neg( x: string | number ): string {
+  return `(-${ x })`;
+}
+
 function pow( x: Exf, y: Exf ): Ex<'float'>;
 function pow( x: Ex<'vec2'>, y: Ex<'vec2'> ): Ex<'vec2'>;
 function pow( x: Ex<'vec3'>, y: Ex<'vec3'> ): Ex<'vec3'>;
@@ -171,6 +228,46 @@ function exp( x: string | number ): string {
   return `exp(${num( x )})`;
 }
 
+function floor( x: Exf ): Ex<'float'>;
+function floor( x: Ex<'vec2'> ): Ex<'vec2'>;
+function floor( x: Ex<'vec3'> ): Ex<'vec3'>;
+function floor( x: Ex<'vec4'> ): Ex<'vec4'>;
+function floor( x: string | number ): string {
+  return `floor(${num( x )})`;
+}
+
+function fract( x: Exf ): Ex<'float'>;
+function fract( x: Ex<'vec2'> ): Ex<'vec2'>;
+function fract( x: Ex<'vec3'> ): Ex<'vec3'>;
+function fract( x: Ex<'vec4'> ): Ex<'vec4'>;
+function fract( x: string | number ): string {
+  return `fract(${num( x )})`;
+}
+
+function mod( x: Exf, y: Exf ): Ex<'float'>;
+function mod( x: Ex<'vec2'>, y: Exf | Ex<'vec2'> ): Ex<'vec2'>;
+function mod( x: Ex<'vec3'>, y: Exf | Ex<'vec3'> ): Ex<'vec3'>;
+function mod( x: Ex<'vec4'>, y: Exf | Ex<'vec4'> ): Ex<'vec4'>;
+function mod( x: string | number, y: string | number ): string {
+  return `mod(${ num( x ) },${ num( y ) })`;
+}
+
+function abs( x: Exf ): Ex<'float'>;
+function abs( x: Ex<'vec2'> ): Ex<'vec2'>;
+function abs( x: Ex<'vec3'> ): Ex<'vec3'>;
+function abs( x: Ex<'vec4'> ): Ex<'vec4'>;
+function abs( x: string | number ): string {
+  return `abs(${num( x )})`;
+}
+
+function sign( x: Exf ): Ex<'float'>;
+function sign( x: Ex<'vec2'> ): Ex<'vec2'>;
+function sign( x: Ex<'vec3'> ): Ex<'vec3'>;
+function sign( x: Ex<'vec4'> ): Ex<'vec4'>;
+function sign( x: string | number ): string {
+  return `sign(${num( x )})`;
+}
+
 function sin( x: Exf ): Ex<'float'>;
 function sin( x: Ex<'vec2'> ): Ex<'vec2'>;
 function sin( x: Ex<'vec3'> ): Ex<'vec3'>;
@@ -193,6 +290,30 @@ function tan( x: Ex<'vec3'> ): Ex<'vec3'>;
 function tan( x: Ex<'vec4'> ): Ex<'vec4'>;
 function tan( x: string | number ): string {
   return `tan(${num( x )})`;
+}
+
+function asin( x: Exf ): Ex<'float'>;
+function asin( x: Ex<'vec2'> ): Ex<'vec2'>;
+function asin( x: Ex<'vec3'> ): Ex<'vec3'>;
+function asin( x: Ex<'vec4'> ): Ex<'vec4'>;
+function asin( x: string | number ): string {
+  return `asin(${num( x )})`;
+}
+
+function acos( x: Exf ): Ex<'float'>;
+function acos( x: Ex<'vec2'> ): Ex<'vec2'>;
+function acos( x: Ex<'vec3'> ): Ex<'vec3'>;
+function acos( x: Ex<'vec4'> ): Ex<'vec4'>;
+function acos( x: string | number ): string {
+  return `acos(${num( x )})`;
+}
+
+function atan( y: Exf, x: Exf ): Ex<'float'>;
+function atan( y: Ex<'vec2'>, x: Ex<'vec2'> ): Ex<'vec2'>;
+function atan( y: Ex<'vec3'>, x: Ex<'vec3'> ): Ex<'vec3'>;
+function atan( y: Ex<'vec4'>, x: Ex<'vec4'> ): Ex<'vec4'>;
+function atan( y: string | number, x: string | number ): string {
+  return `atan(${ num( y ) }, ${ num( x ) })`;
 }
 
 function tern( cond: Ex<'bool'>, truthy: Exf, falsy: Exf ): Ex<'float'>;
@@ -221,7 +342,26 @@ function dot( a: Ex<'vec2'>, b: Ex<'vec2'> ): Ex<'float'>;
 function dot( a: Ex<'vec3'>, b: Ex<'vec3'> ): Ex<'float'>;
 function dot( a: Ex<'vec4'>, b: Ex<'vec4'> ): Ex<'float'>;
 function dot( a: string, b: string ): string {
-  return `dot(${ a }, ${ b })`;
+  return `dot(${ a },${ b })`;
+}
+
+function cross( a: Ex<'vec3'>, b: Ex<'vec3'> ): Ex<'vec3'>;
+function cross( a: string, b: string ): string {
+  return `cross(${ a },${ b })`;
+}
+
+function reflect( i: Ex<'vec2'>, n: Ex<'vec2'> ): Ex<'vec2'>;
+function reflect( i: Ex<'vec3'>, n: Ex<'vec3'> ): Ex<'vec3'>;
+function reflect( i: Ex<'vec4'>, n: Ex<'vec4'> ): Ex<'vec4'>;
+function reflect( i: string, n: string ): string {
+  return `reflect(${ i },${ n })`;
+}
+
+function refract( i: Ex<'vec2'>, n: Ex<'vec2'>, eta: Exf ): Ex<'vec2'>;
+function refract( i: Ex<'vec3'>, n: Ex<'vec3'>, eta: Exf ): Ex<'vec3'>;
+function refract( i: Ex<'vec4'>, n: Ex<'vec4'>, eta: Exf ): Ex<'vec4'>;
+function refract( i: string, n: string, eta: string | number ): string {
+  return `refract(${ i },${ n },${ num( eta ) })`;
 }
 
 function mix( a: Exf, b: Exf, t: Exf ): Ex<'float'>;
@@ -333,61 +473,89 @@ function vec4( ...args: ( string | number )[] ): Ex<'vec4'> {
   return `vec4(${args.join( ',' )})` as Ex<'vec4'>;
 }
 
-type SwizzleComponentVec1 = 'x' | 'r' | 's';
-type SwizzleComponentVec2 = SwizzleComponentVec1 | 'y' | 'g' | 't';
-type SwizzleComponentVec3 = SwizzleComponentVec2 | 'z' | 'b' | 'p';
-type SwizzleComponentVec4 = SwizzleComponentVec3 | 'w' | 'a' | 'q';
+function mat2( ...args: ( string | number )[] ): Ex<'mat2'> {
+  return `mat2(${args.join( ',' )})` as Ex<'mat2'>;
+}
+
+function mat3( ...args: ( string | number )[] ): Ex<'mat3'> {
+  return `mat3(${args.join( ',' )})` as Ex<'mat3'>;
+}
+
+function mat4( ...args: ( string | number )[] ): Ex<'mat4'> {
+  return `mat4(${args.join( ',' )})` as Ex<'mat4'>;
+}
 
 /* eslint-disable max-len */
-function swizzle( val: Tok<'vec2'>, swizzle: `${ SwizzleComponentVec2 }` ): Tok<'float'>;
-function swizzle( val: Tok<'vec2'>, swizzle: `${ SwizzleComponentVec2 }${ SwizzleComponentVec2 }` ): Tok<'vec2'>;
-function swizzle( val: Tok<'vec2'>, swizzle: `${ SwizzleComponentVec2 }${ SwizzleComponentVec2 }${ SwizzleComponentVec2 }` ): Tok<'vec3'>;
-function swizzle( val: Tok<'vec2'>, swizzle: `${ SwizzleComponentVec2 }${ SwizzleComponentVec2 }${ SwizzleComponentVec2 }${ SwizzleComponentVec2 }` ): Tok<'vec4'>;
-function swizzle( val: Tok<'vec3'>, swizzle: `${ SwizzleComponentVec3 }` ): Tok<'float'>;
-function swizzle( val: Tok<'vec3'>, swizzle: `${ SwizzleComponentVec3 }${ SwizzleComponentVec3 }` ): Tok<'vec2'>;
-function swizzle( val: Tok<'vec3'>, swizzle: `${ SwizzleComponentVec3 }${ SwizzleComponentVec3 }${ SwizzleComponentVec3 }` ): Tok<'vec3'>;
-function swizzle( val: Tok<'vec3'>, swizzle: `${ SwizzleComponentVec3 }${ SwizzleComponentVec3 }${ SwizzleComponentVec3 }${ SwizzleComponentVec3 }` ): Tok<'vec4'>;
-function swizzle( val: Tok<'vec4'>, swizzle: `${ SwizzleComponentVec4 }` ): Tok<'float'>;
-function swizzle( val: Tok<'vec4'>, swizzle: `${ SwizzleComponentVec4 }${ SwizzleComponentVec4 }` ): Tok<'vec2'>;
-function swizzle( val: Tok<'vec4'>, swizzle: `${ SwizzleComponentVec4 }${ SwizzleComponentVec4 }${ SwizzleComponentVec4 }` ): Tok<'vec3'>;
-function swizzle( val: Tok<'vec4'>, swizzle: `${ SwizzleComponentVec4 }${ SwizzleComponentVec4 }${ SwizzleComponentVec4 }${ SwizzleComponentVec4 }` ): Tok<'vec4'>;
-function swizzle( val: Ex<'vec2'>, swizzle: `${ SwizzleComponentVec2 }` ): Ex<'float'>;
-function swizzle( val: Ex<'vec2'>, swizzle: `${ SwizzleComponentVec2 }${ SwizzleComponentVec2 }` ): Ex<'vec2'>;
-function swizzle( val: Ex<'vec2'>, swizzle: `${ SwizzleComponentVec2 }${ SwizzleComponentVec2 }${ SwizzleComponentVec2 }` ): Ex<'vec3'>;
-function swizzle( val: Ex<'vec2'>, swizzle: `${ SwizzleComponentVec2 }${ SwizzleComponentVec2 }${ SwizzleComponentVec2 }${ SwizzleComponentVec2 }` ): Ex<'vec4'>;
-function swizzle( val: Ex<'vec3'>, swizzle: `${ SwizzleComponentVec3 }` ): Ex<'float'>;
-function swizzle( val: Ex<'vec3'>, swizzle: `${ SwizzleComponentVec3 }${ SwizzleComponentVec3 }` ): Ex<'vec2'>;
-function swizzle( val: Ex<'vec3'>, swizzle: `${ SwizzleComponentVec3 }${ SwizzleComponentVec3 }${ SwizzleComponentVec3 }` ): Ex<'vec3'>;
-function swizzle( val: Ex<'vec3'>, swizzle: `${ SwizzleComponentVec3 }${ SwizzleComponentVec3 }${ SwizzleComponentVec3 }${ SwizzleComponentVec3 }` ): Ex<'vec4'>;
-function swizzle( val: Ex<'vec4'>, swizzle: `${ SwizzleComponentVec4 }` ): Ex<'float'>;
-function swizzle( val: Ex<'vec4'>, swizzle: `${ SwizzleComponentVec4 }${ SwizzleComponentVec4 }` ): Ex<'vec2'>;
-function swizzle( val: Ex<'vec4'>, swizzle: `${ SwizzleComponentVec4 }${ SwizzleComponentVec4 }${ SwizzleComponentVec4 }` ): Ex<'vec3'>;
-function swizzle( val: Ex<'vec4'>, swizzle: `${ SwizzleComponentVec4 }${ SwizzleComponentVec4 }${ SwizzleComponentVec4 }${ SwizzleComponentVec4 }` ): Ex<'vec4'>;
+function swizzle( val: Tok<'vec2'>, swizzle: SwizzleComponentVec2 ): Tok<'float'>;
+function swizzle( val: Tok<'vec2'>, swizzle: Swizzle2ComponentsVec2 ): Tok<'vec2'>;
+function swizzle( val: Tok<'vec2'>, swizzle: Swizzle3ComponentsVec2 ): Tok<'vec3'>;
+function swizzle( val: Tok<'vec2'>, swizzle: Swizzle4ComponentsVec2 ): Tok<'vec4'>;
+function swizzle( val: Tok<'vec3'>, swizzle: SwizzleComponentVec3 ): Tok<'float'>;
+function swizzle( val: Tok<'vec3'>, swizzle: Swizzle2ComponentsVec3 ): Tok<'vec2'>;
+function swizzle( val: Tok<'vec3'>, swizzle: Swizzle3ComponentsVec3 ): Tok<'vec3'>;
+function swizzle( val: Tok<'vec3'>, swizzle: Swizzle4ComponentsVec3 ): Tok<'vec4'>;
+function swizzle( val: Tok<'vec4'>, swizzle: SwizzleComponentVec4 ): Tok<'float'>;
+function swizzle( val: Tok<'vec4'>, swizzle: Swizzle2ComponentsVec4 ): Tok<'vec2'>;
+function swizzle( val: Tok<'vec4'>, swizzle: Swizzle3ComponentsVec4 ): Tok<'vec3'>;
+function swizzle( val: Tok<'vec4'>, swizzle: Swizzle4ComponentsVec4 ): Tok<'vec4'>;
+function swizzle( val: Ex<'vec2'>, swizzle: SwizzleComponentVec2 ): Ex<'float'>;
+function swizzle( val: Ex<'vec2'>, swizzle: Swizzle2ComponentsVec2 ): Ex<'vec2'>;
+function swizzle( val: Ex<'vec2'>, swizzle: Swizzle3ComponentsVec2 ): Ex<'vec3'>;
+function swizzle( val: Ex<'vec2'>, swizzle: Swizzle4ComponentsVec2 ): Ex<'vec4'>;
+function swizzle( val: Ex<'vec3'>, swizzle: SwizzleComponentVec3 ): Ex<'float'>;
+function swizzle( val: Ex<'vec3'>, swizzle: Swizzle2ComponentsVec3 ): Ex<'vec2'>;
+function swizzle( val: Ex<'vec3'>, swizzle: Swizzle3ComponentsVec3 ): Ex<'vec3'>;
+function swizzle( val: Ex<'vec3'>, swizzle: Swizzle4ComponentsVec3 ): Ex<'vec4'>;
+function swizzle( val: Ex<'vec4'>, swizzle: SwizzleComponentVec4 ): Ex<'float'>;
+function swizzle( val: Ex<'vec4'>, swizzle: Swizzle2ComponentsVec4 ): Ex<'vec2'>;
+function swizzle( val: Ex<'vec4'>, swizzle: Swizzle3ComponentsVec4 ): Ex<'vec3'>;
+function swizzle( val: Ex<'vec4'>, swizzle: Swizzle4ComponentsVec4 ): Ex<'vec4'>;
 /* eslint-enable max-len */
 function swizzle( val: string, swizzle: string ): string {
   return `${val}.${swizzle}`;
 }
 
 function discard(): void {
-  stack[ 0 ] += 'discard;';
+  insert( 'discard;' );
 }
 
 function retFn( val: string | number ): void {
-  stack[ 0 ] += `return ${val};`;
+  insert( `return ${val};` );
 }
 
 function ifThen( condition: Ex<'bool'>, truthy: () => void, falsy?: () => void ): void {
-  stack.unshift( '' );
+  __stack.unshift( '' );
   truthy();
-  const t = stack.shift();
-  stack[ 0 ] += `if(${ condition }){${ t }}`;
+  const t = __stack.shift();
+  insert( `if(${ condition }){${ t }}` );
 
   if ( falsy != null ) {
-    stack.unshift( '' );
+    __stack.unshift( '' );
     falsy();
-    const f = stack.shift();
-    stack[ 0 ] += `else{${ f }}`;
+    const f = __stack.shift();
+    insert( `else{${ f }}` );
   }
+}
+
+function unrollLoop( count: number, func: ( count: number ) => void ): void {
+  [ ...Array( count ) ].forEach( ( _, i ) => {
+    __stack.unshift( '' );
+    func( i );
+    const procedure = __stack.shift();
+    insert( `{${ procedure }}` );
+  } );
+}
+
+function forLoop( count: number, func: ( count: GLSLExpression<'int'> ) => void ): void {
+  const loopToken = genToken() as GLSLExpression<'int'>;
+  __stack.unshift( '' );
+  func( loopToken );
+  const procedure = __stack.shift();
+  insert( `for(int ${ loopToken }=0;${ loopToken }<${ count };${ loopToken }++){${ procedure }}` );
+}
+
+function forBreak(): void {
+  insert( 'break;' );
 }
 
 /* eslint-disable max-len */
@@ -424,31 +592,34 @@ function defFn<T extends string, TArgs extends string[]>(
   const argsToken = argsTypeTokenPair.map( ( [ _, token ] ) => token );
   const argsStatement = argsTypeTokenPair.map( ( arr ) => arr.join( ' ' ) ).join( ',' );
 
-  stack.unshift( '' );
+  __stack.unshift( '' );
   ( build as any )( ...argsToken );
-  const procedure = stack.shift();
+  const procedure = __stack.shift();
 
-  stack[ 0 ] += `${returnType} ${token}(${argsStatement}){${ procedure }}`;
+  insertTop( `${returnType} ${token}(${argsStatement}){${ procedure }}` );
 
-  return ( ...args ) => `${token}(${args.join( '.' )})` as Ex<T>;
+  return ( ...args ) => `${token}(${args.join( ',' )})` as Ex<T>;
 }
 
 function main( builder: () => void ): void {
-  stack.unshift( '' );
+  __stack.unshift( '' );
   builder();
-  const procedure = stack.shift();
-  stack[ 0 ] += `void main(){${ procedure }}`;
+  const procedure = __stack.shift();
+  insert( `void main(){${ procedure }}` );
 }
 
 function build( builder: () => void ): string {
-  stack.unshift( '#version 300 es\n' );
-  charIndex = 0;
+  __stack.unshift( '#version 300 es\n' );
+  __charIndex = 0;
 
   builder();
 
-  return stack.shift()!;
+  __cache.clear();
+  return __stack.shift()!;
 }
 
 /* eslint-disable max-len */
-export const shaderBuilder = { glPosition, glFragCoord, genToken, insert, insertTop, num, def, defIn, defInNamed, defOut, defOutNamed, defUniform, assign, addAssign, subAssign, mulAssign, divAssign, add, sub, mul, div, pow, sqrt, exp, sin, cos, tan, tern, length, normalize, dot, mix, min, max, clamp, step, texture, eq, neq, lt, lte, gt, gte, float, vec2, vec3, vec4, swizzle, discard, retFn, ifThen, defFn, main, build };
+export const shaderBuilder = {
+  glPosition, glFragCoord, cache, genToken, insert, insertTop, num, def, defGlobal, defConst, defIn, defInNamed, defOut, defOutNamed, defUniform, assign, addAssign, subAssign, mulAssign, divAssign, add, sub, mul, div, neg, pow, sqrt, exp, floor, fract, mod, abs, sign, sin, cos, tan, asin, acos, atan, tern, length, normalize, dot, cross, reflect, refract, mix, min, max, clamp, step, texture, eq, neq, lt, lte, gt, gte, float, vec2, vec3, vec4, mat2, mat3, mat4, swizzle, discard, retFn, ifThen, unrollLoop, forLoop, forBreak, defFn, main, build,
+};
 /* eslint-enable max-len */

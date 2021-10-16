@@ -1,5 +1,4 @@
 import { GLSLExpression, shaderBuilder } from '../../shader-builder/shaderBuilder';
-import { glslLinearstep } from './glslLinearstep';
 
 /* eslint-disable max-len, @typescript-eslint/no-unused-vars */
 const {
@@ -7,14 +6,16 @@ const {
 } = shaderBuilder;
 /* eslint-enable max-len, @typescript-eslint/no-unused-vars */
 
-export function calcDepth(
-  cameraNearFar: GLSLExpression<'vec2'>,
-  distance: GLSLExpression<'float'>,
-): GLSLExpression<'vec4'> {
-  const depth = def( 'float', glslLinearstep(
-    swizzle( cameraNearFar, 'x' ),
-    swizzle( cameraNearFar, 'y' ),
-    distance,
-  ) as GLSLExpression<'float'> );
-  return vec4( depth, mul( depth, depth ), depth, 1.0 );
+export function orthBas( z: GLSLExpression<'vec3'> ): GLSLExpression<'mat3'> {
+  const f = cache(
+    'orthBas',
+    () => defFn( 'mat3', [ 'vec3' ], ( z ) => {
+      assign( z, normalize( z ) );
+      const up = tern( gt( abs( swizzle( z, 'y' ) ), 0.999 ), vec3( 0, 0, 1 ), vec3( 0, 1, 0 ) );
+      const x = def( 'vec3', cross( up, z ) );
+      retFn( mat3( x, cross( z, x ), z ) );
+    } )
+  );
+
+  return f( z );
 }

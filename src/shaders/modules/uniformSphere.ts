@@ -1,5 +1,6 @@
 import { GLSLExpression, shaderBuilder } from '../../shader-builder/shaderBuilder';
-import { glslLinearstep } from './glslLinearstep';
+import { PI } from '../../utils/constants';
+import { glslDefRandom } from './glslDefRandom';
 
 /* eslint-disable max-len, @typescript-eslint/no-unused-vars */
 const {
@@ -7,14 +8,18 @@ const {
 } = shaderBuilder;
 /* eslint-enable max-len, @typescript-eslint/no-unused-vars */
 
-export function calcDepth(
-  cameraNearFar: GLSLExpression<'vec2'>,
-  distance: GLSLExpression<'float'>,
-): GLSLExpression<'vec4'> {
-  const depth = def( 'float', glslLinearstep(
-    swizzle( cameraNearFar, 'x' ),
-    swizzle( cameraNearFar, 'y' ),
-    distance,
-  ) as GLSLExpression<'float'> );
-  return vec4( depth, mul( depth, depth ), depth, 1.0 );
+export function uniformSphere(): GLSLExpression<'vec3'> {
+  const { random } = glslDefRandom();
+
+  const f = cache(
+    'uniformSphere',
+    () => defFn( 'vec3', [], () => {
+      const phi = def( 'float', mul( random(), 2.0 * PI ) );
+      const theta = def( 'float', acos( sub( mul( 2.0, random() ), 1.0 ) ) );
+      const sinTheta = def( 'float', sin( theta ) );
+      retFn( vec3( mul( sinTheta, cos( phi ) ), mul( sinTheta, sin( phi ) ), cos( theta ) ) );
+    } )
+  );
+
+  return f();
 }

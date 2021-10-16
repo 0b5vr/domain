@@ -1,5 +1,4 @@
-import { GLSLExpression, shaderBuilder } from '../../shader-builder/shaderBuilder';
-import { glslLinearstep } from './glslLinearstep';
+import { GLSLExpression, GLSLToken, shaderBuilder } from '../../shader-builder/shaderBuilder';
 
 /* eslint-disable max-len, @typescript-eslint/no-unused-vars */
 const {
@@ -7,14 +6,23 @@ const {
 } = shaderBuilder;
 /* eslint-enable max-len, @typescript-eslint/no-unused-vars */
 
-export function calcDepth(
-  cameraNearFar: GLSLExpression<'vec2'>,
-  distance: GLSLExpression<'float'>,
-): GLSLExpression<'vec4'> {
-  const depth = def( 'float', glslLinearstep(
-    swizzle( cameraNearFar, 'x' ),
-    swizzle( cameraNearFar, 'y' ),
-    distance,
-  ) as GLSLExpression<'float'> );
-  return vec4( depth, mul( depth, depth ), depth, 1.0 );
+export function setupRoRd( {
+  inversePVM,
+  p,
+}: {
+  inversePVM: GLSLExpression<'mat4'>,
+  p: GLSLExpression<'vec2'>,
+} ): {
+    ro: GLSLToken<'vec3'>,
+    rd: GLSLToken<'vec3'>,
+  } {
+  const divideByW = defFn( 'vec3', [ 'vec4' ], ( v ) => {
+    retFn( div( swizzle( v, 'xyz' ), swizzle( v, 'w' ) ) );
+  } );
+
+  const ro = def( 'vec3', divideByW( mul( inversePVM, vec4( p, 0.0, 1.0 ) ) ) );
+  const farPos = def( 'vec3', divideByW( mul( inversePVM, vec4( p, 1.0, 1.0 ) ) ) );
+  const rd = def( 'vec3', normalize( sub( farPos, ro ) ) );
+
+  return { ro, rd };
 }

@@ -1,7 +1,9 @@
 import { shaderBuilder } from '../shader-builder/shaderBuilder';
 
 /* eslint-disable max-len, @typescript-eslint/no-unused-vars */
-const { glPosition, insert, num, def, defIn, defInNamed, defOut, defOutNamed, defUniform, assign, addAssign, subAssign, mulAssign, divAssign, add, sub, mul, div, pow, length, normalize, mix, clamp, texture, float, vec2, vec3, vec4, swizzle, retFn, defFn, main, build } = shaderBuilder;
+const {
+  glPosition, glFragCoord, cache, genToken, insert, insertTop, num, def, defGlobal, defConst, defIn, defInNamed, defOut, defOutNamed, defUniform, assign, addAssign, subAssign, mulAssign, divAssign, add, sub, mul, div, neg, pow, sqrt, exp, floor, fract, mod, abs, sign, sin, cos, tan, asin, acos, atan, tern, length, normalize, dot, cross, reflect, refract, mix, min, max, clamp, step, texture, eq, neq, lt, lte, gt, gte, float, vec2, vec3, vec4, mat2, mat3, mat4, swizzle, discard, retFn, ifThen, unrollLoop, forLoop, forBreak, defFn, main, build,
+} = shaderBuilder;
 /* eslint-enable max-len, @typescript-eslint/no-unused-vars */
 
 export const objectVert = ( { locationPosition, locationNormal, locationUv }: {
@@ -22,7 +24,7 @@ export const objectVert = ( { locationPosition, locationNormal, locationUv }: {
   const projectionMatrix = defUniform( 'mat4', 'projectionMatrix' );
   const viewMatrix = defUniform( 'mat4', 'viewMatrix' );
   const modelMatrix = defUniform( 'mat4', 'modelMatrix' );
-  const normalMatrix = normal != null ? defUniform( 'mat4', 'normalMatrix' ) : null;
+  const normalMatrix = normal != null ? defUniform( 'mat3', 'normalMatrix' ) : null;
 
   main( () => {
     assign( vPositionWithoutModel, vec4( position, 1.0 ) );
@@ -37,7 +39,7 @@ export const objectVert = ( { locationPosition, locationNormal, locationUv }: {
     if ( normal != null ) {
       assign(
         vNormal!,
-        normalize( swizzle( mul( normalMatrix!, vec4( normal, 1.0 ) ), 'xyz' ) ),
+        normalize( mul( normalMatrix!, normal ) ),
       );
     }
 

@@ -1,5 +1,5 @@
 import { GLSLExpression, shaderBuilder } from '../../shader-builder/shaderBuilder';
-import { glslLinearstep } from './glslLinearstep';
+import { uniformSphere } from './uniformSphere';
 
 /* eslint-disable max-len, @typescript-eslint/no-unused-vars */
 const {
@@ -7,14 +7,14 @@ const {
 } = shaderBuilder;
 /* eslint-enable max-len, @typescript-eslint/no-unused-vars */
 
-export function calcDepth(
-  cameraNearFar: GLSLExpression<'vec2'>,
-  distance: GLSLExpression<'float'>,
-): GLSLExpression<'vec4'> {
-  const depth = def( 'float', glslLinearstep(
-    swizzle( cameraNearFar, 'x' ),
-    swizzle( cameraNearFar, 'y' ),
-    distance,
-  ) as GLSLExpression<'float'> );
-  return vec4( depth, mul( depth, depth ), depth, 1.0 );
+export function uniformHemisphere( n: GLSLExpression<'vec3'> ): GLSLExpression<'vec3'> {
+  const f = cache(
+    'uniformHemisphere',
+    () => defFn( 'vec3', [ 'vec3' ], ( n ) => {
+      const d = def( 'vec3', uniformSphere() );
+      retFn( tern( lt( dot( d, n ), 0.0 ), neg( d ), d ) );
+    } )
+  );
+
+  return f( n );
 }

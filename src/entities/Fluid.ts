@@ -22,6 +22,7 @@ import fluidPokeDensityFrag from '../shaders/fluid-poke-density.frag';
 import fluidPressureFrag from '../shaders/fluid-pressure.frag';
 import fluidRenderFrag from '../shaders/fluid-render.frag';
 import fluidResolvePressureFrag from '../shaders/fluid-resolve-pressure.frag';
+import { createRaymarchCameraUniformsLambda } from './utils/createRaymarchCameraUniformsLambda';
 
 const GRID_RESO_SQRT = 8;
 const GRID_RESO = GRID_RESO_SQRT * GRID_RESO_SQRT;
@@ -275,29 +276,7 @@ export class Fluid extends Entity {
     forward.addUniformTextures( 'samplerDensity', swapDensity.o.texture );
     forward.addUniformTextures( 'samplerVelocity', swapVelocity.o.texture );
 
-    const lambdaSetCameraUniforms = new Lambda( {
-      onDraw: ( event ) => {
-        forward.addUniform(
-          'cameraNearFar',
-          '2f',
-          event.camera.near,
-          event.camera.far
-        );
-
-        const pvm = mat4Multiply(
-          event.projectionMatrix,
-          event.viewMatrix,
-          event.globalTransform.matrix
-        );
-
-        forward.addUniformMatrixVector(
-          'inversePVM',
-          'Matrix4fv',
-          mat4Inverse( pvm ),
-        );
-      },
-      name: process.env.DEV && 'lambdaSetCameraUniforms',
-    } );
+    const lambdaRaymarchCameraUniforms = createRaymarchCameraUniformsLambda( [ forward ] );
 
     const mesh = new Mesh( {
       geometry,
@@ -329,7 +308,7 @@ export class Fluid extends Entity {
       quadResolvePressure,
       quadAdvectionVelocity,
       quadAdvectionDensity,
-      lambdaSetCameraUniforms,
+      lambdaRaymarchCameraUniforms,
       mesh,
     ];
 

@@ -1,5 +1,4 @@
 import { GLSLExpression, shaderBuilder } from '../../shader-builder/shaderBuilder';
-import { glslLinearstep } from './glslLinearstep';
 
 /* eslint-disable max-len, @typescript-eslint/no-unused-vars */
 const {
@@ -7,14 +6,23 @@ const {
 } = shaderBuilder;
 /* eslint-enable max-len, @typescript-eslint/no-unused-vars */
 
-export function calcDepth(
-  cameraNearFar: GLSLExpression<'vec2'>,
-  distance: GLSLExpression<'float'>,
-): GLSLExpression<'vec4'> {
-  const depth = def( 'float', glslLinearstep(
-    swizzle( cameraNearFar, 'x' ),
-    swizzle( cameraNearFar, 'y' ),
-    distance,
-  ) as GLSLExpression<'float'> );
-  return vec4( depth, mul( depth, depth ), depth, 1.0 );
+// Ref: https://www.iquilezles.org/www/articles/normalsSDF/normalsSDF.htm
+export function sdbox(
+  p: GLSLExpression<'vec3'>,
+  s: GLSLExpression<'vec3'>,
+): GLSLExpression<'float'> {
+  const f = cache(
+    'sdbox',
+    () => defFn( 'float', [ 'vec3', 'vec3' ], ( p, s ) => {
+      const d = def( 'vec3', sub( abs( p ), s ) );
+      const inside = min(
+        max( swizzle( d, 'x' ), max( swizzle( d, 'y' ), swizzle( d, 'z' ) ) ),
+        0.0,
+      );
+      const outside = length( max( d, 0.0 ) );
+      retFn( add( inside, outside ) );
+    } )
+  );
+
+  return f( p, s );
 }

@@ -21,6 +21,7 @@ export class ShaderPool<TUser> {
         try {
           program = glCat.lazyProgram( vert, frag, options );
         } catch ( e ) {
+          console.info( { vert, frag, options } );
           console.error( user );
           throw e;
         }
@@ -48,6 +49,7 @@ export class ShaderPool<TUser> {
       if ( !promise ) {
         if ( process.env.DEV ) {
           promise = glCat.lazyProgramAsync( vert, frag, options ).catch( ( e ) => {
+            console.info( { vert, frag, options } );
             console.error( user );
             throw e;
           } );
