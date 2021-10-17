@@ -1,5 +1,5 @@
 import { INV_PI } from '../utils/constants';
-import { add, addAssign, assign, build, def, defFn, defInNamed, defOutNamed, defUniform, discard, div, dot, glFragCoord, glFragDepth, gt, ifThen, insert, length, main, max, mul, neg, normalize, retFn, sub, subAssign, swizzle, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { add, addAssign, assign, build, def, defFn, defInNamed, defOutNamed, defUniform, discard, div, dot, glFragCoord, glFragDepth, gt, ifThen, insert, length, main, max, mix, mul, neg, normalize, retFn, sin, step, sub, subAssign, swizzle, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { brdfGGX } from './modules/brdfGGX';
 import { calcDepth } from './modules/calcDepth';
 import { calcNormal } from './modules/calcNormal';
@@ -36,9 +36,9 @@ export const sssBoxFrag = ( tag: 'forward' | 'depth' ): string => build( () => {
       freq: 1.3,
     } );
     addAssign( p, mul( 0.1, noise ) );
-    const d = def( 'float', sdbox( p, vec3( 0.36 ) ) );
-    subAssign( d, 0.04 );
-    retFn( vec4( d, 0, 0, 0 ) );
+    const d = def( 'float', sdbox( p, vec3( 0.33 ) ) );
+    subAssign( d, 0.07 );
+    retFn( vec4( d, step( 0.0, sin( dot( vec4( p, time ), vec4( 10.0 ) ) ) ), 0, 0 ) );
   } );
 
   main( () => {
@@ -75,16 +75,26 @@ export const sssBoxFrag = ( tag: 'forward' | 'depth' ): string => build( () => {
       const N = def( 'vec3', calcNormal( { rp, map } ) );
 
       const baseColor = vec3( 0.9, 0.6, 0.5 );
-      const lightGain = mul( 2.0, vec3( 0.8, 0.82, 0.9 ) );
+      const subsurfaceColor = vec3( 0.7, 0.04, 0.04 );
+      const lightGain = mul( 4.0, vec3( 0.8, 0.82, 0.9 ) );
       const dotNL = def( 'float', max( dot( L, N ), 0.0 ) );
       const irradiance = def( 'vec3', mul( lightGain, dotNL ) );
+
       const diffuse = mul( 0.5, irradiance, baseColor, INV_PI );
-      addAssign( col, diffuse );
+      const ss = mul(
+        lightGain,
+        subsurfaceColor,
+        calcSS( { rp, V, L, N, map, intensity: 2.0 } ),
+        INV_PI
+      );
+      addAssign( col, mix(
+        mul( diffuse, swizzle( isect, 'y' ) ),
+        ss,
+        0.5
+      ) );
+
       const specular = mul( irradiance, brdfGGX( L, V, N, baseColor, 0.1, 0.2 ) );
       addAssign( col, specular );
-
-      const ss = calcSS( { rp, V, L, N, map, intensity: 2.0 } );
-      addAssign( col, mul( 0.5, INV_PI, vec3( 0.9, 0.1, 0.1 ), lightGain, ss ) );
 
       assign( fragColor, vec4( col, 1.0 ) );
     } else if ( tag === 'depth' ) {
