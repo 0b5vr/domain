@@ -7,6 +7,7 @@ import { Floor } from './entities/Floor';
 import { Fluid } from './entities/Fluid';
 import { ForwardCamera } from './entities/ForwardCamera';
 import { Lambda } from './heck/components/Lambda';
+import { Plane } from './entities/Plane';
 import { Post } from './entities/Post';
 import { RTInspector } from './entities/RTInspector';
 import { SSSBox } from './entities/SSSBox';
@@ -87,6 +88,15 @@ if ( process.env.DEV && module.hot ) {
 }
 fluid.transform.position = [ 0.0, 1.0, 0.0 ];
 
+const plane = new Plane();
+if ( process.env.DEV && module.hot ) {
+  const replacer = new EntityReplacer( plane, () => new Plane() );
+  module.hot.accept( './entities/Plane', () => {
+    replacer.replace( dog.root );
+  } );
+}
+plane.transform.position = [ 0.0, 1.0, 0.0 ];
+
 const sssBox = new SSSBox();
 if ( process.env.DEV && module.hot ) {
   const replacer = new EntityReplacer( sssBox, () => new SSSBox() );
@@ -113,6 +123,7 @@ const post = new Post( {
 dog.root.children.push(
   floor,
   // fluid,
+  // plane,
   sssBox,
   forwardCamera,
   bloom,

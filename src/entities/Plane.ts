@@ -6,8 +6,8 @@ import { Mesh, MeshCull } from '../heck/components/Mesh';
 import { RawVector3, TRIANGLE_STRIP_QUAD_3D, TRIANGLE_STRIP_QUAD_NORMAL, TRIANGLE_STRIP_QUAD_UV, quatFromAxisAngle, vecNormalize } from '@0b5vr/experimental';
 import { dummyRenderTarget } from '../globals/dummyRenderTarget';
 import { gl, glCat } from '../globals/canvas';
-import objectVert from '../shaders/object.vert';
-import uvFrag from '../shaders/uv.frag';
+import { objectVert } from '../shaders/objectVert';
+import { uvFrag } from '../shaders/uvFrag';
 
 export class Plane extends Entity {
   public constructor( options?: EntityOptions ) {
@@ -33,8 +33,14 @@ export class Plane extends Entity {
     geometry.mode = gl.TRIANGLE_STRIP;
 
     // -- material ---------------------------------------------------------------------------------
+    const locations = {
+      locationPosition: 0,
+      locationNormal: 1,
+      locationUv: 2,
+    };
+
     const forward = new Material(
-      objectVert,
+      objectVert( locations ),
       uvFrag,
       {
         initOptions: { geometry, target: dummyRenderTarget },
