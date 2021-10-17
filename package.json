@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "dev": "webpack-cli serve --mode development",
-    "build": "webpack --mode production",
+    "build": "yarn build-js && yarn build-png",
+    "build-js": "webpack --mode production",
+    "build-png": "jsexe -cn -po ./dist/bundle.js ./dist/out.png.html",
     "lint": "eslint \"src/**/*.{ts,tsx}\"",
     "lint-fix": "eslint --fix \"src/**/*.{ts,tsx}\""
   },
