@@ -35,7 +35,7 @@ export class SSSBox extends Entity {
 
     const forward = new Material(
       objectVert( { ...locations } ),
-      sssBoxFrag,
+      sssBoxFrag( 'forward' ),
       {
         initOptions: { geometry, target: dummyRenderTarget },
         blend: [ gl.ONE, gl.ONE ],
@@ -51,7 +51,7 @@ export class SSSBox extends Entity {
             '../shaders/sssBoxFrag',
           ],
           () => {
-            forward.replaceShader( objectVert( { ...locations } ), sssBoxFrag );
+            forward.replaceShader( objectVert( { ...locations } ), sssBoxFrag( 'forward' ) );
           },
         );
       }

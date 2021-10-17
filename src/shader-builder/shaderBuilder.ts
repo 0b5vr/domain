@@ -53,7 +53,11 @@ export function cache<T>( id: symbol, create: () => T ): T {
 }
 
 export const glPosition = 'gl_Position' as Tok<'vec4'>;
+export const glPointSize = 'gl_PointSize' as Tok<'float'>;
+export const glPointCoord = 'gl_PointCoord' as Tok<'vec2'>;
 export const glFragCoord = 'gl_FragCoord' as Tok<'vec4'>;
+export const glFragColor = 'gl_FragColor' as Tok<'vec4'>;
+export const glFragDepth = 'gl_FragDepth' as Tok<'float'>;
 
 export function insert( code: string ): void {
   __stack[ 0 ] += code;

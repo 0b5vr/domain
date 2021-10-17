@@ -1,4 +1,4 @@
-import { GLSLExpression, GLSLToken, abs, add, addAssign, assign, def, forBreak, forLoop, gt, ifThen, lt, mul, swizzle } from '../../shader-builder/shaderBuilder';
+import { GLSLExpression, GLSLFloatExpression, GLSLToken, abs, add, addAssign, assign, def, forBreak, forLoop, gt, ifThen, lt, mul, swizzle } from '../../shader-builder/shaderBuilder';
 
 export function raymarch( {
   iter,
@@ -14,10 +14,10 @@ export function raymarch( {
   ro: GLSLExpression<'vec3'>,
   rd: GLSLExpression<'vec3'>,
   map: ( p: GLSLExpression<'vec3'> ) => GLSLExpression<'vec4'>,
-  initRl?: number,
-  eps?: number,
-  far?: number,
-  marchMultiplier?: number,
+  initRl?: GLSLFloatExpression,
+  eps?: GLSLFloatExpression,
+  far?: GLSLFloatExpression,
+  marchMultiplier?: GLSLFloatExpression,
 } ): {
     isect: GLSLToken<'vec4'>,
     rl: GLSLToken<'float'>,

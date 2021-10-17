@@ -20,6 +20,12 @@ export function createRaymarchCameraUniformsLambda( materials: Material[] ): Lam
         );
 
         material.addUniformMatrixVector(
+          'pvm',
+          'Matrix4fv',
+          pvm,
+        );
+
+        material.addUniformMatrixVector(
           'inversePVM',
           'Matrix4fv',
           mat4Inverse( pvm ),
