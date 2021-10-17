@@ -65,8 +65,6 @@ export class SSSBox extends Entity {
       name: process.env.DEV && 'mesh',
     } );
     this.transform.scale = [ 1.0, 1.0, 1.0 ];
-    mesh.depthTest = false;
-    mesh.depthWrite = false;
 
     // -- speen ------------------------------------------------------------------------------------
     const speenAxis = vecNormalize( [ 1.0, 1.0, 1.0 ] ) as RawVector3;
