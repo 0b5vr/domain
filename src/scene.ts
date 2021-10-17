@@ -14,7 +14,7 @@ import { SSSBox } from './entities/SSSBox';
 import { Swap } from '@0b5vr/experimental';
 import { automaton } from './globals/automaton';
 import { clock } from './globals/clock';
-import { gui } from './globals/gui';
+import { promiseGui } from './globals/gui';
 import { randomTexture } from './globals/randomTexture';
 
 // == dog ==========================================================================================
@@ -31,9 +31,11 @@ dog.root.components.push( new Lambda( {
   name: process.env.DEV && 'update-everything',
 } ) );
 
-if ( process.env.DEV && gui != null ) {
-  gui.input( 'active', true )?.on( 'change', ( { value } ) => {
-    dog.active = value;
+if ( process.env.DEV ) {
+  promiseGui.then( ( gui ) => {
+    gui.input( 'active', true )?.on( 'change', ( { value } ) => {
+      dog.active = value;
+    } );
   } );
 }
 

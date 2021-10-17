@@ -8,7 +8,7 @@ let profilerUpdateGpu: any | undefined;
 let profilerDrawCpu: any | undefined;
 let profilerDrawGpu: any | undefined;
 
-export const promiseGui = new Promise( ( resolve ) => {
+export const promiseGui = new Promise<ImPane>( ( resolve ) => {
   if ( process.env.DEV ) {
     import( '@0b5vr/imtweakpane' ).then( ( { ImPane } ) => {
       const gui_ = gui = new ImPane( { title: 'gui' } );

@@ -1,4 +1,6 @@
-import { add, addAssign, assign, build, def, defFn, defInNamed, defOutNamed, defUniform, discard, div, glFragCoord, glFragDepth, gt, ifThen, insert, length, main, mul, retFn, sub, subAssign, swizzle, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { INV_PI } from '../utils/constants';
+import { add, addAssign, assign, build, def, defFn, defInNamed, defOutNamed, defUniform, discard, div, dot, glFragCoord, glFragDepth, gt, ifThen, insert, length, main, max, mul, neg, normalize, retFn, sub, subAssign, swizzle, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { brdfGGX } from './modules/brdfGGX';
 import { calcDepth } from './modules/calcDepth';
 import { calcNormal } from './modules/calcNormal';
 import { calcSS } from './modules/calcSS';
@@ -68,17 +70,21 @@ export const sssBoxFrag = ( tag: 'forward' | 'depth' ): string => build( () => {
     assign( glFragDepth, add( 0.5, mul( 0.5, depth ) ) );
 
     if ( tag === 'forward' ) {
-      const ld = def( 'vec3', swizzle( mul( modelMatrixT, vec4( 0, 1, 0, 0 ) ), 'xyz' ) );
-      const n = calcNormal( { rp, map } );
-      const ss = calcSS( {
-        rp,
-        rd,
-        ld,
-        n,
-        map,
-        intensity: 2.0,
-      } );
-      assign( col, vec3( ss ) );
+      const L = def( 'vec3', swizzle( mul( modelMatrixT, vec4( normalize( vec3( 1, 1, 1 ) ), 0 ) ), 'xyz' ) );
+      const V = def( 'vec3', neg( rd ) );
+      const N = def( 'vec3', calcNormal( { rp, map } ) );
+
+      const baseColor = vec3( 0.9, 0.6, 0.5 );
+      const lightGain = mul( 2.0, vec3( 0.8, 0.82, 0.9 ) );
+      const dotNL = def( 'float', max( dot( L, N ), 0.0 ) );
+      const irradiance = def( 'vec3', mul( lightGain, dotNL ) );
+      const diffuse = mul( 0.5, irradiance, baseColor, INV_PI );
+      addAssign( col, diffuse );
+      const specular = mul( irradiance, brdfGGX( L, V, N, baseColor, 0.1, 0.2 ) );
+      addAssign( col, specular );
+
+      const ss = calcSS( { rp, V, L, N, map, intensity: 2.0 } );
+      addAssign( col, mul( 0.5, INV_PI, vec3( 0.9, 0.1, 0.1 ), lightGain, ss ) );
 
       assign( fragColor, vec4( col, 1.0 ) );
     } else if ( tag === 'depth' ) {

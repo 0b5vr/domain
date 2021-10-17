@@ -5,9 +5,9 @@ import { sampleLambert } from './sampleLambert';
 // https://www.shadertoy.com/view/lllBDM
 export function calcSS( {
   rp,
-  rd,
-  ld,
-  n,
+  V,
+  L,
+  N,
   map,
   eta,
   iter = 50,
@@ -17,9 +17,9 @@ export function calcSS( {
   power = 3.0,
 }: {
   rp: GLSLExpression<'vec3'>,
-  rd: GLSLExpression<'vec3'>,
-  ld: GLSLExpression<'vec3'>,
-  n: GLSLExpression<'vec3'>,
+  V: GLSLExpression<'vec3'>,
+  L: GLSLExpression<'vec3'>,
+  N: GLSLExpression<'vec3'>,
   map: ( p: GLSLExpression<'vec3'> ) => GLSLExpression<'vec4'>,
   eta?: GLSLFloatExpression,
   iter?: number,
@@ -28,14 +28,14 @@ export function calcSS( {
   intensity?: GLSLFloatExpression,
   power?: GLSLFloatExpression,
 } ): GLSLToken<'float'> {
-  const sd = def( 'vec3', refract( rd, n, eta ?? 1.0 / 1.5 ) );
+  const sd = def( 'vec3', refract( neg( V ), N, eta ?? 1.0 / 1.5 ) );
   const len = def( 'float', num( lenInit ) );
   const accum = def( 'float', 0.0 );
 
   forLoop( iter, () => {
     addAssign( len, lenStep );
     let samplePoint = add( rp, mul( sampleLambert( sd ), len ) );
-    samplePoint = add( samplePoint, mul( sampleLambert( ld ), len ) );
+    samplePoint = add( samplePoint, mul( sampleLambert( L ), len ) );
     const d = swizzle( map( samplePoint ), 'x' );
     addAssign( accum, div( max( 0.0, neg( d ) ), len ) );
   } );
