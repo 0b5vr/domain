@@ -5,10 +5,10 @@ import { Quad } from '../heck/components/Quad';
 import { RenderTarget } from '../heck/RenderTarget';
 import { auto } from '../globals/automaton';
 import { dummyRenderTarget } from '../globals/dummyRenderTarget';
+import { postFrag } from '../shaders/postFrag';
 import { quadGeometry } from '../globals/quadGeometry';
 import { quadVert } from '../shaders/quadVert';
 import { randomTexture } from '../globals/randomTexture';
-import postFrag from '../shaders/post.frag';
 
 export interface PostOptions {
   input: BufferRenderTarget;
@@ -50,7 +50,7 @@ export class Post extends Entity {
 
     if ( process.env.DEV ) {
       if ( module.hot ) {
-        module.hot.accept( '../shaders/post.frag', () => {
+        module.hot.accept( '../shaders/postFrag', () => {
           material.replaceShader( quadVert, postFrag );
         } );
       }

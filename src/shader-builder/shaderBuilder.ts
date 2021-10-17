@@ -224,6 +224,22 @@ export function sqrt( x: string | number ): string {
   return `sqrt(${num( x )})`;
 }
 
+export function log( x: Exf ): Ex<'float'>;
+export function log( x: Ex<'vec2'> ): Ex<'vec2'>;
+export function log( x: Ex<'vec3'> ): Ex<'vec3'>;
+export function log( x: Ex<'vec4'> ): Ex<'vec4'>;
+export function log( x: string | number ): string {
+  return `log(${num( x )})`;
+}
+
+export function log2( x: Exf ): Ex<'float'>;
+export function log2( x: Ex<'vec2'> ): Ex<'vec2'>;
+export function log2( x: Ex<'vec3'> ): Ex<'vec3'>;
+export function log2( x: Ex<'vec4'> ): Ex<'vec4'>;
+export function log2( x: string | number ): string {
+  return `log2(${num( x )})`;
+}
+
 export function exp( x: Exf ): Ex<'float'>;
 export function exp( x: Ex<'vec2'> ): Ex<'vec2'>;
 export function exp( x: Ex<'vec3'> ): Ex<'vec3'>;
