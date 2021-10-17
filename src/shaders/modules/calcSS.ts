@@ -1,6 +1,6 @@
 import { GLSLExpression, GLSLFloatExpression, GLSLToken, add, addAssign, def, div, forLoop, max, mul, neg, num, pow, refract, sub, swizzle } from '../../shader-builder/shaderBuilder';
 import { glslSaturate } from './glslSaturate';
-import { uniformHemisphere } from './uniformHemisphere';
+import { sampleLambert } from './sampleLambert';
 
 // https://www.shadertoy.com/view/lllBDM
 export function calcSS( {
@@ -34,8 +34,8 @@ export function calcSS( {
 
   forLoop( iter, () => {
     addAssign( len, lenStep );
-    const samplePoint = def( 'vec3', add( rp, mul( uniformHemisphere( sd ), len ) ) );
-    addAssign( samplePoint, mul( uniformHemisphere( ld ), len ) );
+    let samplePoint = add( rp, mul( sampleLambert( sd ), len ) );
+    samplePoint = add( samplePoint, mul( sampleLambert( ld ), len ) );
     const d = swizzle( map( samplePoint ), 'x' );
     addAssign( accum, div( max( 0.0, neg( d ) ), len ) );
   } );
