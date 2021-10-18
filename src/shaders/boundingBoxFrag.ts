@@ -1,4 +1,4 @@
-import { add, assign, build, def, defInNamed, defOut, defUniform, discard, exp, ifThen, insert, length, lt, main, max, mul, mulAssign, sin, sub, swizzle, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { add, assign, build, def, defInNamed, defOut, defUniformNamed, discard, exp, ifThen, insert, length, lt, main, max, mul, mulAssign, sin, sub, sw, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcDepth } from './modules/calcDepth';
 
 export const boundingBoxFrag = ( tag: 'forward' | 'shadow' ): string => build( () => {
@@ -9,15 +9,15 @@ export const boundingBoxFrag = ( tag: 'forward' | 'shadow' ): string => build( (
 
   const fragColor = defOut( 'vec4' );
 
-  const time = defUniform( 'float', 'time' );
-  const cameraNearFar = defUniform( 'vec2', 'cameraNearFar' );
-  const cameraPos = defUniform( 'vec3', 'cameraPos' );
+  const time = defUniformNamed( 'float', 'time' );
+  const cameraNearFar = defUniformNamed( 'vec2', 'cameraNearFar' );
+  const cameraPos = defUniformNamed( 'vec3', 'cameraPos' );
 
   main( () => {
     const phase = add(
-      swizzle( vPositionWithoutModel, 'x' ),
-      swizzle( vPositionWithoutModel, 'y' ),
-      swizzle( vPositionWithoutModel, 'z' ),
+      sw( vPositionWithoutModel, 'x' ),
+      sw( vPositionWithoutModel, 'y' ),
+      sw( vPositionWithoutModel, 'z' ),
     );
     const pattern = sin( add( mul( phase, 40.0 ), mul( 10.0, time ) ) );
 
@@ -26,13 +26,13 @@ export const boundingBoxFrag = ( tag: 'forward' | 'shadow' ): string => build( (
     if ( tag === 'forward' ) {
       const color = def( 'vec3', vec3( 1.0 ) );
 
-      const lenV = length( sub( cameraPos, swizzle( vPosition, 'xyz' ) ) );
+      const lenV = length( sub( cameraPos, sw( vPosition, 'xyz' ) ) );
       mulAssign( color, exp( mul( -0.4, max( sub( lenV, 3.0 ), 0.0 ) ) ) );
 
       assign( fragColor, vec4( color, 1.0 ) );
 
     } else if ( tag === 'shadow' ) {
-      const distance = length( sub( cameraPos, swizzle( vPosition, 'xyz' ) ) );
+      const distance = length( sub( cameraPos, sw( vPosition, 'xyz' ) ) );
       assign( fragColor, calcDepth( cameraNearFar, distance ) );
 
     }

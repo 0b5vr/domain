@@ -1,4 +1,4 @@
-import { GLSLExpression, GLSLFloatExpression, add, addAssign, assign, build, clamp, def, defFn, defInNamed, defOut, defUniform, div, dot, eq, ifThen, insert, lt, main, max, mix, mul, pow, retFn, step, sub, swizzle, tern, texture, vec2, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { GLSLExpression, GLSLFloatExpression, add, addAssign, assign, build, clamp, def, defFn, defInNamed, defOut, defUniformNamed, div, dot, eq, ifThen, insert, lt, main, max, mix, mul, pow, retFn, step, sub, sw, tern, texture, vec2, vec3, vec4 } from '../shader-builder/shaderBuilder';
 
 export const bloomDownFrag = build( () => {
   insert( 'precision highp float;' );
@@ -12,12 +12,12 @@ export const bloomDownFrag = build( () => {
 
   const fragColor = defOut( 'vec4' );
 
-  const level = defUniform( 'float', 'level' );
-  const resolution = defUniform( 'vec2', 'resolution' );
-  const sampler0 = defUniform( 'sampler2D', 'sampler0' );
+  const level = defUniformNamed( 'float', 'level' );
+  const resolution = defUniformNamed( 'vec2', 'resolution' );
+  const sampler0 = defUniformNamed( 'sampler2D', 'sampler0' );
 
   const fetchWithWeight = defFn( 'vec4', [ 'vec2' ], ( uv ) => {
-    const tex = def( 'vec3', swizzle( texture( sampler0, uv ), 'xyz' ) );
+    const tex = def( 'vec3', sw( texture( sampler0, uv ), 'xyz' ) );
     const luma = dot( LUMA, tex );
     retFn( vec4( tex, add( 1.0, mul( 0.5, luma ) ) ) );
   } );
@@ -56,7 +56,7 @@ export const bloomDownFrag = build( () => {
     sample( WEIGHT_2, vec2(  0.0,  1.0 ) );
     sample( WEIGHT_1, vec2(  1.0,  1.0 ) );
 
-    const col = def( 'vec3', div( swizzle( accum, 'rgb' ), swizzle( accum, 'w' ) ) );
+    const col = def( 'vec3', div( sw( accum, 'rgb' ), sw( accum, 'w' ) ) );
 
     ifThen( eq( level, 0.0 ), () => {
       const brightness = def( 'float', dot( LUMA, col ) );

@@ -1,4 +1,4 @@
-import { GLSLExpression, abs, add, addAssign, assign, build, def, defFn, defOutNamed, defUniform, div, dot, float, glFragCoord, gt, ifThen, insert, length, log2, main, max, min, mix, mul, mulAssign, normalize, pow, retFn, sqrt, step, sub, swizzle, tan, texture, unrollLoop, vec2, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { GLSLExpression, abs, add, addAssign, assign, build, def, defFn, defOutNamed, defUniformNamed, div, dot, float, glFragCoord, gt, ifThen, insert, length, log2, main, max, min, mix, mul, mulAssign, normalize, pow, retFn, sqrt, step, sub, sw, tan, texture, unrollLoop, vec2, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { PI } from '../utils/constants';
 import { glslDefRandom } from './modules/glslDefRandom';
 import { glslLofi } from './modules/glslLofi';
@@ -15,14 +15,14 @@ export const postFrag = build( () => {
 
   const fragColor = defOutNamed( 'vec4', 'fragColor' );
 
-  const mosaicAmp = defUniform( 'float', 'mosaicAmp' );
-  const mixInvert = defUniform( 'float', 'mixInvert' );
-  const colorLift = defUniform( 'vec4', 'colorLift' );
-  const colorGamma = defUniform( 'vec4', 'colorGamma' );
-  const colorGain = defUniform( 'vec4', 'colorGain' );
-  const resolution = defUniform( 'vec2', 'resolution' );
-  const sampler0 = defUniform( 'sampler2D', 'sampler0' );
-  const samplerRandom = defUniform( 'sampler2D', 'samplerRandom' );
+  const mosaicAmp = defUniformNamed( 'float', 'mosaicAmp' );
+  const mixInvert = defUniformNamed( 'float', 'mixInvert' );
+  const colorLift = defUniformNamed( 'vec4', 'colorLift' );
+  const colorGamma = defUniformNamed( 'vec4', 'colorGamma' );
+  const colorGain = defUniformNamed( 'vec4', 'colorGain' );
+  const resolution = defUniformNamed( 'vec2', 'resolution' );
+  const sampler0 = defUniformNamed( 'sampler2D', 'sampler0' );
+  const samplerRandom = defUniformNamed( 'sampler2D', 'samplerRandom' );
 
   const { init, random } = glslDefRandom();
 
@@ -35,7 +35,7 @@ export const postFrag = build( () => {
       mul( add( uv, mul( normalize( uvt ), tan( mul( length( uvt ), a ) ) ) ), zoom ),
       mul( 0.5, sub( 1.0, zoom ) )
     ) ) as GLSLExpression<'vec2'>;
-    retFn( swizzle( texture( sampler0, p ), 'xyz' ) );
+    retFn( sw( texture( sampler0, p ), 'xyz' ) );
   } );
 
   const liftGammaGain = defFn(
@@ -55,16 +55,16 @@ export const postFrag = build( () => {
       const col = def( 'vec3', rgb );
       const luma = def( 'float', dot( LUMA, col ) );
 
-      assign( col, pow( col, swizzle( gammat, 'rgb' ) ) );
-      mulAssign( col, pow( swizzle( gain, 'rgb' ), swizzle( gammat, 'rgb' ) ) );
+      assign( col, pow( col, sw( gammat, 'rgb' ) ) );
+      mulAssign( col, pow( sw( gain, 'rgb' ), sw( gammat, 'rgb' ) ) );
       assign(
         col,
-        max( mix( mul( 2.0, swizzle( liftt, 'rgb' ) ), vec3( 1.0 ), col ), 0.0 )
+        max( mix( mul( 2.0, sw( liftt, 'rgb' ) ), vec3( 1.0 ), col ), 0.0 )
       );
 
-      assign( luma, pow( luma, swizzle( gammat, 'a' ) ) );
-      mulAssign( luma, pow( swizzle( gain, 'a' ), swizzle( gammat, 'a' ) ) );
-      assign( luma, max( mix( mul( 2.0, swizzle( liftt, 'a' ) ), 1.0, luma ), 0.0 ) );
+      assign( luma, pow( luma, sw( gammat, 'a' ) ) );
+      mulAssign( luma, pow( sw( gain, 'a' ), sw( gammat, 'a' ) ) );
+      assign( luma, max( mix( mul( 2.0, sw( liftt, 'a' ) ), 1.0, luma ), 0.0 ) );
 
       addAssign( col, sub( luma, dot( LUMA, col ) ) );
 
@@ -89,11 +89,11 @@ export const postFrag = build( () => {
   }
 
   main( () => {
-    const uv = def( 'vec2', div( swizzle( glFragCoord, 'xy' ), resolution ) );
+    const uv = def( 'vec2', div( sw( glFragCoord, 'xy' ), resolution ) );
 
     init( texture( samplerRandom, uv ) );
 
-    const mosaic = mul( mosaicAmp, swizzle( resolution, 'y' ) );
+    const mosaic = mul( mosaicAmp, sw( resolution, 'y' ) );
     ifThen( gt( mosaic, 1.0 ), () => {
       assign( uv, add(
         glslLofi( sub( uv, 0.5 ), div( mosaic, resolution ) ) as GLSLExpression<'vec2'>,
@@ -102,9 +102,9 @@ export const postFrag = build( () => {
       ) );
     } );
 
-    const aspect = div( swizzle( resolution, 'x' ), swizzle( resolution, 'y' ) );
+    const aspect = div( sw( resolution, 'x' ), sw( resolution, 'y' ) );
     const p = def( 'vec2', sub( mul( uv, 2.0 ), 1.0 ) );
-    mulAssign( swizzle( p, 'x' ), aspect );
+    mulAssign( sw( p, 'x' ), aspect );
 
     const vig = sub( 1.0, mul( 0.2, length( p ) ) );
 

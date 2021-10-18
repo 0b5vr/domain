@@ -1,5 +1,5 @@
 import { INV_PI } from '../utils/constants';
-import { abs, add, addAssign, assign, build, def, defFn, defInNamed, defOutNamed, defUniform, discard, div, dot, glFragCoord, glFragDepth, gt, ifThen, insert, length, main, max, mod, mul, neg, normalize, retFn, sin, step, sub, swizzle, texture, unrollLoop, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { abs, add, addAssign, assign, build, def, defFn, defInNamed, defOutNamed, defUniformNamed, discard, div, dot, glFragCoord, glFragDepth, gt, ifThen, insert, length, main, max, mod, mul, neg, normalize, retFn, sin, step, sub, sw, texture, unrollLoop, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { brdfGGX } from './modules/brdfGGX';
 import { calcDepth } from './modules/calcDepth';
 import { calcNormal } from './modules/calcNormal';
@@ -13,18 +13,18 @@ export const mengerSpongeFrag = ( tag: 'forward' | 'depth' ): string => build( (
   insert( 'precision highp float;' );
 
   const vPositionWithoutModel = defInNamed( 'vec4', 'vPositionWithoutModel' );
-  const pvm = defUniform( 'mat4', 'pvm' );
-  const modelMatrix = defUniform( 'mat4', 'modelMatrix' );
-  const modelMatrixT3 = defUniform( 'mat3', 'modelMatrixT3' );
+  const pvm = defUniformNamed( 'mat4', 'pvm' );
+  const modelMatrix = defUniformNamed( 'mat4', 'modelMatrix' );
+  const modelMatrixT3 = defUniformNamed( 'mat3', 'modelMatrixT3' );
 
   const fragColor = defOutNamed( 'vec4', 'fragColor' );
 
-  const time = defUniform( 'float', 'time' );
-  const resolution = defUniform( 'vec2', 'resolution' );
-  const cameraNearFar = defUniform( 'vec2', 'cameraNearFar' );
-  const cameraPos = defUniform( 'vec3', 'cameraPos' );
-  const inversePVM = defUniform( 'mat4', 'inversePVM' );
-  const samplerRandom = defUniform( 'sampler2D', 'samplerRandom' );
+  const time = defUniformNamed( 'float', 'time' );
+  const resolution = defUniformNamed( 'vec2', 'resolution' );
+  const cameraNearFar = defUniformNamed( 'vec2', 'cameraNearFar' );
+  const cameraPos = defUniformNamed( 'vec3', 'cameraPos' );
+  const inversePVM = defUniformNamed( 'mat4', 'inversePVM' );
+  const samplerRandom = defUniformNamed( 'sampler2D', 'samplerRandom' );
 
   const { init } = glslDefRandom();
 
@@ -45,8 +45,8 @@ export const mengerSpongeFrag = ( tag: 'forward' | 'depth' ): string => build( (
 
   main( () => {
     const p = def( 'vec2', div(
-      sub( mul( 2.0, swizzle( glFragCoord, 'xy' ) ), resolution ),
-      swizzle( resolution, 'y' ),
+      sub( mul( 2.0, sw( glFragCoord, 'xy' ) ), resolution ),
+      sw( resolution, 'y' ),
     ) );
     init( texture( samplerRandom, p ) );
 
@@ -57,18 +57,18 @@ export const mengerSpongeFrag = ( tag: 'forward' | 'depth' ): string => build( (
       ro,
       rd,
       map,
-      initRl: length( sub( swizzle( vPositionWithoutModel, 'xyz' ), ro ) ),
+      initRl: length( sub( sw( vPositionWithoutModel, 'xyz' ), ro ) ),
       marchMultiplier: 0.6,
     } );
 
     const col = def( 'vec3', vec3( 0.0 ) );
 
-    ifThen( gt( swizzle( isect, 'x' ), 1E-2 ), () => discard() );
+    ifThen( gt( sw( isect, 'x' ), 1E-2 ), () => discard() );
 
     const modelPos = def( 'vec4', mul( modelMatrix, vec4( rp, 1.0 ) ) );
 
     const projPos = def( 'vec4', mul( pvm, vec4( rp, 1.0 ) ) );
-    const depth = div( swizzle( projPos, 'z' ), swizzle( projPos, 'w' ) );
+    const depth = div( sw( projPos, 'z' ), sw( projPos, 'w' ) );
     assign( glFragDepth, add( 0.5, mul( 0.5, depth ) ) );
 
     if ( tag === 'forward' ) {
@@ -89,7 +89,7 @@ export const mengerSpongeFrag = ( tag: 'forward' | 'depth' ): string => build( (
 
       assign( fragColor, vec4( col, 1.0 ) );
     } else if ( tag === 'depth' ) {
-      const len = length( sub( cameraPos, swizzle( modelPos, 'xyz' ) ) );
+      const len = length( sub( cameraPos, sw( modelPos, 'xyz' ) ) );
       assign( fragColor, calcDepth( cameraNearFar, len ) );
     }
   } );

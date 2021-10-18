@@ -1,4 +1,4 @@
-import { GLSLExpression, GLSLFloatExpression, GLSLToken, abs, add, addAssign, assign, def, forBreak, forLoop, gt, ifThen, lt, mul, swizzle } from '../../shader-builder/shaderBuilder';
+import { GLSLExpression, GLSLFloatExpression, GLSLToken, abs, add, addAssign, assign, def, forBreak, forLoop, gt, ifThen, lt, mul, sw } from '../../shader-builder/shaderBuilder';
 
 export function raymarch( {
   iter,
@@ -29,7 +29,7 @@ export function raymarch( {
 
   forLoop( iter, () => {
     assign( isect, map( rp ) );
-    const dist = swizzle( isect, 'x' );
+    const dist = sw( isect, 'x' );
     addAssign( rl, mul( dist, marchMultiplier ?? 1.0 ) );
     assign( rp, add( ro, mul( rd, rl ) ) );
 

@@ -1,4 +1,4 @@
-import { GLSLExpression, GLSLToken, def, defFn, div, mul, normalize, retFn, sub, swizzle, vec4 } from '../../shader-builder/shaderBuilder';
+import { GLSLExpression, GLSLToken, def, defFn, div, mul, normalize, retFn, sub, sw, vec4 } from '../../shader-builder/shaderBuilder';
 
 export function setupRoRd( {
   inversePVM,
@@ -11,7 +11,7 @@ export function setupRoRd( {
     rd: GLSLToken<'vec3'>,
   } {
   const divideByW = defFn( 'vec3', [ 'vec4' ], ( v ) => {
-    retFn( div( swizzle( v, 'xyz' ), swizzle( v, 'w' ) ) );
+    retFn( div( sw( v, 'xyz' ), sw( v, 'w' ) ) );
   } );
 
   const ro = def( 'vec3', divideByW( mul( inversePVM, vec4( p, 0.0, 1.0 ) ) ) );

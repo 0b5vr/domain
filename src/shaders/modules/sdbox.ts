@@ -1,4 +1,4 @@
-import { GLSLExpression, abs, add, cache, def, defFn, length, max, min, retFn, sub, swizzle } from '../../shader-builder/shaderBuilder';
+import { GLSLExpression, abs, add, cache, def, defFn, length, max, min, retFn, sub, sw } from '../../shader-builder/shaderBuilder';
 
 const symbol = Symbol();
 
@@ -10,7 +10,7 @@ export function sdbox(
   const f = cache( symbol, () => defFn( 'float', [ 'vec3', 'vec3' ], ( p, s ) => {
     const d = def( 'vec3', sub( abs( p ), s ) );
     const inside = min(
-      max( swizzle( d, 'x' ), max( swizzle( d, 'y' ), swizzle( d, 'z' ) ) ),
+      max( sw( d, 'x' ), max( sw( d, 'y' ), sw( d, 'z' ) ) ),
       0.0,
     );
     const outside = length( max( d, 0.0 ) );

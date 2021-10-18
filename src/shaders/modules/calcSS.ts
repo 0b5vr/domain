@@ -1,4 +1,4 @@
-import { GLSLExpression, GLSLFloatExpression, GLSLToken, add, addAssign, def, div, forLoop, max, mul, neg, num, pow, refract, sub, swizzle } from '../../shader-builder/shaderBuilder';
+import { GLSLExpression, GLSLFloatExpression, GLSLToken, add, addAssign, def, div, forLoop, max, mul, neg, num, pow, refract, sub, sw } from '../../shader-builder/shaderBuilder';
 import { glslSaturate } from './glslSaturate';
 import { sampleLambert } from './sampleLambert';
 
@@ -36,7 +36,7 @@ export function calcSS( {
     addAssign( len, lenStep );
     let samplePoint = add( rp, mul( sampleLambert( sd ), len ) );
     samplePoint = add( samplePoint, mul( sampleLambert( L ), len ) );
-    const d = swizzle( map( samplePoint ), 'x' );
+    const d = sw( map( samplePoint ), 'x' );
     addAssign( accum, div( max( 0.0, neg( d ) ), len ) );
   } );
 

@@ -1,4 +1,4 @@
-import { assign, build, def, defIn, defOutNamed, defUniform, div, divAssign, glPosition, main, mul, normalize, swizzle, vec4 } from '../shader-builder/shaderBuilder';
+import { assign, build, def, defIn, defOutNamed, defUniformNamed, div, divAssign, glPosition, main, mul, normalize, sw, vec4 } from '../shader-builder/shaderBuilder';
 
 export const objectVert = ( { locationPosition, locationNormal, locationUv }: {
   locationPosition?: number,
@@ -14,11 +14,11 @@ export const objectVert = ( { locationPosition, locationNormal, locationUv }: {
   const vNormal = normal != null ? defOutNamed( 'vec3', 'vNormal' ) : null;
   const vUv = uv != null ? defOutNamed( 'vec2', 'vUv' ) : null;
 
-  const resolution = defUniform( 'vec2', 'resolution' );
-  const projectionMatrix = defUniform( 'mat4', 'projectionMatrix' );
-  const viewMatrix = defUniform( 'mat4', 'viewMatrix' );
-  const modelMatrix = defUniform( 'mat4', 'modelMatrix' );
-  const normalMatrix = normal != null ? defUniform( 'mat3', 'normalMatrix' ) : null;
+  const resolution = defUniformNamed( 'vec2', 'resolution' );
+  const projectionMatrix = defUniformNamed( 'mat4', 'projectionMatrix' );
+  const viewMatrix = defUniformNamed( 'mat4', 'viewMatrix' );
+  const modelMatrix = defUniformNamed( 'mat4', 'modelMatrix' );
+  const normalMatrix = normal != null ? defUniformNamed( 'mat3', 'normalMatrix' ) : null;
 
   main( () => {
     assign( vPositionWithoutModel, vec4( position, 1.0 ) );
@@ -26,8 +26,8 @@ export const objectVert = ( { locationPosition, locationNormal, locationUv }: {
     assign( vPosition, mul( modelMatrix, vPositionWithoutModel ) );
     const outPos = def( 'vec4', mul( projectionMatrix, viewMatrix, vPosition ) );
 
-    const aspect = div( swizzle( resolution, 'x' ), swizzle( resolution, 'y' ) );
-    divAssign( swizzle( outPos, 'x' ), aspect );
+    const aspect = div( sw( resolution, 'x' ), sw( resolution, 'y' ) );
+    divAssign( sw( outPos, 'x' ), aspect );
     assign( glPosition, outPos );
 
     if ( normal != null ) {

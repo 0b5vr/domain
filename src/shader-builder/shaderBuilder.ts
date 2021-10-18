@@ -1,7 +1,15 @@
-type Branded<T, U extends string> = T & { [K in U]: never };
-export type GLSLExpression<T extends string> = Branded<string, T | 'GLSLExpression'>;
+export type GLSLExpression<T extends string> = string & {
+  __type: T,
+  __glslExpression: true,
+};
 export type GLSLFloatExpression = GLSLExpression<'float'> | number;
-export type GLSLToken<T extends string = string> = Branded<string, T | 'GLSLExpression' | 'GLSLToken'>;
+export type GLSLToken<T extends string = string> = string & {
+  __type: T,
+  __glslExpression: true,
+  __glslToken: true,
+};
+
+export type GLSLGenType = 'float' | 'vec2' | 'vec3' | 'vec4';
 
 type Ex<T extends string> = GLSLExpression<T>;
 type Exf = GLSLFloatExpression;
@@ -79,465 +87,424 @@ export function num( val: string | number ): Ex<'float'> {
   return str as Ex<'float'>;
 }
 
-export function def( type: 'float', init?: Exf ): Tok<'float'>;
-export function def<T extends string>( type: T, init?: Ex<T> ): Tok<T>;
-export function def( type: string, init?: number | string ): string {
-  const token = genToken();
-  const initAssign = init != null ? `=${ num( init ) }` : '';
-  insert( `${type} ${token}${initAssign};` );
+function __def( { type, init, location, name, modifier, local }: {
+  type: string,
+  init?: string | number,
+  location?: number,
+  name?: string,
+  modifier?: string,
+  local?: boolean,
+} ): string {
+  const token = name ?? genToken();
+
+  ( local ? insert : insertTop )( [
+    location ? `layout (location=${ location })` : '',
+    modifier ?? '',
+    type ?? '',
+    token,
+    init ? `=${ num( init ) }` : '',
+    ';',
+  ].join( ' ' ) );
+
   return token;
 }
 
-export function defGlobal( type: 'float', init?: Exf ): Tok<'float'>;
-export function defGlobal<T extends string>( type: T, init?: Ex<T> ): Tok<T>;
-export function defGlobal( type: string, init?: number | string ): string {
-  const token = genToken();
-  const initAssign = init != null ? `=${ num( init ) }` : '';
-  insertTop( `${type} ${token}${initAssign};` );
-  return token;
+export const def: {
+  ( type: 'float', init?: Exf ): Tok<'float'>;
+  <T extends string>( type: T, init?: Ex<T> ): Tok<T>;
+} = ( type: string, init?: string | number ) => __def( {
+  type,
+  init,
+  local: true,
+} ) as any;
+
+export const defGlobal: {
+  ( type: 'float', init?: Exf ): Tok<'float'>;
+  <T extends string>( type: T, init?: Ex<T> ): Tok<T>;
+} = ( type: string, init?: string | number ) => __def( {
+  type,
+  init,
+} ) as any;
+
+export const defConst: {
+  ( type: 'float', init?: Exf ): Tok<'float'>;
+  <T extends string>( type: T, init?: Ex<T> ): Tok<T>;
+} = ( type: string, init?: string | number ) => __def( {
+  type,
+  init,
+  modifier: 'const',
+} ) as any;
+
+export const defIn: {
+  <T extends string>( type: T, location?: number ): Tok<T>;
+} = ( type: string, location: number = 0 ) => __def( {
+  type,
+  location,
+  modifier: 'in',
+} ) as any;
+
+export const defInNamed: {
+  <T extends string>( type: T, name: string ): Tok<T>;
+} = ( type: string, name: string ) => __def( {
+  type,
+  name,
+  modifier: 'in',
+} ) as any;
+
+export const defOut: {
+  <T extends string>( type: T, location?: number ): Tok<T>;
+} = ( type: string, location: number = 0 ) => __def( {
+  type,
+  location,
+  modifier: 'out',
+} ) as any;
+
+export const defOutNamed: {
+  <T extends string>( type: T, name: string ): Tok<T>;
+} = ( type: string, name: string ) => __def( {
+  type,
+  name,
+  modifier: 'out',
+} ) as any;
+
+export const defUniformNamed: {
+  <T extends string>( type: T, name: string ): Tok<T>;
+} = ( type: string, name: string ) => __def( {
+  type,
+  name,
+  modifier: 'uniform',
+} ) as any;
+
+export const assign: {
+  <T extends GLSLGenType>( dst: Ex<T>, src: Exf ): void;
+  <T extends GLSLGenType>( dst: Ex<T>, src: Ex<T> ): void;
+} = ( dst: string, src: string | number ) => (
+  insert( `${dst}=${num( src )};` )
+);
+
+export const addAssign: {
+  <T extends GLSLGenType>( dst: Ex<T>, src: Exf ): void;
+  <T extends GLSLGenType>( dst: Ex<T>, src: Ex<T> ): void;
+} = ( dst: string, src: string | number ) => (
+  insert( `${dst}+=${num( src )};` )
+);
+
+export const subAssign: {
+  <T extends GLSLGenType>( dst: Ex<T>, src: Exf ): void;
+  <T extends GLSLGenType>( dst: Ex<T>, src: Ex<T> ): void;
+} = ( dst: string, src: string | number ) => (
+  insert( `${dst}-=${num( src )};` )
+);
+
+export const mulAssign: {
+  <T extends GLSLGenType>( dst: Ex<T>, src: Exf ): void;
+  <T extends GLSLGenType>( dst: Ex<T>, src: Ex<T> ): void;
+  ( dst: Ex<'vec2'>, src: Ex<'mat2'> ): void;
+  ( dst: Ex<'vec3'>, src: Ex<'mat3'> ): void;
+  ( dst: Ex<'vec4'>, src: Ex<'mat4'> ): void;
+} = ( dst: string, src: string | number ) => (
+  insert( `${dst}*=${num( src )};` )
+);
+
+export const divAssign: {
+  <T extends GLSLGenType>( dst: Ex<T>, src: Exf ): void;
+  <T extends GLSLGenType>( dst: Ex<T>, src: Ex<T> ): void;
+} = ( dst: string, src: string | number ) => (
+  insert( `${dst}/=${num( src )};` )
+);
+
+export const add: {
+  ( ...args: Exf[] ): Ex<'float'>;
+  // <T extends GLSLGenType>( ...args: ( Exf | Ex<T> )[] ): Ex<T>; // does not work well with spread
+  ( ...args: ( Exf | Ex<'vec2'> )[] ): Ex<'vec2'>;
+  ( ...args: ( Exf | Ex<'vec3'> )[] ): Ex<'vec3'>;
+  ( ...args: ( Exf | Ex<'vec4'> )[] ): Ex<'vec4'>;
+} = ( ...args: ( string | number )[] ) => (
+  `(${args.map( ( arg ) => num( arg ) ).join( '+' )})`
+) as any;
+
+export const sub: {
+  ( ...args: Exf[] ): Ex<'float'>;
+  // <T extends GLSLGenType>( ...args: ( Exf | Ex<T> )[] ): Ex<T>; // does not work well with spread
+  ( ...args: ( Exf | Ex<'vec2'> )[] ): Ex<'vec2'>;
+  ( ...args: ( Exf | Ex<'vec3'> )[] ): Ex<'vec3'>;
+  ( ...args: ( Exf | Ex<'vec4'> )[] ): Ex<'vec4'>;
+} = ( ...args: ( string | number )[] ) => (
+  `(${args.map( ( arg ) => num( arg ) ).join( '-' )})`
+) as any;
+
+export const mul: {
+  ( ...args: Exf[] ): Ex<'float'>;
+  // <T extends GLSLGenType>( ...args: ( Exf | Ex<T> )[] ): Ex<T>; // does not work well with spread
+  ( ...args: ( Exf | Ex<'vec2'> | Ex<'mat2'> )[] ): Ex<'vec2'>;
+  ( ...args: ( Exf | Ex<'vec3'> | Ex<'mat3'> )[] ): Ex<'vec3'>;
+  ( ...args: ( Exf | Ex<'vec4'> | Ex<'mat4'> )[] ): Ex<'vec4'>;
+} = ( ...args: ( string | number )[] ) => (
+  `(${args.map( ( arg ) => num( arg ) ).join( '*' )})`
+) as any;
+
+export const div: {
+  ( ...args: Exf[] ): Ex<'float'>;
+  // <T extends GLSLGenType>( ...args: ( Exf | Ex<T> )[] ): Ex<T>; // does not work well with spread
+  ( ...args: ( Exf | Ex<'vec2'> )[] ): Ex<'vec2'>;
+  ( ...args: ( Exf | Ex<'vec3'> )[] ): Ex<'vec3'>;
+  ( ...args: ( Exf | Ex<'vec4'> )[] ): Ex<'vec4'>;
+} = ( ...args: ( string | number )[] ) => (
+  `(${args.map( ( arg ) => num( arg ) ).join( '/' )})`
+) as any;
+
+export const neg: {
+  ( x: Exf ): Ex<'float'>;
+  <T extends GLSLGenType>( x: Exf | Ex<T> ): Ex<T>;
+} = ( x: string | number ) => (
+  `(-${ x })`
+) as any;
+
+export const tern: {
+  ( cond: Ex<'bool'>, truthy: Exf, falsy: Exf ): Ex<'float'>;
+  <T extends string>( cond: Ex<'bool'>, truthy: Ex<T>, falsy: Ex<T> ): Ex<T>;
+} = ( cond: string, truthy: string | number, falsy: string | number ) => (
+  `(${cond}?${num( truthy )}:${num( falsy )})`
+) as any;
+
+export const eq: {
+  ( x: Exf, y: Exf ): Ex<'bool'>;
+  <T extends string>( x: Ex<T>, y: Ex<T> ): Ex<'bool'>;
+} = ( x: string | number, y: string | number ) => (
+  `(${num( x )}==${num( y )})`
+) as any;
+
+export const neq: {
+  ( x: Exf, y: Exf ): Ex<'bool'>;
+  <T extends string>( x: Ex<T>, y: Ex<T> ): Ex<'bool'>;
+} = ( x: string | number, y: string | number ) => (
+  `(${num( x )}!=${num( y )})`
+) as any;
+
+export const lt: {
+  ( x: Exf, y: Exf ): Ex<'bool'>;
+} = ( x: string | number, y: string | number ) => (
+  `(${num( x )}<${num( y )})`
+) as any;
+
+export const lte: {
+  ( x: Exf, y: Exf ): Ex<'bool'>;
+} = ( x: string | number, y: string | number ) => (
+  `(${num( x )}<=${num( y )})`
+) as any;
+
+export const gt: {
+  ( x: Exf, y: Exf ): Ex<'bool'>;
+} = ( x: string | number, y: string | number ) => (
+  `(${num( x )}>${num( y )})`
+) as any;
+
+export const gte: {
+  ( x: Exf, y: Exf ): Ex<'bool'>;
+} = ( x: string | number, y: string | number ) => (
+  `(${num( x )}>=${num( y )})`
+) as any;
+
+export const sw: {
+  ( val: Tok<'vec2'>, swizzle: SwizzleComponentVec2 ): Tok<'float'>;
+  ( val: Tok<'vec2'>, swizzle: Swizzle2ComponentsVec2 ): Tok<'vec2'>;
+  ( val: Tok<'vec2'>, swizzle: Swizzle3ComponentsVec2 ): Tok<'vec3'>;
+  ( val: Tok<'vec2'>, swizzle: Swizzle4ComponentsVec2 ): Tok<'vec4'>;
+  ( val: Tok<'vec3'>, swizzle: SwizzleComponentVec3 ): Tok<'float'>;
+  ( val: Tok<'vec3'>, swizzle: Swizzle2ComponentsVec3 ): Tok<'vec2'>;
+  ( val: Tok<'vec3'>, swizzle: Swizzle3ComponentsVec3 ): Tok<'vec3'>;
+  ( val: Tok<'vec3'>, swizzle: Swizzle4ComponentsVec3 ): Tok<'vec4'>;
+  ( val: Tok<'vec4'>, swizzle: SwizzleComponentVec4 ): Tok<'float'>;
+  ( val: Tok<'vec4'>, swizzle: Swizzle2ComponentsVec4 ): Tok<'vec2'>;
+  ( val: Tok<'vec4'>, swizzle: Swizzle3ComponentsVec4 ): Tok<'vec3'>;
+  ( val: Tok<'vec4'>, swizzle: Swizzle4ComponentsVec4 ): Tok<'vec4'>;
+  ( val: Ex<'vec2'>, swizzle: SwizzleComponentVec2 ): Ex<'float'>;
+  ( val: Ex<'vec2'>, swizzle: Swizzle2ComponentsVec2 ): Ex<'vec2'>;
+  ( val: Ex<'vec2'>, swizzle: Swizzle3ComponentsVec2 ): Ex<'vec3'>;
+  ( val: Ex<'vec2'>, swizzle: Swizzle4ComponentsVec2 ): Ex<'vec4'>;
+  ( val: Ex<'vec3'>, swizzle: SwizzleComponentVec3 ): Ex<'float'>;
+  ( val: Ex<'vec3'>, swizzle: Swizzle2ComponentsVec3 ): Ex<'vec2'>;
+  ( val: Ex<'vec3'>, swizzle: Swizzle3ComponentsVec3 ): Ex<'vec3'>;
+  ( val: Ex<'vec3'>, swizzle: Swizzle4ComponentsVec3 ): Ex<'vec4'>;
+  ( val: Ex<'vec4'>, swizzle: SwizzleComponentVec4 ): Ex<'float'>;
+  ( val: Ex<'vec4'>, swizzle: Swizzle2ComponentsVec4 ): Ex<'vec2'>;
+  ( val: Ex<'vec4'>, swizzle: Swizzle3ComponentsVec4 ): Ex<'vec3'>;
+  ( val: Ex<'vec4'>, swizzle: Swizzle4ComponentsVec4 ): Ex<'vec4'>;
+} = ( val: string, swizzle: string ) => (
+  `${val}.${swizzle}`
+) as any;
+
+function __callFn( name: string ): ( ...args: ( string | number )[] ) => string {
+  return ( ...args ) => (
+    `${ name }(${ args.map( ( arg ) => num( arg ) ).join( ',' ) })`
+  );
 }
 
-export function defConst( type: 'float', init: Exf ): Tok<'float'>;
-export function defConst<T extends string>( type: T, init: Ex<T> ): Tok<T>;
-export function defConst( type: string, init: number | string ): string {
-  const token = genToken();
-  insertTop( `const ${type} ${token}=${ num( init ) };` );
-  return token;
-}
+export const pow: {
+  ( x: Exf, y: Exf ): Ex<'float'>;
+  <T extends GLSLGenType>( x: Ex<T>, y: Ex<T> ): Ex<T>;
+} = __callFn( 'pow' ) as any;
 
-export function defIn<T extends string>( type: T, location: number = 0 ): Tok<T> {
-  const token = genToken();
-  insertTop( `layout (location = ${location}) in ${type} ${token};` );
-  return token as Tok<T>;
-}
+export const sqrt: {
+  ( x: Exf ): Ex<'float'>;
+  <T extends GLSLGenType>( x: Ex<T> ): Ex<T>;
+} = __callFn( 'sqrt' ) as any;
 
-export function defInNamed<T extends string>( type: T, name: string ): Tok<T> {
-  insertTop( `in ${type} ${name};` );
-  return name as Tok<T>;
-}
+export const log: {
+  ( x: Exf ): Ex<'float'>;
+  <T extends GLSLGenType>( x: Ex<T> ): Ex<T>;
+} = __callFn( 'log' ) as any;
 
-export function defOut<T extends string>( type: T, location: number = 0 ): Tok<T> {
-  const token = genToken();
-  insertTop( `layout (location = ${location}) out ${type} ${token};` );
-  return token as Tok<T>;
-}
+export const log2: {
+  ( x: Exf ): Ex<'float'>;
+  <T extends GLSLGenType>( x: Ex<T> ): Ex<T>;
+} = __callFn( 'log2' ) as any;
 
-export function defOutNamed<T extends string>( type: T, name: string ): Tok<T> {
-  insertTop( `out ${type} ${name};` );
-  return name as Tok<T>;
-}
+export const exp: {
+  ( x: Exf ): Ex<'float'>;
+  <T extends GLSLGenType>( x: Ex<T> ): Ex<T>;
+} = __callFn( 'exp' ) as any;
 
-export function defUniform<T extends string>( type: T, name: string ): Tok<T> {
-  insertTop( `uniform ${type} ${name};` );
-  return name as Tok<T>;
-}
+export const floor: {
+  ( x: Exf ): Ex<'float'>;
+  <T extends GLSLGenType>( x: Ex<T> ): Ex<T>;
+} = __callFn( 'floor' ) as any;
 
-export function assign<T extends string>( dst: Tok<T>, src: Ex<T> ): void {
-  insert( `${dst}=${src};` );
-}
+export const fract: {
+  ( x: Exf ): Ex<'float'>;
+  <T extends GLSLGenType>( x: Ex<T> ): Ex<T>;
+} = __callFn( 'fract' ) as any;
 
-export function addAssign( dst: Tok<'float'> | Tok<'vec2'> | Tok<'vec3'> | Tok<'vec4'>, src: Exf ): void;
-export function addAssign( dst: Tok<'vec2'>, src: Ex<'vec2'> ): void;
-export function addAssign( dst: Tok<'vec3'>, src: Ex<'vec3'> ): void;
-export function addAssign( dst: Tok<'vec4'>, src: Ex<'vec4'> ): void;
-export function addAssign( dst: string, src: string | number ): void {
-  insert( `${dst}+=${num( src )};` );
-}
+export const mod: {
+  ( x: Exf, y: Exf ): Ex<'float'>;
+  <T extends GLSLGenType>( x: Ex<T>, y: Exf ): Ex<T>;
+  <T extends GLSLGenType>( x: Ex<T>, y: Ex<T> ): Ex<T>;
+} = __callFn( 'mod' ) as any;
 
-export function subAssign( dst: Tok<'float'> | Tok<'vec2'> | Tok<'vec3'> | Tok<'vec4'>, src: Exf ): void;
-export function subAssign( dst: Tok<'vec2'>, src: Ex<'vec2'> ): void;
-export function subAssign( dst: Tok<'vec3'>, src: Ex<'vec3'> ): void;
-export function subAssign( dst: Tok<'vec4'>, src: Ex<'vec4'> ): void;
-export function subAssign( dst: string, src: string | number ): void {
-  insert( `${dst}-=${num( src )};` );
-}
+export const abs: {
+  ( x: Exf ): Ex<'float'>;
+  <T extends GLSLGenType>( x: Ex<T> ): Ex<T>;
+} = __callFn( 'abs' ) as any;
 
-export function mulAssign( dst: Tok<'float'> | Tok<'vec2'> | Tok<'vec3'> | Tok<'vec4'>, src: Exf ): void;
-export function mulAssign( dst: Tok<'vec2'>, src: Ex<'vec2'> | Ex<'mat2'> ): void;
-export function mulAssign( dst: Tok<'vec3'>, src: Ex<'vec3'> | Ex<'mat3'> ): void;
-export function mulAssign( dst: Tok<'vec4'>, src: Ex<'vec4'> | Ex<'mat4'> ): void;
-export function mulAssign( dst: string, src: string | number ): void {
-  insert( `${dst}*=${num( src )};` );
-}
+export const sign: {
+  ( x: Exf ): Ex<'float'>;
+  <T extends GLSLGenType>( x: Ex<T> ): Ex<T>;
+} = __callFn( 'sign' ) as any;
 
-export function divAssign( dst: Tok<'float'> | Tok<'vec2'> | Tok<'vec3'> | Tok<'vec4'>, src: Exf ): void;
-export function divAssign( dst: Tok<'vec2'>, src: Ex<'vec2'> ): void;
-export function divAssign( dst: Tok<'vec3'>, src: Ex<'vec3'> ): void;
-export function divAssign( dst: Tok<'vec4'>, src: Ex<'vec4'> ): void;
-export function divAssign( dst: string, src: string | number ): void {
-  insert( `${dst}/=${num( src )};` );
-}
+export const sin: {
+  ( x: Exf ): Ex<'float'>;
+  <T extends GLSLGenType>( x: Ex<T> ): Ex<T>;
+} = __callFn( 'sin' ) as any;
 
-export function add( ...args: Exf[] ): Ex<'float'>;
-export function add( ...args: ( Exf | Ex<'vec2'> )[] ): Ex<'vec2'>;
-export function add( ...args: ( Exf | Ex<'vec3'> )[] ): Ex<'vec3'>;
-export function add( ...args: ( Exf | Ex<'vec4'> )[] ): Ex<'vec4'>;
-export function add( ...args: ( string | number )[] ): string {
-  return `(${args.map( ( val ) => num( val ) ).join( '+' )})`;
-}
+export const cos: {
+  ( x: Exf ): Ex<'float'>;
+  <T extends GLSLGenType>( x: Ex<T> ): Ex<T>;
+} = __callFn( 'cos' ) as any;
 
-export function sub( ...args: Exf[] ): Ex<'float'>;
-export function sub( ...args: ( Exf | Ex<'vec2'> )[] ): Ex<'vec2'>;
-export function sub( ...args: ( Exf | Ex<'vec3'> )[] ): Ex<'vec3'>;
-export function sub( ...args: ( Exf | Ex<'vec4'> )[] ): Ex<'vec4'>;
-export function sub( ...args: ( string | number )[] ): string {
-  return `(${args.map( ( val ) => num( val ) ).join( '-' )})`;
-}
+export const tan: {
+  ( x: Exf ): Ex<'float'>;
+  <T extends GLSLGenType>( x: Ex<T> ): Ex<T>;
+} = __callFn( 'tan' ) as any;
 
-export function mul( ...args: Exf[] ): Ex<'float'>;
-export function mul( ...args: ( Exf | Ex<'vec2'> | Ex<'mat2'> )[] ): Ex<'vec2'>;
-export function mul( ...args: ( Exf | Ex<'vec3'> | Ex<'mat3'> )[] ): Ex<'vec3'>;
-export function mul( ...args: ( Exf | Ex<'vec4'> | Ex<'mat4'> )[] ): Ex<'vec4'>;
-export function mul( ...args: ( string | number )[] ): string {
-  return `(${args.map( ( val ) => num( val ) ).join( '*' )})`;
-}
+export const asin: {
+  ( x: Exf ): Ex<'float'>;
+  <T extends GLSLGenType>( x: Ex<T> ): Ex<T>;
+} = __callFn( 'asin' ) as any;
 
-export function div( ...args: Exf[] ): Ex<'float'>;
-export function div( ...args: ( Exf | Ex<'vec2'> )[] ): Ex<'vec2'>;
-export function div( ...args: ( Exf | Ex<'vec3'> )[] ): Ex<'vec3'>;
-export function div( ...args: ( Exf | Ex<'vec4'> )[] ): Ex<'vec4'>;
-export function div( ...args: ( string | number )[] ): string {
-  return `(${args.map( ( val ) => num( val ) ).join( '/' )})`;
-}
+export const acos: {
+  ( x: Exf ): Ex<'float'>;
+  <T extends GLSLGenType>( x: Ex<T> ): Ex<T>;
+} = __callFn( 'acos' ) as any;
 
-export function neg( x: Exf ): Ex<'float'>;
-export function neg( x: Ex<'vec2'> ): Ex<'vec2'>;
-export function neg( x: Ex<'vec3'> ): Ex<'vec3'>;
-export function neg( x: Ex<'vec4'> ): Ex<'vec4'>;
-export function neg( x: string | number ): string {
-  return `(-${ x })`;
-}
+export const atan: {
+  ( x: Exf, y: Exf ): Ex<'float'>;
+  <T extends GLSLGenType>( x: Ex<T>, y: Ex<T> ): Ex<T>;
+} = __callFn( 'atan' ) as any;
 
-export function pow( x: Exf, y: Exf ): Ex<'float'>;
-export function pow( x: Ex<'vec2'>, y: Ex<'vec2'> ): Ex<'vec2'>;
-export function pow( x: Ex<'vec3'>, y: Ex<'vec3'> ): Ex<'vec3'>;
-export function pow( x: Ex<'vec4'>, y: Ex<'vec4'> ): Ex<'vec4'>;
-export function pow( x: string | number, y: string | number ): string {
-  return `pow(${num( x )},${num( y )})`;
-}
+export const length: {
+  <T extends 'vec2' | 'vec3' | 'vec4'>( x: Ex<T> ): Ex<'float'>;
+} = __callFn( 'length' ) as any;
 
-export function sqrt( x: Exf ): Ex<'float'>;
-export function sqrt( x: Ex<'vec2'> ): Ex<'vec2'>;
-export function sqrt( x: Ex<'vec3'> ): Ex<'vec3'>;
-export function sqrt( x: Ex<'vec4'> ): Ex<'vec4'>;
-export function sqrt( x: string | number ): string {
-  return `sqrt(${num( x )})`;
-}
+export const normalize: {
+  <T extends 'vec2' | 'vec3' | 'vec4'>( x: Ex<T> ): Ex<T>;
+} = __callFn( 'normalize' ) as any;
 
-export function log( x: Exf ): Ex<'float'>;
-export function log( x: Ex<'vec2'> ): Ex<'vec2'>;
-export function log( x: Ex<'vec3'> ): Ex<'vec3'>;
-export function log( x: Ex<'vec4'> ): Ex<'vec4'>;
-export function log( x: string | number ): string {
-  return `log(${num( x )})`;
-}
+export const dot: {
+  <T extends 'vec2' | 'vec3' | 'vec4'>( x: Ex<T>, y: Ex<T> ): Ex<'float'>;
+} = __callFn( 'dot' ) as any;
 
-export function log2( x: Exf ): Ex<'float'>;
-export function log2( x: Ex<'vec2'> ): Ex<'vec2'>;
-export function log2( x: Ex<'vec3'> ): Ex<'vec3'>;
-export function log2( x: Ex<'vec4'> ): Ex<'vec4'>;
-export function log2( x: string | number ): string {
-  return `log2(${num( x )})`;
-}
+export const cross: {
+  ( x: Ex<'vec3'>, y: Ex<'vec3'> ): Ex<'vec3'>;
+} = __callFn( 'cross' ) as any;
 
-export function exp( x: Exf ): Ex<'float'>;
-export function exp( x: Ex<'vec2'> ): Ex<'vec2'>;
-export function exp( x: Ex<'vec3'> ): Ex<'vec3'>;
-export function exp( x: Ex<'vec4'> ): Ex<'vec4'>;
-export function exp( x: string | number ): string {
-  return `exp(${num( x )})`;
-}
+export const reflect: {
+  <T extends 'vec2' | 'vec3' | 'vec4'>( i: Ex<T>, n: Ex<T> ): Ex<T>;
+} = __callFn( 'reflect' ) as any;
 
-export function floor( x: Exf ): Ex<'float'>;
-export function floor( x: Ex<'vec2'> ): Ex<'vec2'>;
-export function floor( x: Ex<'vec3'> ): Ex<'vec3'>;
-export function floor( x: Ex<'vec4'> ): Ex<'vec4'>;
-export function floor( x: string | number ): string {
-  return `floor(${num( x )})`;
-}
+export const refract: {
+  <T extends 'vec2' | 'vec3' | 'vec4'>( i: Ex<T>, n: Ex<T>, eta: Exf ): Ex<T>;
+} = __callFn( 'refract' ) as any;
 
-export function fract( x: Exf ): Ex<'float'>;
-export function fract( x: Ex<'vec2'> ): Ex<'vec2'>;
-export function fract( x: Ex<'vec3'> ): Ex<'vec3'>;
-export function fract( x: Ex<'vec4'> ): Ex<'vec4'>;
-export function fract( x: string | number ): string {
-  return `fract(${num( x )})`;
-}
+export const mix: {
+  ( a: Exf, b: Exf, t: Exf ): Ex<'float'>;
+  <T extends GLSLGenType>( a: Ex<T>, b: Ex<T>, t: Exf ): Ex<T>;
+  <T extends GLSLGenType>( a: Ex<T>, b: Ex<T>, t: Ex<T> ): Ex<T>;
+} = __callFn( 'mix' ) as any;
 
-export function mod( x: Exf, y: Exf ): Ex<'float'>;
-export function mod( x: Ex<'vec2'>, y: Exf | Ex<'vec2'> ): Ex<'vec2'>;
-export function mod( x: Ex<'vec3'>, y: Exf | Ex<'vec3'> ): Ex<'vec3'>;
-export function mod( x: Ex<'vec4'>, y: Exf | Ex<'vec4'> ): Ex<'vec4'>;
-export function mod( x: string | number, y: string | number ): string {
-  return `mod(${ num( x ) },${ num( y ) })`;
-}
+export const min: {
+  ( a: Exf, b: Exf ): Ex<'float'>;
+  <T extends GLSLGenType>( a: Ex<T>, b: Exf ): Ex<T>;
+  <T extends GLSLGenType>( a: Ex<T>, b: Ex<T> ): Ex<T>;
+} = __callFn( 'min' ) as any;
 
-export function abs( x: Exf ): Ex<'float'>;
-export function abs( x: Ex<'vec2'> ): Ex<'vec2'>;
-export function abs( x: Ex<'vec3'> ): Ex<'vec3'>;
-export function abs( x: Ex<'vec4'> ): Ex<'vec4'>;
-export function abs( x: string | number ): string {
-  return `abs(${num( x )})`;
-}
+export const max: {
+  ( a: Exf, b: Exf ): Ex<'float'>;
+  <T extends GLSLGenType>( a: Ex<T>, b: Exf ): Ex<T>;
+  <T extends GLSLGenType>( a: Ex<T>, b: Ex<T> ): Ex<T>;
+} = __callFn( 'max' ) as any;
 
-export function sign( x: Exf ): Ex<'float'>;
-export function sign( x: Ex<'vec2'> ): Ex<'vec2'>;
-export function sign( x: Ex<'vec3'> ): Ex<'vec3'>;
-export function sign( x: Ex<'vec4'> ): Ex<'vec4'>;
-export function sign( x: string | number ): string {
-  return `sign(${num( x )})`;
-}
+export const clamp: {
+  ( x: Exf, min: Exf, max: Exf ): Ex<'float'>;
+  <T extends GLSLGenType>( x: Ex<T>, min: Exf, max: Exf ): Ex<T>;
+  <T extends GLSLGenType>( x: Ex<T>, min: Ex<T>, max: Ex<T> ): Ex<T>;
+} = __callFn( 'clamp' ) as any;
 
-export function sin( x: Exf ): Ex<'float'>;
-export function sin( x: Ex<'vec2'> ): Ex<'vec2'>;
-export function sin( x: Ex<'vec3'> ): Ex<'vec3'>;
-export function sin( x: Ex<'vec4'> ): Ex<'vec4'>;
-export function sin( x: string | number ): string {
-  return `sin(${num( x )})`;
-}
+export const step: {
+  ( edge: Exf, x: Exf ): Ex<'float'>;
+  <T extends GLSLGenType>( edge: Exf, x: Ex<T> ): Ex<T>;
+  <T extends GLSLGenType>( edge: Ex<T>, x: Ex<T> ): Ex<T>;
+} = __callFn( 'step' ) as any;
 
-export function cos( x: Exf ): Ex<'float'>;
-export function cos( x: Ex<'vec2'> ): Ex<'vec2'>;
-export function cos( x: Ex<'vec3'> ): Ex<'vec3'>;
-export function cos( x: Ex<'vec4'> ): Ex<'vec4'>;
-export function cos( x: string | number ): string {
-  return `cos(${num( x )})`;
-}
+export const texture: {
+  ( sampler: Ex<'sampler2D'>, x: Ex<'vec2'> ): Ex<'vec4'>;
+} = __callFn( 'texture' ) as any;
 
-export function tan( x: Exf ): Ex<'float'>;
-export function tan( x: Ex<'vec2'> ): Ex<'vec2'>;
-export function tan( x: Ex<'vec3'> ): Ex<'vec3'>;
-export function tan( x: Ex<'vec4'> ): Ex<'vec4'>;
-export function tan( x: string | number ): string {
-  return `tan(${num( x )})`;
-}
+export const float: {
+  ( val: Exf ): Ex<'float'>;
+} = __callFn( 'float' ) as any;
 
-export function asin( x: Exf ): Ex<'float'>;
-export function asin( x: Ex<'vec2'> ): Ex<'vec2'>;
-export function asin( x: Ex<'vec3'> ): Ex<'vec3'>;
-export function asin( x: Ex<'vec4'> ): Ex<'vec4'>;
-export function asin( x: string | number ): string {
-  return `asin(${num( x )})`;
-}
+type Vec2Args = [ Exf, Exf ] | [ Ex<'vec2'> ];
+export const vec2: {
+  ( ...args: Vec2Args ): Ex<'vec2'>;
+  ( scalar: Exf ): Ex<'vec2'>;
+} = __callFn( 'vec2' ) as any;
 
-export function acos( x: Exf ): Ex<'float'>;
-export function acos( x: Ex<'vec2'> ): Ex<'vec2'>;
-export function acos( x: Ex<'vec3'> ): Ex<'vec3'>;
-export function acos( x: Ex<'vec4'> ): Ex<'vec4'>;
-export function acos( x: string | number ): string {
-  return `acos(${num( x )})`;
-}
+type Vec3Args = [ ...Vec2Args, Exf ] | [ Exf, ...Vec2Args ] | [ Ex<'vec3'> ];
+export const vec3: {
+  ( ...args: Vec3Args ): Ex<'vec3'>;
+  ( scalar: Exf ): Ex<'vec3'>;
+} = __callFn( 'vec3' ) as any;
 
-export function atan( y: Exf, x: Exf ): Ex<'float'>;
-export function atan( y: Ex<'vec2'>, x: Ex<'vec2'> ): Ex<'vec2'>;
-export function atan( y: Ex<'vec3'>, x: Ex<'vec3'> ): Ex<'vec3'>;
-export function atan( y: Ex<'vec4'>, x: Ex<'vec4'> ): Ex<'vec4'>;
-export function atan( y: string | number, x: string | number ): string {
-  return `atan(${ num( y ) }, ${ num( x ) })`;
-}
+type Vec4Args = [ ...Vec3Args, Exf ] | [ ...Vec2Args, ...Vec2Args ] | [ Exf, ...Vec3Args ] | [ Ex<'vec4'> ];
+export const vec4: {
+  ( ...args: Vec4Args ): Ex<'vec4'>;
+  ( scalar: Exf ): Ex<'vec4'>;
+} = __callFn( 'vec4' ) as any;
 
-export function tern( cond: Ex<'bool'>, truthy: Exf, falsy: Exf ): Ex<'float'>;
-export function tern( cond: Ex<'bool'>, truthy: Ex<'vec2'>, falsy: Ex<'vec2'> ): Ex<'vec2'>;
-export function tern( cond: Ex<'bool'>, truthy: Ex<'vec3'>, falsy: Ex<'vec3'> ): Ex<'vec3'>;
-export function tern( cond: Ex<'bool'>, truthy: Ex<'vec4'>, falsy: Ex<'vec4'> ): Ex<'vec4'>;
-export function tern(
-  cond: string,
-  truthy: string | number,
-  falsy: string | number
-): string {
-  return `(${cond}?${num( truthy )}:${num( falsy )})`;
-}
-
-export function length( val: Ex<'vec2'> ): Ex<'float'>;
-export function length( val: Ex<'vec3'> ): Ex<'float'>;
-export function length( val: Ex<'vec4'> ): Ex<'float'>;
-export function length( val: string ): string {
-  return `length(${val})`;
-}
-
-export function normalize( val: Ex<'vec2'> ): Ex<'vec2'>;
-export function normalize( val: Ex<'vec3'> ): Ex<'vec3'>;
-export function normalize( val: Ex<'vec4'> ): Ex<'vec4'>;
-export function normalize( val: string ): string {
-  return `normalize(${val})`;
-}
-
-export function dot( a: Ex<'vec2'>, b: Ex<'vec2'> ): Ex<'float'>;
-export function dot( a: Ex<'vec3'>, b: Ex<'vec3'> ): Ex<'float'>;
-export function dot( a: Ex<'vec4'>, b: Ex<'vec4'> ): Ex<'float'>;
-export function dot( a: string, b: string ): string {
-  return `dot(${ a },${ b })`;
-}
-
-export function cross( a: Ex<'vec3'>, b: Ex<'vec3'> ): Ex<'vec3'>;
-export function cross( a: string, b: string ): string {
-  return `cross(${ a },${ b })`;
-}
-
-export function reflect( i: Ex<'vec2'>, n: Ex<'vec2'> ): Ex<'vec2'>;
-export function reflect( i: Ex<'vec3'>, n: Ex<'vec3'> ): Ex<'vec3'>;
-export function reflect( i: Ex<'vec4'>, n: Ex<'vec4'> ): Ex<'vec4'>;
-export function reflect( i: string, n: string ): string {
-  return `reflect(${ i },${ n })`;
-}
-
-export function refract( i: Ex<'vec2'>, n: Ex<'vec2'>, eta: Exf ): Ex<'vec2'>;
-export function refract( i: Ex<'vec3'>, n: Ex<'vec3'>, eta: Exf ): Ex<'vec3'>;
-export function refract( i: Ex<'vec4'>, n: Ex<'vec4'>, eta: Exf ): Ex<'vec4'>;
-export function refract( i: string, n: string, eta: string | number ): string {
-  return `refract(${ i },${ n },${ num( eta ) })`;
-}
-
-export function mix( a: Exf, b: Exf, t: Exf ): Ex<'float'>;
-export function mix( a: Ex<'vec2'>, b: Ex<'vec2'>, t: Exf ): Ex<'vec2'>;
-export function mix( a: Ex<'vec2'>, b: Ex<'vec2'>, t: Ex<'vec2'> ): Ex<'vec2'>;
-export function mix( a: Ex<'vec3'>, b: Ex<'vec3'>, t: Exf ): Ex<'vec3'>;
-export function mix( a: Ex<'vec3'>, b: Ex<'vec3'>, t: Ex<'vec3'> ): Ex<'vec3'>;
-export function mix( a: Ex<'vec4'>, b: Ex<'vec4'>, t: Exf ): Ex<'vec4'>;
-export function mix( a: Ex<'vec4'>, b: Ex<'vec4'>, t: Ex<'vec4'> ): Ex<'vec4'>;
-export function mix( a: string | number, b: string | number, t: string | number ): string {
-  return `mix(${num( a )},${num( b )},${num( t )})`;
-}
-
-export function min( x: Exf, y: Exf ): Ex<'float'>;
-export function min( x: Ex<'vec2'>, y: Exf ): Ex<'vec2'>;
-export function min( x: Ex<'vec2'>, y: Ex<'vec2'> ): Ex<'vec2'>;
-export function min( x: Ex<'vec3'>, y: Exf ): Ex<'vec3'>;
-export function min( x: Ex<'vec3'>, y: Ex<'vec3'> ): Ex<'vec3'>;
-export function min( x: Ex<'vec4'>, y: Exf ): Ex<'vec4'>;
-export function min( x: Ex<'vec4'>, y: Ex<'vec4'> ): Ex<'vec4'>;
-export function min( x: string | number, y: string | number ): string {
-  return `min(${num( x )},${num( y )})`;
-}
-
-export function max( x: Exf, y: Exf ): Ex<'float'>;
-export function max( x: Ex<'vec2'>, y: Exf ): Ex<'vec2'>;
-export function max( x: Ex<'vec2'>, y: Ex<'vec2'> ): Ex<'vec2'>;
-export function max( x: Ex<'vec3'>, y: Exf ): Ex<'vec3'>;
-export function max( x: Ex<'vec3'>, y: Ex<'vec3'> ): Ex<'vec3'>;
-export function max( x: Ex<'vec4'>, y: Exf ): Ex<'vec4'>;
-export function max( x: Ex<'vec4'>, y: Ex<'vec4'> ): Ex<'vec4'>;
-export function max( x: string | number, y: string | number ): string {
-  return `max(${num( x )},${num( y )})`;
-}
-
-export function clamp( x: Exf, min: Exf, max: Exf ): Ex<'float'>;
-export function clamp( x: Ex<'vec2'>, min: Exf, max: Exf ): Ex<'vec2'>;
-export function clamp( x: Ex<'vec2'>, min: Ex<'vec2'>, max: Ex<'vec2'> ): Ex<'vec2'>;
-export function clamp( x: Ex<'vec3'>, min: Exf, max: Exf ): Ex<'vec3'>;
-export function clamp( x: Ex<'vec3'>, min: Ex<'vec3'>, max: Ex<'vec3'> ): Ex<'vec3'>;
-export function clamp( x: Ex<'vec4'>, min: Exf, max: Exf ): Ex<'vec4'>;
-export function clamp( x: Ex<'vec4'>, min: Ex<'vec4'>, max: Ex<'vec4'> ): Ex<'vec4'>;
-export function clamp( x: string | number, min: string | number, max: string | number ): string {
-  return `clamp(${ num( x ) },${ num( min ) },${ num( max ) })`;
-}
-
-export function step( edge: Exf, x: Exf ): Ex<'float'>;
-export function step( edge: Exf | Ex<'vec2'>, x: Ex<'vec2'> ): Ex<'vec2'>;
-export function step( edge: Exf | Ex<'vec3'>, x: Ex<'vec3'> ): Ex<'vec3'>;
-export function step( edge: Exf | Ex<'vec4'>, x: Ex<'vec4'> ): Ex<'vec4'>;
-export function step( edge: string | number, x: string | number ): string {
-  return `step(${ num( edge ) },${ num( x ) })`;
-}
-
-export function texture( sampler: Ex<'sampler2D'>, uv: Ex<'vec2'> ): Ex<'vec4'>;
-export function texture( sampler: string, uv: string ): string {
-  return `texture(${ sampler },${ uv })`;
-}
-
-export function eq( x: Exf, y: Exf ): Ex<'bool'>;
-export function eq( x: Ex<'vec2'>, y: Ex<'vec2'> ): Ex<'bool'>;
-export function eq( x: Ex<'vec3'>, y: Ex<'vec3'> ): Ex<'bool'>;
-export function eq( x: Ex<'vec4'>, y: Ex<'vec4'> ): Ex<'bool'>;
-export function eq( x: string | number, y: string | number ): string {
-  return `(${num( x )}==${num( y )})`;
-}
-
-export function neq( x: Exf, y: Exf ): Ex<'bool'>;
-export function neq( x: Ex<'vec2'>, y: Ex<'vec2'> ): Ex<'bool'>;
-export function neq( x: Ex<'vec3'>, y: Ex<'vec3'> ): Ex<'bool'>;
-export function neq( x: Ex<'vec4'>, y: Ex<'vec4'> ): Ex<'bool'>;
-export function neq( x: string | number, y: string | number ): string {
-  return `(${num( x )}!=${num( y )})`;
-}
-
-export function lt( x: Exf, y: Exf ): Ex<'bool'>;
-export function lt( x: string | number, y: string | number ): string {
-  return `(${num( x )}<${num( y )})`;
-}
-
-export function lte( x: Exf, y: Exf ): Ex<'bool'>;
-export function lte( x: string | number, y: string | number ): string {
-  return `(${num( x )}<=${num( y )})`;
-}
-
-export function gt( x: Exf, y: Exf ): Ex<'bool'>;
-export function gt( x: string | number, y: string | number ): string {
-  return `(${num( x )}>${num( y )})`;
-}
-
-export function gte( x: Exf, y: Exf ): Ex<'bool'>;
-export function gte( x: string | number, y: string | number ): string {
-  return `(${num( x )}>=${num( y )})`;
-}
-
-export function float( val: string | number ): Ex<'float'> {
-  return `float(${val})` as Ex<'float'>;
-}
-
-export function vec2( ...args: ( string | number )[] ): Ex<'vec2'> {
-  return `vec2(${args.join( ',' )})` as Ex<'vec2'>;
-}
-
-export function vec3( ...args: ( string | number )[] ): Ex<'vec3'> {
-  return `vec3(${args.join( ',' )})` as Ex<'vec3'>;
-}
-
-export function vec4( ...args: ( string | number )[] ): Ex<'vec4'> {
-  return `vec4(${args.join( ',' )})` as Ex<'vec4'>;
-}
-
-export function mat2( ...args: ( string | number )[] ): Ex<'mat2'> {
-  return `mat2(${args.join( ',' )})` as Ex<'mat2'>;
-}
-
-export function mat3( ...args: ( string | number )[] ): Ex<'mat3'> {
-  return `mat3(${args.join( ',' )})` as Ex<'mat3'>;
-}
-
-export function mat4( ...args: ( string | number )[] ): Ex<'mat4'> {
-  return `mat4(${args.join( ',' )})` as Ex<'mat4'>;
-}
-
-/* eslint-disable max-len */
-export function swizzle( val: Tok<'vec2'>, swizzle: SwizzleComponentVec2 ): Tok<'float'>;
-export function swizzle( val: Tok<'vec2'>, swizzle: Swizzle2ComponentsVec2 ): Tok<'vec2'>;
-export function swizzle( val: Tok<'vec2'>, swizzle: Swizzle3ComponentsVec2 ): Tok<'vec3'>;
-export function swizzle( val: Tok<'vec2'>, swizzle: Swizzle4ComponentsVec2 ): Tok<'vec4'>;
-export function swizzle( val: Tok<'vec3'>, swizzle: SwizzleComponentVec3 ): Tok<'float'>;
-export function swizzle( val: Tok<'vec3'>, swizzle: Swizzle2ComponentsVec3 ): Tok<'vec2'>;
-export function swizzle( val: Tok<'vec3'>, swizzle: Swizzle3ComponentsVec3 ): Tok<'vec3'>;
-export function swizzle( val: Tok<'vec3'>, swizzle: Swizzle4ComponentsVec3 ): Tok<'vec4'>;
-export function swizzle( val: Tok<'vec4'>, swizzle: SwizzleComponentVec4 ): Tok<'float'>;
-export function swizzle( val: Tok<'vec4'>, swizzle: Swizzle2ComponentsVec4 ): Tok<'vec2'>;
-export function swizzle( val: Tok<'vec4'>, swizzle: Swizzle3ComponentsVec4 ): Tok<'vec3'>;
-export function swizzle( val: Tok<'vec4'>, swizzle: Swizzle4ComponentsVec4 ): Tok<'vec4'>;
-export function swizzle( val: Ex<'vec2'>, swizzle: SwizzleComponentVec2 ): Ex<'float'>;
-export function swizzle( val: Ex<'vec2'>, swizzle: Swizzle2ComponentsVec2 ): Ex<'vec2'>;
-export function swizzle( val: Ex<'vec2'>, swizzle: Swizzle3ComponentsVec2 ): Ex<'vec3'>;
-export function swizzle( val: Ex<'vec2'>, swizzle: Swizzle4ComponentsVec2 ): Ex<'vec4'>;
-export function swizzle( val: Ex<'vec3'>, swizzle: SwizzleComponentVec3 ): Ex<'float'>;
-export function swizzle( val: Ex<'vec3'>, swizzle: Swizzle2ComponentsVec3 ): Ex<'vec2'>;
-export function swizzle( val: Ex<'vec3'>, swizzle: Swizzle3ComponentsVec3 ): Ex<'vec3'>;
-export function swizzle( val: Ex<'vec3'>, swizzle: Swizzle4ComponentsVec3 ): Ex<'vec4'>;
-export function swizzle( val: Ex<'vec4'>, swizzle: SwizzleComponentVec4 ): Ex<'float'>;
-export function swizzle( val: Ex<'vec4'>, swizzle: Swizzle2ComponentsVec4 ): Ex<'vec2'>;
-export function swizzle( val: Ex<'vec4'>, swizzle: Swizzle3ComponentsVec4 ): Ex<'vec3'>;
-export function swizzle( val: Ex<'vec4'>, swizzle: Swizzle4ComponentsVec4 ): Ex<'vec4'>;
-/* eslint-enable max-len */
-export function swizzle( val: string, swizzle: string ): string {
-  return `${val}.${swizzle}`;
-}
+// TODO: type
+export const mat2 = __callFn( 'mat2' );
+export const mat3 = __callFn( 'mat3' );
+export const mat4 = __callFn( 'mat4' );
 
 export function discard(): void {
   insert( 'discard;' );
@@ -632,7 +599,7 @@ export function defFn<T extends string, TArgs extends string[]>(
 
   insertTop( `${returnType} ${token}(${argsStatement}){${ procedure }}` );
 
-  return ( ...args ) => `${token}(${args.join( ',' )})` as Ex<T>;
+  return __callFn( token ) as any;
 }
 
 export function main( builder: () => void ): void {

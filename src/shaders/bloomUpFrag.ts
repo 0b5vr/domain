@@ -1,4 +1,4 @@
-import { GLSLExpression, GLSLFloatExpression, add, addAssign, assign, build, clamp, def, defInNamed, defOut, defUniform, div, insert, main, mix, mul, pow, sub, swizzle, texture, vec2, vec4 } from '../shader-builder/shaderBuilder';
+import { GLSLExpression, GLSLFloatExpression, add, addAssign, assign, build, clamp, def, defInNamed, defOut, defUniformNamed, div, insert, main, mix, mul, pow, sub, sw, texture, vec2, vec4 } from '../shader-builder/shaderBuilder';
 
 export const bloomUpFrag = build( () => {
   insert( 'precision highp float;' );
@@ -11,9 +11,9 @@ export const bloomUpFrag = build( () => {
 
   const fragColor = defOut( 'vec4' );
 
-  const level = defUniform( 'float', 'level' );
-  const resolution = defUniform( 'vec2', 'resolution' );
-  const sampler0 = defUniform( 'sampler2D', 'sampler0' );
+  const level = defUniformNamed( 'float', 'level' );
+  const resolution = defUniformNamed( 'vec2', 'resolution' );
+  const sampler0 = defUniformNamed( 'sampler2D', 'sampler0' );
 
   main( () => {
     const p = def( 'float', pow( 0.5, level ) ); // 1.0, 0.5, 0.25...
@@ -45,7 +45,7 @@ export const bloomUpFrag = build( () => {
     sample( WEIGHT_2, vec2(  0.0,  1.0 ) );
     sample( WEIGHT_1, vec2(  1.0,  1.0 ) );
 
-    const col = swizzle( accum, 'rgb' );
+    const col = sw( accum, 'rgb' );
     assign( fragColor, vec4( col, 1.0 ) );
   } );
 } );
