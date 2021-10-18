@@ -1,13 +1,9 @@
-import { cache, genToken, insertTop } from '../../shader-builder/shaderBuilder';
+import { GLSLExpression, GLSLFloatExpression, div, floor, mul, num } from '../../shader-builder/shaderBuilder';
 
-const symbol = Symbol();
-
-export function glslLofi( x: string, y: string ): string {
-  const lofi = cache( symbol, () => {
-    const token = genToken();
-    insertTop( `\n#define ${ token }(x,y) floor((x)/(y)*(y))\n` );
-    return ( x: string, y: string ) => `(${ token }(${ x },${ y }))`;
-  } );
-
-  return lofi( x, y );
+export function glslLofi( x: GLSLFloatExpression, y: GLSLFloatExpression ): GLSLExpression<'float'>;
+export function glslLofi( x: GLSLExpression<'vec2'>, y: GLSLExpression<'vec2'> | GLSLFloatExpression ): GLSLExpression<'vec2'>;
+export function glslLofi( x: GLSLExpression<'vec3'>, y: GLSLExpression<'vec3'> | GLSLFloatExpression ): GLSLExpression<'vec3'>;
+export function glslLofi( x: GLSLExpression<'vec4'>, y: GLSLExpression<'vec4'> | GLSLFloatExpression ): GLSLExpression<'vec4'>;
+export function glslLofi( x: string | number, y: string | number ): string {
+  return mul( floor( div( num( x ), num( y ) ) ), num( y ) );
 }

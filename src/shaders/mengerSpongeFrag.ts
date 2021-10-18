@@ -1,16 +1,15 @@
 import { INV_PI } from '../utils/constants';
-import { add, addAssign, assign, build, def, defFn, defInNamed, defOutNamed, defUniform, discard, div, dot, glFragCoord, glFragDepth, gt, ifThen, insert, length, main, max, mix, mul, neg, normalize, retFn, sin, step, sub, subAssign, swizzle, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { abs, add, addAssign, assign, build, def, defFn, defInNamed, defOutNamed, defUniform, discard, div, dot, glFragCoord, glFragDepth, gt, ifThen, insert, length, main, max, mod, mul, neg, normalize, retFn, sin, step, sub, swizzle, texture, unrollLoop, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { brdfGGX } from './modules/brdfGGX';
 import { calcDepth } from './modules/calcDepth';
 import { calcNormal } from './modules/calcNormal';
-import { calcSS } from './modules/calcSS';
-import { cyclicNoise } from './modules/cyclicNoise';
 import { glslDefRandom } from './modules/glslDefRandom';
 import { raymarch } from './modules/raymarch';
 import { sdbox } from './modules/sdbox';
 import { setupRoRd } from './modules/setupRoRd';
+import { sortVec3Components } from './modules/sortVec3Components';
 
-export const sssBoxFrag = ( tag: 'forward' | 'depth' ): string => build( () => {
+export const mengerSpongeFrag = ( tag: 'forward' | 'depth' ): string => build( () => {
   insert( 'precision highp float;' );
 
   const vPositionWithoutModel = defInNamed( 'vec4', 'vPositionWithoutModel' );
@@ -31,13 +30,16 @@ export const sssBoxFrag = ( tag: 'forward' | 'depth' ): string => build( () => {
 
   const map = defFn( 'vec4', [ 'vec3' ], ( p ) => {
     // const d = def( 'float', sub( length( p ), 0.1 ) );
-    const noise = cyclicNoise( {
-      p: add( mul( p, 5.0 ), time ),
-      freq: 1.3,
+    const d = def( 'float', sdbox( p, vec3( 0.5 ) ) );
+
+    let scale = 1.0;
+    unrollLoop( 4, () => {
+      const pt = def( 'vec3', abs( sub( mod( add( p, scale / 2.0 ), scale ), scale / 2.0 ) ) );
+      assign( pt, sortVec3Components( pt ) );
+      assign( d, max( d, neg( sdbox( pt, vec3( scale / 6.0, scale / 6.0, 9 ) ) ) ) );
+      scale /= 3.0;
     } );
-    addAssign( p, mul( 0.1, noise ) );
-    const d = def( 'float', sdbox( p, vec3( 0.33 ) ) );
-    subAssign( d, 0.07 );
+
     retFn( vec4( d, step( 0.0, sin( dot( vec4( p, time ), vec4( 10.0 ) ) ) ), 0, 0 ) );
   } );
 
@@ -74,26 +76,15 @@ export const sssBoxFrag = ( tag: 'forward' | 'depth' ): string => build( () => {
       const V = def( 'vec3', neg( rd ) );
       const N = def( 'vec3', calcNormal( { rp, map } ) );
 
-      const baseColor = vec3( 0.9, 0.7, 0.4 );
-      const subsurfaceColor = vec3( 0.7, 0.04, 0.04 );
-      const lightGain = mul( 4.0, vec3( 0.8, 0.82, 0.9 ) );
+      const baseColor = vec3( 0.5, 0.6, 0.7 );
+      const lightGain = vec3( 1.0 );
       const dotNL = def( 'float', max( dot( L, N ), 0.0 ) );
       const irradiance = def( 'vec3', mul( lightGain, dotNL ) );
 
       const diffuse = mul( irradiance, baseColor, INV_PI );
-      const ss = mul(
-        lightGain,
-        subsurfaceColor,
-        calcSS( { rp, V, L, N, map, intensity: 2.0 } ),
-        INV_PI
-      );
-      addAssign( col, mix(
-        mul( diffuse ),
-        ss,
-        0.5
-      ) );
+      addAssign( col, diffuse );
 
-      const specular = mul( irradiance, brdfGGX( L, V, N, baseColor, 0.1, 0.2 ) );
+      const specular = mul( irradiance, brdfGGX( L, V, N, baseColor, 0.7, 0.9 ) );
       addAssign( col, specular );
 
       assign( fragColor, vec4( col, 1.0 ) );
