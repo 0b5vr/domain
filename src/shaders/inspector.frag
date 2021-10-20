@@ -13,80 +13,78 @@ uniform vec2 resolution;
 uniform vec2 mouse;
 uniform sampler2D sampler0;
 
-bool print( in vec2 _coord, float _in ) {
-  vec2 coord = _coord;
+bool print( vec2 coord, float value ) {
+  ivec2 icoord = ivec2( floor( coord ) );
 
   // vertical restriction
-  if ( coord.y <= 0.0 || 5.0 <= coord.y ) { return false; }
+  if ( icoord.y < 0 || 4 < icoord.y ) { return false; }
 
   // dot
-  if ( 0.0 < coord.x && coord.x < 2.0 ) {
-    return coord.x < 1.0 && coord.y < 1.0;
+  if ( 0 <= icoord.x && icoord.x < 2 ) {
+    return icoord.x < 1 && icoord.y < 1;
   }
 
   // padded by dot
-  if ( 2.0 < coord.x ) { coord.x -= 2.0; }
+  if ( 2 <= icoord.x ) { icoord.x -= 2; }
 
   // determine digit
-  float ci = floor( coord.x / 5.0 ) + 1.0;
+  int ci = ( icoord.x + 100 ) / 5 - 20 + 1;
 
   // too low / too high
-  if ( 4.0 < ci ) { return false; }
-  if ( ci < -4.0 ) { return false; }
+  if ( 4 < ci ) { return false; }
+  if ( ci < -4 ) { return false; }
 
-  // x of char
-  float cfx = floor( mod( coord.x, 5.0 ) );
+  // x, y of char
+  ivec2 cf = ivec2(
+    ( icoord.x + 100 ) % 5,
+    icoord.y
+  );
 
   // width is 4
-  if ( 4.0 == cfx ) { return false; }
-
-  // y of char
-  float cfy = floor( coord.y );
+  if ( 4 == cf.x ) { return false; }
 
   // bit of char
-  float cf = cfx + 4.0 * cfy;
+  int cfbit = cf.x + 4 * cf.y;
 
   // determine char
-  float num = 0.0;
-  if ( 0.0 < ci ) {
-    float n = abs( _in );
-    for ( int i = 0; i < 6; i ++ ) {
-      if ( ci < float( i ) ) { break; }
+  int num = 0;
+  float n = abs( value );
 
-      num = mod( floor( n ), 10.0 );
-      n -= num;
+  if ( 0 < ci ) {
+    // int part
+    for ( int i = 0; i < 6; i ++ ) {
+      if ( ci < i ) { break; }
+
+      num = int( n ) % 10;
       n *= 10.0;
     }
   } else {
-    float n = abs( _in );
+    // frac part
     for ( int i = 0; i < 6; i ++ ) {
-      if ( -ci < float( i ) ) { break; }
+      if ( -ci < i ) { break; }
 
-      if ( ci != 0.0 && n < 1.0 ) {
+      if ( i != 0 && n < 1.0 ) {
         // minus
-        return float( i ) == -ci && _in < 0.0 && cfy == 2.0 && 0.0 < cfx;
+        return i == -ci && value < 0.0 && cf.y == 2 && 0 < cf.x;
       }
-      num = mod( floor( n ), 10.0 );
-      n -= num;
+
+      num = int( n ) % 10;
       n /= 10.0;
     }
   }
 
-  bool a;
-  a = 1.0 == mod( floor( (
-    num == 0.0 ? 432534.0 :
-    num == 1.0 ? 410692.0 :
-    num == 2.0 ? 493087.0 :
-    num == 3.0 ? 493191.0 :
-    num == 4.0 ? 630408.0 :
-    num == 5.0 ? 989063.0 :
-    num == 6.0 ? 399254.0 :
-    num == 7.0 ? 1016898.0 :
-    num == 8.0 ? 431766.0 :
-    433798.0
-  ) / pow( 2.0, cf ) ), 2.0 );
-
-  return a ? true : false;
+  return ( 1 & ( (
+    num == 0 ? 432534 :
+    num == 1 ? 410692 :
+    num == 2 ? 493087 :
+    num == 3 ? 493191 :
+    num == 4 ? 630408 :
+    num == 5 ? 989063 :
+    num == 6 ? 399254 :
+    num == 7 ? 1016898 :
+    num == 8 ? 431766 :
+    433798
+  ) >> cfbit ) ) == 1;
 }
 
 void main() {
