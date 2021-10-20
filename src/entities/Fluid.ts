@@ -8,6 +8,7 @@ import { Mesh } from '../heck/components/Mesh';
 import { Quad } from '../heck/components/Quad';
 import { RawVector3, Swap, quatFromAxisAngle, vecNormalize } from '@0b5vr/experimental';
 import { colorFrag } from '../shaders/colorFrag';
+import { createLightUniformsLambda } from './utils/createLightUniformsLambda';
 import { createRaymarchCameraUniformsLambda } from './utils/createRaymarchCameraUniformsLambda';
 import { dummyRenderTarget } from '../globals/dummyRenderTarget';
 import { genCube } from '../geometries/genCube';
@@ -276,11 +277,13 @@ export class Fluid extends Entity {
     forward.addUniformTextures( 'samplerDensity', swapDensity.o.texture );
     forward.addUniformTextures( 'samplerVelocity', swapVelocity.o.texture );
 
+    const lambdaLightUniforms = createLightUniformsLambda( [ forward ] );
+
     const lambdaRaymarchCameraUniforms = createRaymarchCameraUniformsLambda( [ forward ] );
 
     const mesh = new Mesh( {
       geometry,
-      materials: { forward },
+      materials: { forward, cubemap: forward },
       name: process.env.DEV && 'mesh',
     } );
     this.transform.scale = [ 1.0, 1.0, 1.0 ];
@@ -308,6 +311,7 @@ export class Fluid extends Entity {
       quadResolvePressure,
       quadAdvectionVelocity,
       quadAdvectionDensity,
+      lambdaLightUniforms,
       lambdaRaymarchCameraUniforms,
       mesh,
     ];

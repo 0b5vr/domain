@@ -6,8 +6,10 @@ import { Quad } from '../heck/components/Quad';
 import { Swap } from '@0b5vr/experimental';
 import { dummyRenderTarget } from '../globals/dummyRenderTarget';
 import { quadGeometry } from '../globals/quadGeometry';
-import quadVert from '../shaders/quad.vert';
-import shadowBlurFrag from '../shaders/shadow-blur.frag';
+import { quadVert } from '../shaders/quadVert';
+import { shadowBlurFrag } from '../shaders/shadowBlurFrag';
+
+export const PointLightTag = Symbol();
 
 export interface PointLightEntityOptions extends EntityOptions {
   scenes: Entity[];
@@ -18,7 +20,7 @@ export interface PointLightEntityOptions extends EntityOptions {
   brtNamePrefix?: string;
 }
 
-export class LightEntity extends Entity {
+export class PointLightEntity extends Entity {
   public spotness: number = 0.0;
   public color: [ number, number, number ] = [ 1.0, 1.0, 1.0 ];
   public camera: PerspectiveCamera;
@@ -38,6 +40,8 @@ export class LightEntity extends Entity {
 
   public constructor( options: PointLightEntityOptions ) {
     super( options );
+
+    this.tags.push( PointLightTag );
 
     const swapOptions = {
       width: options.shadowMapSize ?? 1024,
@@ -78,10 +82,9 @@ export class LightEntity extends Entity {
     for ( let i = 0; i < 2; i ++ ) {
       const material = new Material(
         quadVert,
-        shadowBlurFrag,
+        shadowBlurFrag( i === 1 ),
         { initOptions: { geometry: quadGeometry, target: dummyRenderTarget } },
       );
-      material.addUniform( 'isVert', '1i', i );
       material.addUniformTextures( 'sampler0', swap.i.texture );
 
       this.components.push( new Quad( {

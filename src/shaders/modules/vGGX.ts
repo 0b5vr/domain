@@ -2,6 +2,7 @@ import { GLSLExpression, GLSLFloatExpression, add, cache, def, defFn, div, gt, m
 
 const symbol = Symbol();
 
+// The famous "V_SmithGGXCorrelated"
 export function vGGX(
   dotNL: GLSLFloatExpression,
   dotNV: GLSLFloatExpression,
@@ -19,7 +20,7 @@ export function vGGX(
         sqrt( add( mul( dotNL, dotNL, sub( 1.0, roughnessSq ) ), roughnessSq ) )
       );
       const ggx = def( 'float', add( ggxv, ggxl ) );
-      retFn( tern( gt( ggx, 0.0 ), div( 0.5, ggx ), 0.0 ) );
+      retFn( ( tern( gt( ggx, 0.0 ), div( 0.5, ggx ), 0.0 ) ) );
     } )
   );
 

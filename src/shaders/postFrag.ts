@@ -38,39 +38,40 @@ export const postFrag = build( () => {
     retFn( sw( texture( sampler0, p ), 'xyz' ) );
   } );
 
-  const liftGammaGain = defFn(
-    'vec3',
-    [ 'vec3', 'vec4', 'vec4', 'vec4' ],
-    ( rgb, lift, gamma, gain ) => {
-      const liftt = def( 'vec4', (
-        sub( 1.0, pow( sub( 1.0, lift ), log2( add( gain, 1.0 ) ) ) )
-      ) );
+  function liftGammaGain(
+    rgb: GLSLExpression<'vec3'>,
+    lift: GLSLExpression<'vec4'>,
+    gamma: GLSLExpression<'vec4'>,
+    gain: GLSLExpression<'vec4'>,
+  ): GLSLExpression<'vec3'> {
+    const liftt = def( 'vec4', (
+      sub( 1.0, pow( sub( 1.0, lift ), log2( add( gain, 1.0 ) ) ) )
+    ) );
 
-      const gammat = def( 'vec4', (
-        sub( gamma, vec4( 0.0, 0.0, 0.0, dot( vec4( LUMA, 0.0 ), gamma ) ) )
-      ) );
-      const gammatTemp = add( 1.0, mul( 4.0, abs( gammat ) ) );
-      assign( gammat, mix( gammatTemp, div( 1.0, gammatTemp ), step( 0.0, gammat ) ) );
+    const gammat = def( 'vec4', (
+      sub( gamma, vec4( 0.0, 0.0, 0.0, dot( vec4( LUMA, 0.0 ), gamma ) ) )
+    ) );
+    const gammatTemp = add( 1.0, mul( 4.0, abs( gammat ) ) );
+    assign( gammat, mix( gammatTemp, div( 1.0, gammatTemp ), step( 0.0, gammat ) ) );
 
-      const col = def( 'vec3', rgb );
-      const luma = def( 'float', dot( LUMA, col ) );
+    const col = def( 'vec3', rgb );
+    const luma = def( 'float', dot( LUMA, col ) );
 
-      assign( col, pow( col, sw( gammat, 'rgb' ) ) );
-      mulAssign( col, pow( sw( gain, 'rgb' ), sw( gammat, 'rgb' ) ) );
-      assign(
-        col,
-        max( mix( mul( 2.0, sw( liftt, 'rgb' ) ), vec3( 1.0 ), col ), 0.0 )
-      );
+    assign( col, pow( col, sw( gammat, 'rgb' ) ) );
+    mulAssign( col, pow( sw( gain, 'rgb' ), sw( gammat, 'rgb' ) ) );
+    assign(
+      col,
+      max( mix( mul( 2.0, sw( liftt, 'rgb' ) ), vec3( 1.0 ), col ), 0.0 )
+    );
 
-      assign( luma, pow( luma, sw( gammat, 'a' ) ) );
-      mulAssign( luma, pow( sw( gain, 'a' ), sw( gammat, 'a' ) ) );
-      assign( luma, max( mix( mul( 2.0, sw( liftt, 'a' ) ), 1.0, luma ), 0.0 ) );
+    assign( luma, pow( luma, sw( gammat, 'a' ) ) );
+    mulAssign( luma, pow( sw( gain, 'a' ), sw( gammat, 'a' ) ) );
+    assign( luma, max( mix( mul( 2.0, sw( liftt, 'a' ) ), 1.0, luma ), 0.0 ) );
 
-      addAssign( col, sub( luma, dot( LUMA, col ) ) );
+    addAssign( col, sub( luma, dot( LUMA, col ) ) );
 
-      retFn( glslSaturate( col ) );
-    }
-  );
+    return glslSaturate( col ) as GLSLExpression<'vec3'>;
+  }
 
   function aces( x: GLSLExpression<'vec3'> ): GLSLExpression<'vec3'> {
     return glslSaturate( div(

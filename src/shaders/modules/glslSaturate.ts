@@ -1,13 +1,8 @@
-import { cache, genToken, insertTop } from '../../shader-builder/shaderBuilder';
+import { GLSLExpression, GLSLFloatExpression, clamp } from '../../shader-builder/shaderBuilder';
 
-const symbol = Symbol();
-
-export function glslSaturate( val: string ): string {
-  const saturate = cache( symbol, () => {
-    const token = genToken();
-    insertTop( `\n#define ${ token }(i) clamp(i,0.,1.)\n` );
-    return ( val: string ) => `(${ token }(${ val }))`;
-  } );
-
-  return saturate( val );
-}
+export const glslSaturate: {
+  ( val: GLSLFloatExpression ): GLSLExpression<'float'>,
+  ( val: GLSLExpression<'vec2'> ): GLSLExpression<'vec2'>,
+  ( val: GLSLExpression<'vec3'> ): GLSLExpression<'vec3'>,
+  ( val: GLSLExpression<'vec4'> ): GLSLExpression<'vec4'>,
+} = ( val: string | number ) => clamp( val as any, 0.0, 1.0 ) as any;

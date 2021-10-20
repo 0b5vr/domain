@@ -1,24 +1,31 @@
-import { INV_PI } from '../utils/constants';
-import { abs, add, addAssign, assign, build, def, defFn, defInNamed, defOutNamed, defUniformNamed, discard, div, dot, glFragCoord, glFragDepth, gt, ifThen, insert, length, main, max, mod, mul, neg, normalize, retFn, sin, step, sub, sw, texture, unrollLoop, vec3, vec4 } from '../shader-builder/shaderBuilder';
-import { brdfGGX } from './modules/brdfGGX';
+import { MTL_PBR_EMISSIVE } from './deferredShadeFrag';
+import { abs, add, addAssign, arrayIndex, assign, build, def, defFn, defInNamed, defOut, defUniformArrayNamed, defUniformNamed, discard, div, divAssign, dot, forBreak, forLoop, glFragCoord, glFragDepth, gt, gte, ifThen, insert, length, main, max, mod, mul, neg, normalize, retFn, sin, sq, step, sub, sw, texture, unrollLoop, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcDepth } from './modules/calcDepth';
 import { calcNormal } from './modules/calcNormal';
+import { doAnalyticLighting } from './modules/doAnalyticLighting';
 import { glslDefRandom } from './modules/glslDefRandom';
 import { raymarch } from './modules/raymarch';
 import { sdbox } from './modules/sdbox';
 import { setupRoRd } from './modules/setupRoRd';
 import { sortVec3Components } from './modules/sortVec3Components';
 
-export const mengerSpongeFrag = ( tag: 'forward' | 'depth' ): string => build( () => {
+export const mengerSpongeFrag = ( tag: 'forward' | 'deferred' | 'depth' ): string => build( () => {
   insert( 'precision highp float;' );
 
   const vPositionWithoutModel = defInNamed( 'vec4', 'vPositionWithoutModel' );
   const pvm = defUniformNamed( 'mat4', 'pvm' );
   const modelMatrix = defUniformNamed( 'mat4', 'modelMatrix' );
   const modelMatrixT3 = defUniformNamed( 'mat3', 'modelMatrixT3' );
+  const normalMatrix = defUniformNamed( 'mat3', 'normalMatrix' );
 
-  const fragColor = defOutNamed( 'vec4', 'fragColor' );
+  const fragColor = defOut( 'vec4' );
+  const fragPosition = tag === 'deferred' ? defOut( 'vec4', 1 ) : null;
+  const fragNormal = tag === 'deferred' ? defOut( 'vec4', 2 ) : null;
+  const fragMisc = tag === 'deferred' ? defOut( 'vec4', 3 ) : null;
 
+  const lightCount = defUniformNamed( 'int', 'lightCount' );
+  const lightPos = defUniformArrayNamed( 'vec3', 'lightPos', 8 );
+  const lightColor = defUniformArrayNamed( 'vec3', 'lightColor', 8 );
   const time = defUniformNamed( 'float', 'time' );
   const resolution = defUniformNamed( 'vec2', 'resolution' );
   const cameraNearFar = defUniformNamed( 'vec2', 'cameraNearFar' );
@@ -61,8 +68,6 @@ export const mengerSpongeFrag = ( tag: 'forward' | 'depth' ): string => build( (
       marchMultiplier: 0.6,
     } );
 
-    const col = def( 'vec3', vec3( 0.0 ) );
-
     ifThen( gt( sw( isect, 'x' ), 1E-2 ), () => discard() );
 
     const modelPos = def( 'vec4', mul( modelMatrix, vec4( rp, 1.0 ) ) );
@@ -71,26 +76,49 @@ export const mengerSpongeFrag = ( tag: 'forward' | 'depth' ): string => build( (
     const depth = div( sw( projPos, 'z' ), sw( projPos, 'w' ) );
     assign( glFragDepth, add( 0.5, mul( 0.5, depth ) ) );
 
-    if ( tag === 'forward' ) {
-      const L = def( 'vec3', mul( modelMatrixT3, normalize( vec3( 1, 1, 1 ) ) ) );
+    const N = def( 'vec3', calcNormal( { rp, map } ) );
+    const roughness = 0.1;
+    const metallic = 0.0;
+    const baseColor = mul( 0.5, vec3( 0.7 ) );
+
+    if ( tag === 'deferred' ) {
+      assign( fragColor, vec4( baseColor, 1.0 ) );
+      assign( fragPosition!, vec4( sw( modelPos, 'xyz' ), depth ) );
+      assign( fragNormal!, vec4( normalize( mul( normalMatrix, N ) ), MTL_PBR_EMISSIVE ) );
+      assign( fragMisc!, vec4( roughness, metallic, 0.0, 0.0 ) );
+
+    } else if ( tag === 'forward' ) {
+      const col = def( 'vec3', vec3( 0.0 ) );
+
       const V = def( 'vec3', neg( rd ) );
-      const N = def( 'vec3', calcNormal( { rp, map } ) );
 
-      const baseColor = vec3( 0.5, 0.6, 0.7 );
-      const lightGain = vec3( 1.0 );
-      const dotNL = def( 'float', max( dot( L, N ), 0.0 ) );
-      const irradiance = def( 'vec3', mul( lightGain, dotNL ) );
+      // for each lights
+      forLoop( 8, ( iLight ) => {
+        ifThen( gte( iLight, lightCount ), () => { forBreak(); } );
 
-      const diffuse = mul( irradiance, baseColor, INV_PI );
-      addAssign( col, diffuse );
+        const lp = mul( modelMatrixT3, arrayIndex( lightPos, iLight ) );
+        const L = def( 'vec3', sub( lp, rp ) );
+        const lenL = def( 'float', length( L ) );
+        divAssign( L, max( 1E-3, lenL ) );
 
-      const specular = mul( irradiance, brdfGGX( L, V, N, baseColor, 0.7, 0.9 ) );
-      addAssign( col, specular );
+        const dotNL = def( 'float', max( dot( N, L ), 0.0 ) );
+
+        const lightCol = arrayIndex( lightColor, iLight );
+        const lightDecay = div( 1.0, sq( lenL ) );
+        const irradiance = def( 'vec3', mul( lightCol, dotNL, lightDecay ) );
+
+        addAssign( col, mul(
+          irradiance,
+          doAnalyticLighting( L, V, N, baseColor, roughness, metallic ),
+        ) );
+      } );
 
       assign( fragColor, vec4( col, 1.0 ) );
+
     } else if ( tag === 'depth' ) {
       const len = length( sub( cameraPos, sw( modelPos, 'xyz' ) ) );
       assign( fragColor, calcDepth( cameraNearFar, len ) );
+
     }
   } );
 } );

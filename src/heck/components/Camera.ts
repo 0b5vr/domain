@@ -1,6 +1,5 @@
 import { Component, ComponentOptions, ComponentUpdateEvent } from './Component';
 import { Entity } from '../Entity';
-import { MapOfSet } from '../../utils/MapOfSet';
 import { MaterialTag } from '../Material';
 import { RawMatrix4, mat4Inverse } from '@0b5vr/experimental';
 import { RenderTarget } from '../RenderTarget';
@@ -42,7 +41,12 @@ export abstract class Camera extends Component {
     this.clear = options.clear ?? [];
   }
 
-  protected __updateImpl( event: ComponentUpdateEvent ): void {
+  protected __updateImpl( {
+    entitiesByTag,
+    frameCount,
+    globalTransform,
+    time,
+  }: ComponentUpdateEvent ): void {
     const { renderTarget, scenes } = this;
 
     if ( !renderTarget ) {
@@ -53,7 +57,7 @@ export abstract class Camera extends Component {
       throw process.env.DEV && new Error( 'You must assign scenes to the Camera' );
     }
 
-    const viewMatrix = mat4Inverse( event.globalTransform.matrix );
+    const viewMatrix = mat4Inverse( globalTransform.matrix );
 
     renderTarget.bind();
 
@@ -63,12 +67,12 @@ export abstract class Camera extends Component {
 
     scenes.map( ( scene ) => {
       scene.draw( {
-        frameCount: event.frameCount,
-        time: event.time,
-        renderTarget: renderTarget,
-        cameraTransform: event.globalTransform,
+        frameCount,
+        time: time,
+        renderTarget,
+        cameraTransform: globalTransform,
         globalTransform: new Transform(),
-        entitiesByComponent: new MapOfSet(),
+        entitiesByTag,
         viewMatrix,
         projectionMatrix: this.projectionMatrix,
         camera: this,

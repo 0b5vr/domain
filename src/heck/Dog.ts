@@ -28,7 +28,7 @@ export class Dog {
           time: clock.time,
           deltaTime: clock.deltaTime,
           globalTransform: new Transform(),
-          entitiesByComponent: new MapOfSet(),
+          entitiesByTag: new MapOfSet(),
           parent: null,
           path: process.env.DEV && '',
         } );

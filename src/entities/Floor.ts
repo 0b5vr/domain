@@ -37,7 +37,7 @@ export class Floor extends Entity {
     } );
 
     this.mirrorCamera = new PerspectiveCamera( {
-      materialTag: 'forward',
+      materialTag: 'cubemap',
       renderTarget: this.mirrorTarget,
       near: this.primaryCamera.near,
       far: this.primaryCamera.far,

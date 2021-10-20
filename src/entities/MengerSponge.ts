@@ -9,11 +9,11 @@ import { createLightUniformsLambda } from './utils/createLightUniformsLambda';
 import { createRaymarchCameraUniformsLambda } from './utils/createRaymarchCameraUniformsLambda';
 import { dummyRenderTarget, dummyRenderTargetFourDrawBuffers } from '../globals/dummyRenderTarget';
 import { genCube } from '../geometries/genCube';
+import { mengerSpongeFrag } from '../shaders/mengerSpongeFrag';
 import { objectVert } from '../shaders/objectVert';
 import { randomTexture } from '../globals/randomTexture';
-import { sssBoxFrag } from '../shaders/sssBoxFrag';
 
-export class SSSBox extends Entity {
+export class MengerSponge extends Entity {
   public constructor() {
     super();
 
@@ -35,7 +35,7 @@ export class SSSBox extends Entity {
 
     const cubemap = new Material(
       objectVert( { ...locations } ),
-      sssBoxFrag( 'forward' ),
+      mengerSpongeFrag( 'forward' ),
       {
         initOptions: { geometry, target: dummyRenderTargetFourDrawBuffers },
       },
@@ -44,7 +44,7 @@ export class SSSBox extends Entity {
 
     const deferred = new Material(
       objectVert( { ...locations } ),
-      sssBoxFrag( 'deferred' ),
+      mengerSpongeFrag( 'deferred' ),
       {
         initOptions: { geometry, target: dummyRenderTargetFourDrawBuffers },
       },
@@ -53,7 +53,7 @@ export class SSSBox extends Entity {
 
     const depth = new Material(
       objectVert( { ...locations } ),
-      sssBoxFrag( 'depth' ),
+      mengerSpongeFrag( 'depth' ),
       {
         initOptions: { geometry, target: dummyRenderTarget },
       },
@@ -65,12 +65,12 @@ export class SSSBox extends Entity {
         module.hot.accept(
           [
             '../shaders/objectVert',
-            '../shaders/sssBoxFrag',
+            '../shaders/mengerSpongeFrag',
           ],
           () => {
-            cubemap.replaceShader( objectVert( { ...locations } ), sssBoxFrag( 'forward' ) );
-            deferred.replaceShader( objectVert( { ...locations } ), sssBoxFrag( 'deferred' ) );
-            depth.replaceShader( objectVert( { ...locations } ), sssBoxFrag( 'depth' ) );
+            cubemap.replaceShader( objectVert( { ...locations } ), mengerSpongeFrag( 'forward' ) );
+            deferred.replaceShader( objectVert( { ...locations } ), mengerSpongeFrag( 'deferred' ) );
+            depth.replaceShader( objectVert( { ...locations } ), mengerSpongeFrag( 'depth' ) );
           },
         );
       }

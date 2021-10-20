@@ -1,14 +1,28 @@
-import { cache, genToken, insertTop } from '../../shader-builder/shaderBuilder';
+import { GLSLExpression, GLSLFloatExpression, div, sub } from '../../shader-builder/shaderBuilder';
 import { glslSaturate } from './glslSaturate';
 
-const symbol = Symbol();
-
-export function glslLinearstep( a: string, b: string, x: string ): string {
-  const linearstep = cache( symbol, () => {
-    const token = genToken();
-    insertTop( `\n#define ${ token }(a,b,x) ${ glslSaturate( '(((x)-(a))/((b)-(a)))' ) }\n` );
-    return ( a: string, b: string, x: string ) => `(${ token }(${ a },${ b },${ x }))`;
-  } );
-
-  return linearstep( a, b, x );
-}
+export const glslLinearstep: {
+  (
+    a: GLSLFloatExpression,
+    b: GLSLFloatExpression,
+    x: GLSLFloatExpression,
+  ): GLSLExpression<'float'>;
+  (
+    a: GLSLFloatExpression | GLSLExpression<'vec2'>,
+    b: GLSLFloatExpression | GLSLExpression<'vec2'>,
+    x: GLSLFloatExpression | GLSLExpression<'vec2'>,
+  ): GLSLExpression<'vec2'>;
+  (
+    a: GLSLFloatExpression | GLSLExpression<'vec3'>,
+    b: GLSLFloatExpression | GLSLExpression<'vec3'>,
+    x: GLSLFloatExpression | GLSLExpression<'vec3'>,
+  ): GLSLExpression<'vec3'>;
+  (
+    a: GLSLFloatExpression | GLSLExpression<'vec4'>,
+    b: GLSLFloatExpression | GLSLExpression<'vec4'>,
+    x: GLSLFloatExpression | GLSLExpression<'vec4'>,
+  ): GLSLExpression<'vec4'>;
+} = ( a: any, b: any, x: any ) => glslSaturate( div(
+  sub( x, a ),
+  sub( b, a ),
+) ) as any;

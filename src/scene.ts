@@ -1,13 +1,17 @@
 import { Bloom } from './entities/Bloom';
 import { BufferRenderTarget } from './heck/BufferRenderTarget';
 import { CanvasRenderTarget } from './heck/CanvasRenderTarget';
+import { DeferredCamera } from './entities/DeferredCamera';
 import { Dog } from './heck/Dog';
 import { EntityReplacer } from './utils/EntityReplacer';
 import { Floor } from './entities/Floor';
 import { Fluid } from './entities/Fluid';
 import { ForwardCamera } from './entities/ForwardCamera';
+import { IBLLUTCalc } from './entities/IBLLUTCalc';
 import { Lambda } from './heck/components/Lambda';
+import { MengerSponge } from './entities/MengerSponge';
 import { Plane } from './entities/Plane';
+import { PointLightEntity } from './entities/PointLightEntity';
 import { Post } from './entities/Post';
 import { RTInspector } from './entities/RTInspector';
 import { SSSBox } from './entities/SSSBox';
@@ -60,10 +64,29 @@ const swap = new Swap(
 // const plane = new Plane();
 // dog.root.children.push( plane );
 
+const iblLutCalc = new IBLLUTCalc();
+
+const light1 = new PointLightEntity( {
+  scenes: [ dog.root ],
+  shadowMapFov: 30.0,
+  shadowMapNear: 1.0,
+  shadowMapFar: 20.0,
+  name: process.env.DEV && 'light1',
+  brtNamePrefix: process.env.DEV && 'SceneBegin/light1',
+} );
+light1.color = [ 300.0, 300.0, 300.0 ];
+light1.transform.lookAt( [ 4.0, 4.0, 4.0 ] );
+
+const deferredCamera = new DeferredCamera( {
+  scenes: [ dog.root ],
+  target: swap.i,
+  textureIBLLUT: iblLutCalc.texture,
+} );
+deferredCamera.transform.position = [ 0.0, 1.0, 5.0 ];
+
 const forwardCamera = new ForwardCamera( {
   scenes: [ dog.root ],
   target: swap.i,
-  clear: [ 0, 0, 0, 1 ],
 } );
 forwardCamera.transform.position = [ 0.0, 1.0, 5.0 ];
 
@@ -88,7 +111,7 @@ if ( process.env.DEV && module.hot ) {
     replacer.replace( dog.root );
   } );
 }
-fluid.transform.position = [ 0.0, 1.0, 0.0 ];
+fluid.transform.position = [ -2.0, 1.0, 0.0 ];
 
 const plane = new Plane();
 if ( process.env.DEV && module.hot ) {
@@ -108,6 +131,15 @@ if ( process.env.DEV && module.hot ) {
 }
 sssBox.transform.position = [ 0.0, 1.0, 0.0 ];
 
+const mengerSponge = new MengerSponge();
+if ( process.env.DEV && module.hot ) {
+  const replacer = new EntityReplacer( mengerSponge, () => new MengerSponge() );
+  module.hot.accept( './entities/MengerSponge', () => {
+    replacer.replace( dog.root );
+  } );
+}
+mengerSponge.transform.position = [ 2.0, 1.0, 0.0 ];
+
 swap.swap();
 
 const bloom = new Bloom( {
@@ -123,10 +155,14 @@ const post = new Post( {
 } );
 
 dog.root.children.push(
+  light1,
+  iblLutCalc,
   floor,
-  // fluid,
+  fluid,
   // plane,
   sssBox,
+  mengerSponge,
+  deferredCamera,
   forwardCamera,
   bloom,
   post,

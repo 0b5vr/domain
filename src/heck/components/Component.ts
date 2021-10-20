@@ -13,7 +13,7 @@ export interface ComponentUpdateEvent {
   deltaTime: number;
   globalTransform: Transform;
   entity: Entity;
-  entitiesByComponent: MapOfSet<string, Entity>;
+  entitiesByTag: MapOfSet<symbol, Entity>;
 }
 
 export interface ComponentDrawEvent {
@@ -27,7 +27,7 @@ export interface ComponentDrawEvent {
   viewMatrix: RawMatrix4;
   projectionMatrix: RawMatrix4;
   entity: Entity;
-  entitiesByComponent: MapOfSet<string, Entity>;
+  entitiesByTag: MapOfSet<symbol, Entity>;
 }
 
 export interface ComponentOptions {

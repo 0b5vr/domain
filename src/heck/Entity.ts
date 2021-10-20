@@ -12,7 +12,7 @@ export interface EntityUpdateEvent {
   time: number;
   deltaTime: number;
   globalTransform: Transform;
-  entitiesByComponent: MapOfSet<string, Entity>;
+  entitiesByTag: MapOfSet<symbol, Entity>;
   parent: Entity | null;
   path?: string;
 }
@@ -24,7 +24,7 @@ export interface EntityDrawEvent {
   globalTransform: Transform;
   viewMatrix: RawMatrix4;
   projectionMatrix: RawMatrix4;
-  entitiesByComponent: MapOfSet<string, Entity>;
+  entitiesByTag: MapOfSet<symbol, Entity>;
   camera: Camera;
   cameraTransform: Transform;
   materialTag: MaterialTag;
@@ -35,6 +35,7 @@ export interface EntityOptions {
   active?: boolean;
   visible?: boolean;
   name?: string;
+  tags?: symbol[];
 }
 
 export class Entity {
@@ -47,6 +48,7 @@ export class Entity {
   public visible;
 
   public name?: string;
+  public tags: symbol[];
 
   public children: Entity[];
   public components: Component[];
@@ -63,39 +65,48 @@ export class Entity {
     if ( process.env.DEV ) {
       this.name = options?.name ?? ( this as any ).constructor.name;
     }
+    this.tags = options?.tags ?? [];
 
     this.children = [];
     this.components = [];
   }
 
-  public update( event: EntityUpdateEvent ): void {
+  public update( {
+    deltaTime,
+    entitiesByTag,
+    frameCount,
+    globalTransform,
+    time,
+  }: EntityUpdateEvent ): void {
     if ( !this.active ) { return; }
-    if ( this.lastUpdateFrame === event.frameCount ) { return; }
-    this.lastUpdateFrame = event.frameCount;
-    const { entitiesByComponent } = event;
+    if ( this.lastUpdateFrame === frameCount ) { return; }
+    this.lastUpdateFrame = frameCount;
 
     const measured = (): void => {
-      const globalTransform = event.globalTransform.multiply( this.transform );
+      const nextGlobalTransform = globalTransform.multiply( this.transform );
 
       this.components.forEach( ( component ) => {
-        entitiesByComponent.add( component.constructor.name, this );
+        this.tags.map( ( tag ) => (
+          entitiesByTag.add( tag, this )
+        ) );
+
         component.update( {
-          frameCount: event.frameCount,
-          time: event.time,
-          deltaTime: event.deltaTime,
-          globalTransform,
-          entitiesByComponent,
+          frameCount,
+          time,
+          deltaTime,
+          globalTransform: nextGlobalTransform,
+          entitiesByTag,
           entity: this,
         } );
       } );
 
       this.children.forEach( ( child ) => {
         child.update( {
-          frameCount: event.frameCount,
-          time: event.time,
-          deltaTime: event.deltaTime,
-          globalTransform,
-          entitiesByComponent,
+          frameCount,
+          time,
+          deltaTime,
+          globalTransform: nextGlobalTransform,
+          entitiesByTag,
           parent: this,
         } );
       } );
@@ -108,41 +119,50 @@ export class Entity {
     }
   }
 
-  public draw( event: EntityDrawEvent ): void {
+  public draw( {
+    camera,
+    cameraTransform,
+    entitiesByTag,
+    frameCount,
+    globalTransform,
+    materialTag,
+    projectionMatrix,
+    renderTarget,
+    time,
+    viewMatrix,
+  }: EntityDrawEvent ): void {
     if ( !this.visible ) { return; }
-    const { entitiesByComponent } = event;
-
     const measured = (): void => {
-      this.globalTransformCache = event.globalTransform.multiply( this.transform );
+      this.globalTransformCache = globalTransform.multiply( this.transform );
 
       this.components.forEach( ( component ) => {
         component.draw( {
-          frameCount: event.frameCount,
-          time: event.time,
-          renderTarget: event.renderTarget,
+          frameCount,
+          time,
+          renderTarget,
           globalTransform: this.globalTransformCache,
-          camera: event.camera,
-          cameraTransform: event.cameraTransform,
-          viewMatrix: event.viewMatrix,
-          projectionMatrix: event.projectionMatrix,
+          camera,
+          cameraTransform,
+          viewMatrix,
+          projectionMatrix,
           entity: this,
-          entitiesByComponent,
-          materialTag: event.materialTag,
+          entitiesByTag,
+          materialTag,
         } );
       } );
 
       this.children.forEach( ( child ) => {
         child.draw( {
-          frameCount: event.frameCount,
-          time: event.time,
-          renderTarget: event.renderTarget,
+          frameCount,
+          time: time,
+          renderTarget,
           globalTransform: this.globalTransformCache,
-          viewMatrix: event.viewMatrix,
-          projectionMatrix: event.projectionMatrix,
-          entitiesByComponent,
-          camera: event.camera,
-          cameraTransform: event.cameraTransform,
-          materialTag: event.materialTag,
+          viewMatrix,
+          projectionMatrix,
+          entitiesByTag,
+          camera,
+          cameraTransform,
+          materialTag,
         } );
       } );
     };
