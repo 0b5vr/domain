@@ -40,6 +40,19 @@ if ( process.env.DEV ) {
     gui.input( 'active', true )?.on( 'change', ( { value } ) => {
       dog.active = value;
     } );
+
+    // Esc = panic button
+    window.addEventListener( 'keydown', ( event ) => {
+      if ( event.code === 'Escape' ) {
+        const input = (
+          gui.input( 'active', true )?.controller_.valueController.view as any
+        ).inputElement;
+
+        if ( input.checked ) {
+          input.click();
+        }
+      }
+    } );
   } );
 }
 
