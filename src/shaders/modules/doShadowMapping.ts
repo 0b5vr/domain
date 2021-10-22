@@ -20,9 +20,9 @@ export function doShadowMapping(
       [ 'float', 'float', 'vec4', 'vec2', 'vec2', 'float' ],
       ( lenL, dotNL, tex, lightP, lightNearFar, spotness ) => {
         const depth = def( 'float', glslLinearstep(
-          lenL,
           sw( lightNearFar, 'x' ),
           sw( lightNearFar, 'y' ),
+          lenL,
         ) );
 
         const shadow = def( 'float', mix(
@@ -37,7 +37,7 @@ export function doShadowMapping(
         const variance = glslSaturate( sub( sw( tex, 'y' ), sq( sw( tex, 'x' ) ) ) );
         const md = sub( depth, sw( tex, 'x' ) );
         const p = def( 'float', div( variance, add( variance, sq( md ) ) ) );
-        assign( p, glslLinearstep( p, 0.2, 1.0 ) );
+        assign( p, glslLinearstep( 0.2, 1.0, p ) );
 
         mulAssign( shadow, mix(
           tern( lt( md, 0.0 ), 1.0, p ),

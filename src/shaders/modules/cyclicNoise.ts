@@ -3,19 +3,17 @@ import { orthBas } from './orthBas';
 
 const symbol = Symbol();
 
-export function cyclicNoise( {
-  p,
+export function cyclicNoise( p: GLSLExpression<'vec3'>, {
   rot = vec3( -1.0 ),
   pump = 2.0,
   freq = 2.0,
   warp = 1.0,
 }: {
-  p: GLSLExpression<'vec3'>,
   rot?: GLSLExpression<'vec3'>,
   pump?: GLSLFloatExpression,
   freq?: GLSLFloatExpression,
   warp?: GLSLFloatExpression,
-} ): GLSLExpression<'vec3'> {
+} = {} ): GLSLExpression<'vec3'> {
   const f = cache( symbol, () => defFn( 'vec3', [ 'vec3', 'vec3', 'float' ], ( p, rot, pump ) => {
     const b = def( 'mat3', orthBas( rot ) );
     const accum = def( 'vec4', vec4( 0.0 ) );

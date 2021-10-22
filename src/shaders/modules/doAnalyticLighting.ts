@@ -46,7 +46,7 @@ export function doAnalyticLighting(
           FSpec,
         ) );
 
-        retFn( mul( dotNL, outColor ) );
+        retFn( max( mul( dotNL, outColor ), 0.0 ) );
       }
     )
   );

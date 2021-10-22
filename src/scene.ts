@@ -87,8 +87,30 @@ const light1 = new PointLightEntity( {
   name: process.env.DEV && 'light1',
   brtNamePrefix: process.env.DEV && 'SceneBegin/light1',
 } );
-light1.color = [ 300.0, 300.0, 300.0 ];
-light1.transform.lookAt( [ 4.0, 4.0, 4.0 ] );
+light1.color = [ 250.0, 250.0, 250.0 ];
+light1.transform.lookAt( [ 4.0, 2.0, 4.0 ], [ 0.0, 1.0, 0.0 ] );
+
+const light2 = new PointLightEntity( {
+  scenes: [ dog.root ],
+  shadowMapFov: 30.0,
+  shadowMapNear: 1.0,
+  shadowMapFar: 20.0,
+  name: process.env.DEV && 'light2',
+  brtNamePrefix: process.env.DEV && 'SceneBegin/light2',
+} );
+light2.color = [ 200.0, 230.0, 260.0 ];
+light2.transform.lookAt( [ 0.01, 6.0, 0.01 ], [ 0.0, 1.0, 0.0 ] );
+
+const light3 = new PointLightEntity( {
+  scenes: [ dog.root ],
+  shadowMapFov: 30.0,
+  shadowMapNear: 1.0,
+  shadowMapFar: 20.0,
+  name: process.env.DEV && 'light3',
+  brtNamePrefix: process.env.DEV && 'SceneBegin/light3',
+} );
+light3.color = [ 60.0, 4.0, 10.0 ];
+light3.transform.lookAt( [ -8.0, 0.0, -4.0 ], [ 0.0, 1.0, 0.0 ] );
 
 const deferredCamera = new DeferredCamera( {
   scenes: [ dog.root ],
@@ -169,12 +191,14 @@ const post = new Post( {
 
 dog.root.children.push(
   light1,
+  light2,
+  light3,
   iblLutCalc,
   floor,
-  fluid,
+  // fluid,
   // plane,
   sssBox,
-  mengerSponge,
+  // mengerSponge,
   deferredCamera,
   forwardCamera,
   bloom,

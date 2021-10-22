@@ -44,8 +44,7 @@ export const sssBoxFrag = ( tag: 'forward' | 'deferred' | 'depth' ): string => b
 
   const map = defFn( 'vec4', [ 'vec3' ], ( p ) => {
     // const d = def( 'float', sub( length( p ), 0.1 ) );
-    const noise = cyclicNoise( {
-      p: add( mul( p, 5.0 ), time ),
+    const noise = cyclicNoise( add( mul( p, 5.0 ), time ), {
       freq: 1.3,
     } );
     addAssign( p, mul( 0.1, noise ) );

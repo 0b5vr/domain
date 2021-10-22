@@ -44,8 +44,8 @@ export class PointLightEntity extends Entity {
     this.tags.push( PointLightTag );
 
     const swapOptions = {
-      width: options.shadowMapSize ?? 1024,
-      height: options.shadowMapSize ?? 1024,
+      width: options.shadowMapSize ?? 256,
+      height: options.shadowMapSize ?? 256,
     };
 
     const swap = new Swap(

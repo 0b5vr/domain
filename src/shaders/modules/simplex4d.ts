@@ -78,7 +78,7 @@ function grad4(
 
 const symbol = Symbol();
 
-export function simplexNoise( v: GLSLExpression<'vec4'> ): GLSLExpression<'float'> {
+export function simplex4d( v: GLSLExpression<'vec4'> ): GLSLExpression<'float'> {
   const f = cache( symbol, () => defFn( 'float', [ 'vec4' ], ( v ) => {
     // (sqrt(5) - 1)/4 = F4, used once below
     const F4 = 0.309016994374947451;

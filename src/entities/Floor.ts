@@ -6,7 +6,8 @@ import { Lambda } from '../heck/components/Lambda';
 import { Material } from '../heck/Material';
 import { Mesh } from '../heck/components/Mesh';
 import { PerspectiveCamera } from '../heck/components/PerspectiveCamera';
-import { RawMatrix4, TRIANGLE_STRIP_QUAD_3D, TRIANGLE_STRIP_QUAD_NORMAL } from '@0b5vr/experimental';
+import { RawMatrix4, TRIANGLE_STRIP_QUAD_3D, TRIANGLE_STRIP_QUAD_NORMAL, TRIANGLE_STRIP_QUAD_UV } from '@0b5vr/experimental';
+import { createLightUniformsLambda } from './utils/createLightUniformsLambda';
 import { dummyRenderTarget } from '../globals/dummyRenderTarget';
 import { floorFrag } from '../shaders/floorFrag';
 import { gl, glCat } from '../globals/canvas';
@@ -73,13 +74,17 @@ export class Floor extends Entity {
     bufferPos.setVertexbuffer( new Float32Array( TRIANGLE_STRIP_QUAD_3D ) );
 
     const bufferNor = glCat.createBuffer();
-    bufferNor.setIndexbuffer( new Float32Array( TRIANGLE_STRIP_QUAD_NORMAL ) );
+    bufferNor.setVertexbuffer( new Float32Array( TRIANGLE_STRIP_QUAD_NORMAL ) );
+
+    const bufferUv = glCat.createBuffer();
+    bufferUv.setVertexbuffer( new Float32Array( TRIANGLE_STRIP_QUAD_UV ) );
 
     // -- create geometry --------------------------------------------------------------------------
     const geometry = new Geometry();
 
     geometry.vao.bindVertexbuffer( bufferPos, 0, 3 );
     geometry.vao.bindVertexbuffer( bufferNor, 1, 3 );
+    geometry.vao.bindVertexbuffer( bufferUv, 2, 2 );
 
     geometry.count = 4;
     geometry.mode = gl.TRIANGLE_STRIP;
@@ -93,7 +98,15 @@ export class Floor extends Entity {
 
     const forward = new Material(
       objectVert( { ...locations } ),
-      floorFrag,
+      floorFrag( 'forward' ),
+      {
+        initOptions: { geometry, target: dummyRenderTarget },
+      },
+    );
+
+    const depth = new Material(
+      objectVert( { ...locations } ),
+      floorFrag( 'depth' ),
       {
         initOptions: { geometry, target: dummyRenderTarget },
       },
@@ -101,7 +114,9 @@ export class Floor extends Entity {
 
     forward.addUniformTextures( 'samplerMirror', this.mirrorTarget.texture );
 
-    const materials = { forward };
+    this.components.push( createLightUniformsLambda( [ forward ] ) );
+
+    const materials = { forward, depth };
 
     if ( process.env.DEV ) {
       if ( module.hot ) {
@@ -111,7 +126,8 @@ export class Floor extends Entity {
             '../shaders/floorFrag',
           ],
           () => {
-            forward.replaceShader( objectVert( { ...locations } ), floorFrag );
+            forward.replaceShader( objectVert( { ...locations } ), floorFrag( 'forward' ) );
+            depth.replaceShader( objectVert( { ...locations } ), floorFrag( 'depth' ) );
           },
         );
       }
