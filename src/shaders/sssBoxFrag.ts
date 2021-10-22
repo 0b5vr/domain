@@ -1,6 +1,6 @@
 import { DIELECTRIC_SPECULAR, INV_PI, ONE_SUB_DIELECTRIC_SPECULAR } from '../utils/constants';
 import { MTL_PRESHADED_PUNCTUALS } from './deferredShadeFrag';
-import { add, addAssign, arrayIndex, assign, build, def, defFn, defInNamed, defOut, defUniformArrayNamed, defUniformNamed, discard, div, divAssign, dot, forBreak, forLoop, glFragCoord, glFragDepth, gt, gte, ifThen, insert, length, main, max, mix, mul, neg, normalize, retFn, sin, sq, step, sub, subAssign, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { add, addAssign, arrayIndex, assign, build, def, defFn, defInNamed, defOut, defUniformArrayNamed, defUniformNamed, discard, div, divAssign, dot, forBreak, forLoop, glFragCoord, glFragDepth, gt, gte, ifThen, insert, length, main, max, mix, mul, neg, normalize, retFn, sq, sub, subAssign, sw, tern, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcDepth } from './modules/calcDepth';
 import { calcNormal } from './modules/calcNormal';
 import { calcSS } from './modules/calcSS';
@@ -12,6 +12,7 @@ import { raymarch } from './modules/raymarch';
 import { sdbox } from './modules/sdbox';
 import { setupRoRd } from './modules/setupRoRd';
 import { vGGX } from './modules/vGGX';
+import { voronoi3d } from './modules/voronoi3d';
 
 export const sssBoxFrag = ( tag: 'forward' | 'deferred' | 'depth' ): string => build( () => {
   insert( 'precision highp float;' );
@@ -39,6 +40,8 @@ export const sssBoxFrag = ( tag: 'forward' | 'deferred' | 'depth' ): string => b
 
   const { init } = glslDefRandom();
 
+  const shouldCalcVoronoi = def( 'bool', false );
+
   const map = defFn( 'vec4', [ 'vec3' ], ( p ) => {
     // const d = def( 'float', sub( length( p ), 0.1 ) );
     const noise = cyclicNoise( {
@@ -48,7 +51,15 @@ export const sssBoxFrag = ( tag: 'forward' | 'deferred' | 'depth' ): string => b
     addAssign( p, mul( 0.1, noise ) );
     const d = def( 'float', sdbox( p, vec3( 0.33 ) ) );
     subAssign( d, 0.07 );
-    retFn( vec4( d, step( 0.0, sin( dot( vec4( p, time ), vec4( 10.0 ) ) ) ), 0, 0 ) );
+
+    const voro = def( 'float', tern(
+      shouldCalcVoronoi,
+      sw( voronoi3d( mul( 40.0, add( p, 80.0 ) ) ), 'w' ),
+      0.0,
+    ) );
+    addAssign( d, mul( 0.001, voro ) );
+
+    retFn( vec4( d, voro, 0, 0 ) );
   } );
 
   main( () => {
@@ -71,6 +82,10 @@ export const sssBoxFrag = ( tag: 'forward' | 'deferred' | 'depth' ): string => b
 
     ifThen( gt( sw( isect, 'x' ), 1E-2 ), () => discard() );
 
+    //  calc voronoi for finalizing map and normals
+    assign( shouldCalcVoronoi, true );
+    assign( isect, map( rp ) );
+
     const modelPos = def( 'vec4', mul( modelMatrix, vec4( rp, 1.0 ) ) );
 
     const projPos = def( 'vec4', mul( pvm, vec4( rp, 1.0 ) ) );
@@ -84,10 +99,22 @@ export const sssBoxFrag = ( tag: 'forward' | 'deferred' | 'depth' ): string => b
     const baseColor = mul( 0.5, vec3( 0.9, 0.7, 0.4 ) );
     const subsurfaceColor = mul( 0.5, vec3( 0.7, 0.04, 0.04 ) );
 
+    // don't calc voronoi for ss
+    assign( shouldCalcVoronoi, false );
+
     if ( tag === 'forward' || tag === 'deferred' ) {
       const col = def( 'vec3', vec3( 0.0 ) );
 
-      const albedo = mix( mul( baseColor, ONE_SUB_DIELECTRIC_SPECULAR ), vec3( 0.0 ), metallic );
+      const albedo = def( 'vec3', mix(
+        mul( baseColor, ONE_SUB_DIELECTRIC_SPECULAR ),
+        vec3( 0.0 ),
+        metallic,
+      ) );
+      assign( albedo, mix(
+        albedo,
+        vec3( 0.0 ),
+        mul( 0.1, sw( isect, 'y' ) )
+      ) );
       const f0 = mix( DIELECTRIC_SPECULAR, baseColor, metallic );
       const f90 = vec3( 1.0 );
 

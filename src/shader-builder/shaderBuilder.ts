@@ -75,21 +75,23 @@ export function insertTop( code: string ): void {
   __stack[ __stack.length - 1 ] += code;
 }
 
-export function num( val: string | number ): Ex<'float'> {
-  if ( typeof val === 'string' ) {
-    return val as Ex<'float'>;
+export function num( val: GLSLFloatExpression ): GLSLExpression<'float'>;
+export function num( val: string | number | boolean ): string;
+export function num( val: string | number | boolean ): string {
+  if ( typeof val !== 'number' ) {
+    return `${ val }`;
   }
 
   let str: string = val.toString( 10 );
   if ( str.indexOf( '.' ) === -1 ) {
     str += '.';
   }
-  return str as Ex<'float'>;
+  return str;
 }
 
 function __def( { type, init, location, name, modifier, local, size }: {
   type: string,
-  init?: string | number,
+  init?: string | number | boolean,
   location?: number,
   name?: string,
   modifier?: string,
@@ -113,8 +115,9 @@ function __def( { type, init, location, name, modifier, local, size }: {
 
 export const def: {
   ( type: 'float', init?: Exf ): Tok<'float'>;
+  ( type: 'bool', init?: boolean ): Tok<'bool'>;
   <T extends string>( type: T, init?: Ex<T> ): Tok<T>;
-} = ( type: string, init?: string | number ) => __def( {
+} = ( type: string, init?: string | number | boolean ) => __def( {
   type,
   init,
   local: true,
@@ -187,8 +190,9 @@ export const defUniformArrayNamed: {
 } ) as any;
 
 export const assign: {
+  ( dst: Tok<'bool'>, src: boolean ): void;
   <T extends string>( dst: Tok<T>, src: Ex<T> ): void;
-} = ( dst: string, src: string | number ) => (
+} = ( dst: string, src: string | number | boolean ) => (
   insert( `${dst}=${num( src )};` )
 );
 
@@ -197,6 +201,10 @@ export const addAssign: {
   ( dst: Tok<'vec2'>, src: Exf | Ex<'vec2'> ): void;
   ( dst: Tok<'vec3'>, src: Exf | Ex<'vec3'> ): void;
   ( dst: Tok<'vec4'>, src: Exf | Ex<'vec4'> ): void;
+  ( dst: Tok<'uint'>, src: Ex<'uint'> ): void;
+  ( dst: Tok<'uvec2'>, src: Ex<'uint'> | Ex<'uvec2'> ): void;
+  ( dst: Tok<'uvec3'>, src: Ex<'uint'> | Ex<'uvec3'> ): void;
+  ( dst: Tok<'uvec4'>, src: Ex<'uint'> | Ex<'uvec4'> ): void;
 } = ( dst: string, src: string | number ) => (
   insert( `${dst}+=${num( src )};` )
 );
@@ -206,6 +214,10 @@ export const subAssign: {
   ( dst: Tok<'vec2'>, src: Exf | Ex<'vec2'> ): void;
   ( dst: Tok<'vec3'>, src: Exf | Ex<'vec3'> ): void;
   ( dst: Tok<'vec4'>, src: Exf | Ex<'vec4'> ): void;
+  ( dst: Tok<'uint'>, src: Ex<'uint'> ): void;
+  ( dst: Tok<'uvec2'>, src: Ex<'uint'> | Ex<'uvec2'> ): void;
+  ( dst: Tok<'uvec3'>, src: Ex<'uint'> | Ex<'uvec3'> ): void;
+  ( dst: Tok<'uvec4'>, src: Ex<'uint'> | Ex<'uvec4'> ): void;
 } = ( dst: string, src: string | number ) => (
   insert( `${dst}-=${num( src )};` )
 );
@@ -215,6 +227,10 @@ export const mulAssign: {
   ( dst: Tok<'vec2'>, src: Exf | Ex<'vec2'> | Ex<'mat2'> ): void;
   ( dst: Tok<'vec3'>, src: Exf | Ex<'vec3'> | Ex<'mat3'> ): void;
   ( dst: Tok<'vec4'>, src: Exf | Ex<'vec4'> | Ex<'mat4'> ): void;
+  ( dst: Tok<'uint'>, src: Ex<'uint'> ): void;
+  ( dst: Tok<'uvec2'>, src: Ex<'uint'> | Ex<'uvec2'> ): void;
+  ( dst: Tok<'uvec3'>, src: Ex<'uint'> | Ex<'uvec3'> ): void;
+  ( dst: Tok<'uvec4'>, src: Ex<'uint'> | Ex<'uvec4'> ): void;
 } = ( dst: string, src: string | number ) => (
   insert( `${dst}*=${num( src )};` )
 );
@@ -224,8 +240,39 @@ export const divAssign: {
   ( dst: Tok<'vec2'>, src: Exf | Ex<'vec2'> ): void;
   ( dst: Tok<'vec3'>, src: Exf | Ex<'vec3'> ): void;
   ( dst: Tok<'vec4'>, src: Exf | Ex<'vec4'> ): void;
+  ( dst: Tok<'uint'>, src: Ex<'uint'> ): void;
+  ( dst: Tok<'uvec2'>, src: Ex<'uint'> | Ex<'uvec2'> ): void;
+  ( dst: Tok<'uvec3'>, src: Ex<'uint'> | Ex<'uvec3'> ): void;
+  ( dst: Tok<'uvec4'>, src: Ex<'uint'> | Ex<'uvec4'> ): void;
 } = ( dst: string, src: string | number ) => (
   insert( `${dst}/=${num( src )};` )
+);
+
+export const lshiftAssign: {
+  ( dst: Tok<'uint'>, src: Ex<'uint'> ): void;
+  ( dst: Tok<'uvec2'>, src: Ex<'uint'> | Ex<'uvec2'> ): void;
+  ( dst: Tok<'uvec3'>, src: Ex<'uint'> | Ex<'uvec3'> ): void;
+  ( dst: Tok<'uvec4'>, src: Ex<'uint'> | Ex<'uvec4'> ): void;
+} = ( dst: string, src: string ) => (
+  insert( `${dst}<<=${src};` )
+);
+
+export const rshiftAssign: {
+  ( dst: Tok<'uint'>, src: Ex<'uint'> ): void;
+  ( dst: Tok<'uvec2'>, src: Ex<'uint'> | Ex<'uvec2'> ): void;
+  ( dst: Tok<'uvec3'>, src: Ex<'uint'> | Ex<'uvec3'> ): void;
+  ( dst: Tok<'uvec4'>, src: Ex<'uint'> | Ex<'uvec4'> ): void;
+} = ( dst: string, src: string ) => (
+  insert( `${dst}>>=${src};` )
+);
+
+export const xorAssign: {
+  ( dst: Tok<'uint'>, src: Ex<'uint'> ): void;
+  ( dst: Tok<'uvec2'>, src: Ex<'uint'> | Ex<'uvec2'> ): void;
+  ( dst: Tok<'uvec3'>, src: Ex<'uint'> | Ex<'uvec3'> ): void;
+  ( dst: Tok<'uvec4'>, src: Ex<'uint'> | Ex<'uvec4'> ): void;
+} = ( dst: string, src: string ) => (
+  insert( `${dst}^=${src};` )
 );
 
 export const add: {
@@ -234,6 +281,10 @@ export const add: {
   ( ...args: ( Exf | Ex<'vec2'> )[] ): Ex<'vec2'>;
   ( ...args: ( Exf | Ex<'vec3'> )[] ): Ex<'vec3'>;
   ( ...args: ( Exf | Ex<'vec4'> )[] ): Ex<'vec4'>;
+  ( ...args: ( Ex<'uint'> )[] ): Ex<'uint'>;
+  ( ...args: ( Ex<'uint'> | Ex<'uvec2'> )[] ): Ex<'uvec2'>;
+  ( ...args: ( Ex<'uint'> | Ex<'uvec3'> )[] ): Ex<'uvec3'>;
+  ( ...args: ( Ex<'uint'> | Ex<'uvec4'> )[] ): Ex<'uvec4'>;
 } = ( ...args: ( string | number )[] ) => (
   `(${args.map( ( arg ) => num( arg ) ).join( '+' )})`
 ) as any;
@@ -244,6 +295,10 @@ export const sub: {
   ( ...args: ( Exf | Ex<'vec2'> )[] ): Ex<'vec2'>;
   ( ...args: ( Exf | Ex<'vec3'> )[] ): Ex<'vec3'>;
   ( ...args: ( Exf | Ex<'vec4'> )[] ): Ex<'vec4'>;
+  ( ...args: ( Ex<'uint'> )[] ): Ex<'uint'>;
+  ( ...args: ( Ex<'uint'> | Ex<'uvec2'> )[] ): Ex<'uvec2'>;
+  ( ...args: ( Ex<'uint'> | Ex<'uvec3'> )[] ): Ex<'uvec3'>;
+  ( ...args: ( Ex<'uint'> | Ex<'uvec4'> )[] ): Ex<'uvec4'>;
 } = ( ...args: ( string | number )[] ) => (
   `(${args.map( ( arg ) => num( arg ) ).join( '-' )})`
 ) as any;
@@ -254,6 +309,10 @@ export const mul: {
   ( ...args: ( Exf | Ex<'vec2'> | Ex<'mat2'> )[] ): Ex<'vec2'>;
   ( ...args: ( Exf | Ex<'vec3'> | Ex<'mat3'> )[] ): Ex<'vec3'>;
   ( ...args: ( Exf | Ex<'vec4'> | Ex<'mat4'> )[] ): Ex<'vec4'>;
+  ( ...args: ( Ex<'uint'> )[] ): Ex<'uint'>;
+  ( ...args: ( Ex<'uint'> | Ex<'uvec2'> )[] ): Ex<'uvec2'>;
+  ( ...args: ( Ex<'uint'> | Ex<'uvec3'> )[] ): Ex<'uvec3'>;
+  ( ...args: ( Ex<'uint'> | Ex<'uvec4'> )[] ): Ex<'uvec4'>;
 } = ( ...args: ( string | number )[] ) => (
   `(${args.map( ( arg ) => num( arg ) ).join( '*' )})`
 ) as any;
@@ -264,8 +323,27 @@ export const div: {
   ( ...args: ( Exf | Ex<'vec2'> )[] ): Ex<'vec2'>;
   ( ...args: ( Exf | Ex<'vec3'> )[] ): Ex<'vec3'>;
   ( ...args: ( Exf | Ex<'vec4'> )[] ): Ex<'vec4'>;
+  ( ...args: ( Ex<'uint'> )[] ): Ex<'uint'>;
+  ( ...args: ( Ex<'uint'> | Ex<'uvec2'> )[] ): Ex<'uvec2'>;
+  ( ...args: ( Ex<'uint'> | Ex<'uvec3'> )[] ): Ex<'uvec3'>;
+  ( ...args: ( Ex<'uint'> | Ex<'uvec4'> )[] ): Ex<'uvec4'>;
 } = ( ...args: ( string | number )[] ) => (
   `(${args.map( ( arg ) => num( arg ) ).join( '/' )})`
+) as any;
+
+export const lshift: {
+  ( x: Ex<'uint'>, y: Ex<'uint'> ): Ex<'uint'>;
+} = ( x: string, y: string ) => (
+  `(${ x }<<${ y })`
+) as any;
+
+export const rshift: {
+  ( x: Ex<'uint'>, y: Ex<'uint'> ): Ex<'uint'>;
+  ( x: Ex<'uint'> | Ex<'uvec2'>, y: Ex<'uint'> | Ex<'uvec2'> ): Ex<'uvec2'>;
+  ( x: Ex<'uint'> | Ex<'uvec3'>, y: Ex<'uint'> | Ex<'uvec3'> ): Ex<'uvec3'>;
+  ( x: Ex<'uint'> | Ex<'uvec4'>, y: Ex<'uint'> | Ex<'uvec4'> ): Ex<'uvec4'>;
+} = ( x: string, y: string ) => (
+  `(${ x }>>${ y })`
 ) as any;
 
 export const neg: {
@@ -398,6 +476,30 @@ export const sw: {
   ( val: Ex<'ivec4'>, swizzle: Swizzle2ComponentsVec4 ): Ex<'ivec2'>;
   ( val: Ex<'ivec4'>, swizzle: Swizzle3ComponentsVec4 ): Ex<'ivec3'>;
   ( val: Ex<'ivec4'>, swizzle: Swizzle4ComponentsVec4 ): Ex<'ivec4'>;
+  ( val: Tok<'uvec2'>, swizzle: SwizzleComponentVec2 ): Tok<'uint'>;
+  ( val: Tok<'uvec2'>, swizzle: Swizzle2ComponentsVec2 ): Tok<'uvec2'>;
+  ( val: Tok<'uvec2'>, swizzle: Swizzle3ComponentsVec2 ): Tok<'uvec3'>;
+  ( val: Tok<'uvec2'>, swizzle: Swizzle4ComponentsVec2 ): Tok<'uvec4'>;
+  ( val: Tok<'uvec3'>, swizzle: SwizzleComponentVec3 ): Tok<'uint'>;
+  ( val: Tok<'uvec3'>, swizzle: Swizzle2ComponentsVec3 ): Tok<'uvec2'>;
+  ( val: Tok<'uvec3'>, swizzle: Swizzle3ComponentsVec3 ): Tok<'uvec3'>;
+  ( val: Tok<'uvec3'>, swizzle: Swizzle4ComponentsVec3 ): Tok<'uvec4'>;
+  ( val: Tok<'uvec4'>, swizzle: SwizzleComponentVec4 ): Tok<'uint'>;
+  ( val: Tok<'uvec4'>, swizzle: Swizzle2ComponentsVec4 ): Tok<'uvec2'>;
+  ( val: Tok<'uvec4'>, swizzle: Swizzle3ComponentsVec4 ): Tok<'uvec3'>;
+  ( val: Tok<'uvec4'>, swizzle: Swizzle4ComponentsVec4 ): Tok<'uvec4'>;
+  ( val: Ex<'uvec2'>, swizzle: SwizzleComponentVec2 ): Ex<'uint'>;
+  ( val: Ex<'uvec2'>, swizzle: Swizzle2ComponentsVec2 ): Ex<'uvec2'>;
+  ( val: Ex<'uvec2'>, swizzle: Swizzle3ComponentsVec2 ): Ex<'uvec3'>;
+  ( val: Ex<'uvec2'>, swizzle: Swizzle4ComponentsVec2 ): Ex<'uvec4'>;
+  ( val: Ex<'uvec3'>, swizzle: SwizzleComponentVec3 ): Ex<'uint'>;
+  ( val: Ex<'uvec3'>, swizzle: Swizzle2ComponentsVec3 ): Ex<'uvec2'>;
+  ( val: Ex<'uvec3'>, swizzle: Swizzle3ComponentsVec3 ): Ex<'uvec3'>;
+  ( val: Ex<'uvec3'>, swizzle: Swizzle4ComponentsVec3 ): Ex<'uvec4'>;
+  ( val: Ex<'uvec4'>, swizzle: SwizzleComponentVec4 ): Ex<'uint'>;
+  ( val: Ex<'uvec4'>, swizzle: Swizzle2ComponentsVec4 ): Ex<'uvec2'>;
+  ( val: Ex<'uvec4'>, swizzle: Swizzle3ComponentsVec4 ): Ex<'uvec3'>;
+  ( val: Ex<'uvec4'>, swizzle: Swizzle4ComponentsVec4 ): Ex<'uvec4'>;
 } = ( val: string, swizzle: string ) => (
   `${val}.${swizzle}`
 ) as any;
@@ -555,26 +657,45 @@ export const texture: {
   ( sampler: Ex<'sampler2D'>, x: Ex<'vec2'> ): Ex<'vec4'>;
 } = __callFn( 'texture' ) as any;
 
+type FloatArg =
+  | Exf
+  | Ex<'int'>
+  | Ex<'uint'>;
 export const float: {
-  ( val: Exf ): Ex<'float'>;
+  ( val: FloatArg ): Ex<'float'>;
 } = __callFn( 'float' ) as any;
 
-type Vec2Args = [ Exf, Exf ] | [ Ex<'vec2'> ];
+type Vec2Args =
+  | [ FloatArg, FloatArg ]
+  | [ Ex<'vec2'> ]
+  | [ Ex<'ivec2'> ]
+  | [ Ex<'uvec2'> ];
 export const vec2: {
   ( ...args: Vec2Args ): Ex<'vec2'>;
-  ( scalar: Exf ): Ex<'vec2'>;
+  ( scalar: FloatArg ): Ex<'vec2'>;
 } = __callFn( 'vec2' ) as any;
 
-type Vec3Args = [ ...Vec2Args, Exf ] | [ Exf, ...Vec2Args ] | [ Ex<'vec3'> ];
+type Vec3Args =
+  | [ ...Vec2Args, FloatArg ]
+  | [ FloatArg, ...Vec2Args ]
+  | [ Ex<'vec3'> ]
+  | [ Ex<'ivec3'> ]
+  | [ Ex<'uvec3'> ];
 export const vec3: {
   ( ...args: Vec3Args ): Ex<'vec3'>;
-  ( scalar: Exf ): Ex<'vec3'>;
+  ( scalar: FloatArg ): Ex<'vec3'>;
 } = __callFn( 'vec3' ) as any;
 
-type Vec4Args = [ ...Vec3Args, Exf ] | [ ...Vec2Args, ...Vec2Args ] | [ Exf, ...Vec3Args ] | [ Ex<'vec4'> ];
+type Vec4Args =
+  | [ ...Vec3Args, FloatArg ]
+  | [ ...Vec2Args, ...Vec2Args ]
+  | [ FloatArg, ...Vec3Args ]
+  | [ Ex<'vec4'> ]
+  | [ Ex<'ivec4'> ]
+  | [ Ex<'uvec4'> ];
 export const vec4: {
   ( ...args: Vec4Args ): Ex<'vec4'>;
-  ( scalar: Exf ): Ex<'vec4'>;
+  ( scalar: FloatArg ): Ex<'vec4'>;
 } = __callFn( 'vec4' ) as any;
 
 // TODO: type
@@ -590,6 +711,18 @@ export const ivec3: {
 export const ivec4: {
   ( ...args: any[] ): Ex<'ivec4'>;
 } = __callFn( 'ivec4' ) as any;
+export const uint: {
+  ( ...args: any[] ): Ex<'uint'>;
+} = __callFn( 'uint' ) as any;
+export const uvec2: {
+  ( ...args: any[] ): Ex<'uvec2'>;
+} = __callFn( 'uvec2' ) as any;
+export const uvec3: {
+  ( ...args: any[] ): Ex<'uvec3'>;
+} = __callFn( 'uvec3' ) as any;
+export const uvec4: {
+  ( ...args: any[] ): Ex<'uvec4'>;
+} = __callFn( 'uvec4' ) as any;
 export const mat2: {
   ( ...args: any[] ): Ex<'mat2'>;
 } = __callFn( 'mat2' ) as any;
