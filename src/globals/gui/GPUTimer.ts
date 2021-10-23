@@ -1,4 +1,4 @@
-import { Pool } from '../../utils/Pool';
+import { Pool } from '@0b5vr/experimental';
 import { gl, glCat } from '../canvas';
 
 export class GPUTimer {
