@@ -1,4 +1,4 @@
-import { GLSLExpression, GLSLFloatExpression, GLSLToken, add, addAssign, arrayIndex, assign, build, clamp, def, defFn, defInNamed, defOut, defUniformArrayNamed, defUniformNamed, div, divAssign, dot, eq, exp, forBreak, forLoop, glFragDepth, gte, ifChain, ifThen, insert, int, length, main, max, mul, mulAssign, normalize, retFn, sq, sub, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { GLSLExpression, GLSLFloatExpression, GLSLToken, add, addAssign, arrayIndex, assign, build, clamp, def, defFn, defInNamed, defOut, defUniformArrayNamed, defUniformNamed, div, divAssign, dot, eq, forBreak, forLoop, glFragDepth, gte, ifChain, ifThen, insert, int, length, main, max, mul, mulAssign, normalize, retFn, sq, sub, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { doAnalyticLighting } from './modules/doAnalyticLighting';
 import { doShadowMapping } from './modules/doShadowMapping';
 
@@ -59,7 +59,7 @@ export const deferredShadeFrag = build( () => {
     const mtlId = sw( tex2, 'w' );
 
     const rawV = sub( cameraPos, position );
-    const lenV = def( 'float', length( rawV ) );
+    // const lenV = def( 'float', length( rawV ) );
     const V = def( 'vec3', normalize( rawV ) );
 
     const dotNV = clamp( dot( normal, V ), EPSILON, 1.0 );
@@ -153,7 +153,7 @@ export const deferredShadeFrag = build( () => {
     );
 
     // fog
-    mulAssign( outColor, exp( mul( -0.4, max( sub( lenV, 3.0 ), 0.0 ) ) ) );
+    // mulAssign( outColor, exp( mul( -0.4, max( sub( lenV, 3.0 ), 0.0 ) ) ) );
 
     assign( fragColor, vec4( outColor, 1.0 ) );
 

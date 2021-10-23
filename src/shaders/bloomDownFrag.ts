@@ -1,11 +1,9 @@
-import { GLSLExpression, GLSLFloatExpression, add, addAssign, assign, build, clamp, def, defFn, defInNamed, defOut, defUniformNamed, div, dot, eq, ifThen, insert, lt, main, max, mix, mul, pow, retFn, step, sub, sw, tern, texture, vec2, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { add, addAssign, assign, build, clamp, def, defFn, defInNamed, defOut, defUniformNamed, div, dot, eq, ifThen, insert, lt, main, max, mix, mul, pow, retFn, step, sub, sw, tern, texture, vec2, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { downsampleTap13 } from './modules/downsampleTap13';
 
 export const bloomDownFrag = build( () => {
   insert( 'precision highp float;' );
 
-  const WEIGHT_1 = 1.0 / 16.0;
-  const WEIGHT_2 = 2.0 / 16.0;
-  const WEIGHT_4 = 4.0 / 16.0;
   const LUMA = vec3( 0.299, 0.587, 0.114 );
 
   const vUv = defInNamed( 'vec2', 'vUv' );
@@ -36,25 +34,11 @@ export const bloomDownFrag = build( () => {
       sub( uv1, deltaTexel ),
     ) );
 
-    // http://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare
     const accum = def( 'vec4' );
-    const sample = ( weight: GLSLFloatExpression, offset: GLSLExpression<'vec2'> ): void => {
+    downsampleTap13( ( weight, offset ) => {
       const tex = fetchWithWeight( sub( uv, mul( deltaTexel, offset ) ) );
       addAssign( accum, mul( weight, tex ) );
-    };
-    sample( WEIGHT_1, vec2( -1.0, -1.0 ) );
-    sample( WEIGHT_2, vec2(  0.0, -1.0 ) );
-    sample( WEIGHT_1, vec2(  1.0, -1.0 ) );
-    sample( WEIGHT_4, vec2( -0.5, -0.5 ) );
-    sample( WEIGHT_4, vec2(  0.5, -0.5 ) );
-    sample( WEIGHT_2, vec2( -1.0,  0.0 ) );
-    sample( WEIGHT_4, vec2(  0.0,  0.0 ) );
-    sample( WEIGHT_2, vec2(  1.0,  0.0 ) );
-    sample( WEIGHT_4, vec2( -0.5,  0.5 ) );
-    sample( WEIGHT_4, vec2(  0.5,  0.5 ) );
-    sample( WEIGHT_1, vec2( -1.0,  1.0 ) );
-    sample( WEIGHT_2, vec2(  0.0,  1.0 ) );
-    sample( WEIGHT_1, vec2(  1.0,  1.0 ) );
+    } );
 
     const col = def( 'vec3', div( sw( accum, 'rgb' ), sw( accum, 'w' ) ) );
 

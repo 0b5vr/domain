@@ -1,4 +1,4 @@
-import { GLSLExpression, add, addAssign, arrayIndex, assign, build, def, defFn, defInNamed, defOutNamed, defUniformArrayNamed, defUniformNamed, div, divAssign, dot, eq, forBreak, forLoop, glFragCoord, gte, ifChain, ifThen, insert, int, length, main, max, mix, mul, mulAssign, normalize, retFn, sq, sub, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { GLSLExpression, add, addAssign, arrayIndex, assign, build, def, defFn, defInNamed, defOutNamed, defUniformArrayNamed, defUniformNamed, div, divAssign, dot, eq, forBreak, forLoop, glFragCoord, gte, ifChain, ifThen, insert, int, length, main, max, mix, mul, mulAssign, normalize, pow, retFn, sq, sub, sw, texture, textureLod, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcDepth } from './modules/calcDepth';
 import { cyclicNoise } from './modules/cyclicNoise';
 import { doAnalyticLighting } from './modules/doAnalyticLighting';
@@ -38,25 +38,27 @@ export const floorFrag = ( tag: 'forward' | 'depth' ): string => build( () => {
     const screenUv = def( 'vec2', div( sw( glFragCoord, 'xy' ), resolution ) );
     assign( sw( screenUv, 'x' ), sub( 1.0, sw( screenUv, 'x' ) ) );
 
-    const tex = def( 'vec4', texture( samplerMirror, screenUv ) );
-
-    const baseColor = def( 'vec3', vec3( 0.1 ) );
-
-    const col = def( 'vec3', mul( sw( tex, 'xyz' ), baseColor ) );
-
-    const posXYZ = sw( vPosition, 'xyz' );
-    const V = normalize( sub( cameraPos, posXYZ ) );
-
     const roughness = mix(
-      0.3,
+      0.2,
       0.6,
       sw( cyclicNoise( vec3( mul( vUv, 20.0 ), 1.0 ), {
         pump: 1.4,
         freq: 1.8,
         warp: 0.5,
-      } ), 'x' ),
+      } ), 'x' )
     );
     const metallic = 0.0;
+
+    const tex = def( 'vec4', textureLod( samplerMirror, screenUv, mul( 5.0, roughness ) ) );
+
+    const baseColor = def( 'vec3', vec3( 0.04 ) );
+
+    const posXYZ = sw( vPosition, 'xyz' );
+    const V = normalize( sub( cameraPos, posXYZ ) );
+    const dotVN = dot( V, vNormal );
+
+    const FReflect = pow( max( 0.0, sub( 1.0, dotVN ) ), 5.0 );
+    const col = def( 'vec3', mul( sw( tex, 'xyz' ), FReflect ) );
 
     if ( tag === 'depth' ) {
       const len = length( sub( cameraPos, posXYZ ) );

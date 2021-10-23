@@ -6,12 +6,17 @@ import { Lambda } from '../heck/components/Lambda';
 import { Material } from '../heck/Material';
 import { Mesh } from '../heck/components/Mesh';
 import { PerspectiveCamera } from '../heck/components/PerspectiveCamera';
+import { Quad } from '../heck/components/Quad';
 import { RawMatrix4, TRIANGLE_STRIP_QUAD_3D, TRIANGLE_STRIP_QUAD_NORMAL, TRIANGLE_STRIP_QUAD_UV } from '@0b5vr/experimental';
 import { createLightUniformsLambda } from './utils/createLightUniformsLambda';
+import { dryFrag } from '../shaders/dryFrag';
 import { dummyRenderTarget } from '../globals/dummyRenderTarget';
 import { floorFrag } from '../shaders/floorFrag';
 import { gl, glCat } from '../globals/canvas';
+import { mipmapDownFrag } from '../shaders/mipmapDownFrag';
 import { objectVert } from '../shaders/objectVert';
+import { quadGeometry } from '../globals/quadGeometry';
+import { quadVert } from '../shaders/quadVert';
 
 export class Floor extends Entity {
   public mirrorCameraEntity: Entity;
@@ -19,15 +24,31 @@ export class Floor extends Entity {
   public primaryCamera: PerspectiveCamera;
   public mirrorCamera: PerspectiveCamera;
   public mirrorTarget: BufferRenderTarget;
+  public mipmapMirrorTarget: BufferRenderTarget;
 
   public constructor( primaryCameraEntity: Entity, primaryCamera: PerspectiveCamera ) {
     super();
 
-    // -- funky part -------------------------------------------------------------------------------
+    // -- https://www.nicovideo.jp/watch/sm21005672 ------------------------------------------------
     this.mirrorCameraEntity = new Entity( {
       name: process.env.DEV && 'mirrorCameraEntity',
     } );
     this.children.push( this.mirrorCameraEntity );
+
+    this.components.push( new Lambda( {
+      onUpdate: () => {
+        const camTrans = this.mirrorCameraEntity.transform;
+        camTrans.matrix = this.primaryCameraEntity.transform.matrix.concat() as RawMatrix4;
+
+        camTrans.matrix[ 0 ] *= -1.0;
+        camTrans.matrix[ 4 ] *= -1.0;
+        camTrans.matrix[ 8 ] *= -1.0;
+        camTrans.matrix[ 1 ] *= -1.0;
+        camTrans.matrix[ 5 ] *= -1.0;
+        camTrans.matrix[ 9 ] *= -1.0;
+        camTrans.matrix[ 13 ] *= -1.0;
+      },
+    } ) );
 
     this.primaryCameraEntity = primaryCameraEntity;
     this.primaryCamera = primaryCamera;
@@ -47,27 +68,43 @@ export class Floor extends Entity {
     } );
     this.mirrorCameraEntity.components.push( this.mirrorCamera );
 
-    this.components.push( new Lambda( {
-      onUpdate: () => {
-        const camTrans = this.mirrorCameraEntity.transform;
-        camTrans.matrix = this.primaryCameraEntity.transform.matrix.concat() as RawMatrix4;
+    // -- create mipmaps ---------------------------------------------------------------------------
+    this.mipmapMirrorTarget = new BufferRenderTarget( {
+      width: 1280,
+      height: 720,
+      levels: 6,
+      name: process.env.DEV && 'Floor/mipmapMirrorTarget',
+    } );
 
-        camTrans.matrix[ 0 ] *= -1.0;
-        camTrans.matrix[ 4 ] *= -1.0;
-        camTrans.matrix[ 8 ] *= -1.0;
-        camTrans.matrix[ 1 ] *= -1.0;
-        camTrans.matrix[ 5 ] *= -1.0;
-        camTrans.matrix[ 9 ] *= -1.0;
-        camTrans.matrix[ 13 ] *= -1.0;
-      },
-    } ) );
+    const mipmapEntity = new Entity( {
+      name: process.env.DEV && 'mipmapEntity',
+    } );
+    this.children.push( mipmapEntity );
+
+    this.mipmapMirrorTarget.mipmapTargets!.map( ( target, i ) => {
+      const material = new Material(
+        quadVert,
+        i === 0 ? dryFrag : mipmapDownFrag,
+        { initOptions: { geometry: quadGeometry, target: dummyRenderTarget } },
+      );
+
+      material.addUniform( 'lod', '1f', i );
+      material.addUniformTextures( 'sampler0', this.mirrorTarget.texture );
+
+      const quad = new Quad( {
+        target,
+        material,
+        name: process.env.DEV && 'quad',
+      } );
+      mipmapEntity.components.push( quad );
+    } );
 
     // -- entity for mesh --------------------------------------------------------------------------
     const meshEntity = new Entity();
     this.children.push( meshEntity );
 
     meshEntity.transform.rotation = [ -HALF_SQRT_TWO, 0.0, 0.0, HALF_SQRT_TWO ];
-    meshEntity.transform.scale = [ 5.0, 5.0, 5.0 ];
+    meshEntity.transform.scale = [ 20.0, 20.0, 20.0 ];
 
     // -- create buffers ---------------------------------------------------------------------------
     const bufferPos = glCat.createBuffer();
@@ -112,7 +149,7 @@ export class Floor extends Entity {
       },
     );
 
-    forward.addUniformTextures( 'samplerMirror', this.mirrorTarget.texture );
+    forward.addUniformTextures( 'samplerMirror', this.mipmapMirrorTarget.texture );
 
     this.components.push( createLightUniformsLambda( [ forward ] ) );
 

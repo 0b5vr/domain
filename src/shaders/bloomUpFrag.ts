@@ -1,11 +1,8 @@
-import { GLSLExpression, GLSLFloatExpression, add, addAssign, assign, build, clamp, def, defInNamed, defOut, defUniformNamed, div, insert, main, mix, mul, pow, sub, sw, texture, vec2, vec4 } from '../shader-builder/shaderBuilder';
+import { add, addAssign, assign, build, clamp, def, defInNamed, defOut, defUniformNamed, div, insert, main, mix, mul, pow, sub, sw, texture, vec2, vec4 } from '../shader-builder/shaderBuilder';
+import { upsampleTap9 } from './modules/upsampleTap9';
 
 export const bloomUpFrag = build( () => {
   insert( 'precision highp float;' );
-
-  const WEIGHT_1 = 1.0 / 16.0;
-  const WEIGHT_2 = 2.0 / 16.0;
-  const WEIGHT_4 = 4.0 / 16.0;
 
   const vUv = defInNamed( 'vec2', 'vUv' );
 
@@ -31,19 +28,10 @@ export const bloomUpFrag = build( () => {
 
     // http://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare
     const accum = def( 'vec4' );
-    const sample = ( weight: GLSLFloatExpression, offset: GLSLExpression<'vec2'> ): void => {
+    upsampleTap9( ( weight, offset ) => {
       const tex = texture( sampler0, sub( uv, mul( deltaTexel, offset ) ) );
       addAssign( accum, mul( weight, tex ) );
-    };
-    sample( WEIGHT_1, vec2( -1.0, -1.0 ) );
-    sample( WEIGHT_2, vec2(  0.0, -1.0 ) );
-    sample( WEIGHT_1, vec2(  1.0, -1.0 ) );
-    sample( WEIGHT_2, vec2( -1.0,  0.0 ) );
-    sample( WEIGHT_4, vec2(  0.0,  0.0 ) );
-    sample( WEIGHT_2, vec2(  1.0,  0.0 ) );
-    sample( WEIGHT_1, vec2( -1.0,  1.0 ) );
-    sample( WEIGHT_2, vec2(  0.0,  1.0 ) );
-    sample( WEIGHT_1, vec2(  1.0,  1.0 ) );
+    } );
 
     const col = sw( accum, 'rgb' );
     assign( fragColor, vec4( col, 1.0 ) );

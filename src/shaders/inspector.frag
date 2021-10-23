@@ -9,6 +9,7 @@ in vec2 vUv;
 
 out vec4 fragColor;
 
+uniform float lod;
 uniform vec2 resolution;
 uniform vec2 mouse;
 uniform sampler2D sampler0;
@@ -94,8 +95,8 @@ void main() {
   vec2 center = floor( mouse * resolution + vec2( 1.0, 0.7 ) * RADIUS );
   float circle = length( coord.xy - center ) - RADIUS;
 
-  vec4 col = texture( sampler0, uv );
-  vec4 mcol = texture( sampler0, mouse );
+  vec4 col = textureLod( sampler0, uv, lod );
+  vec4 mcol = textureLod( sampler0, mouse, lod );
   float mcolb = dot( mcol.rgb, vec3( 0.299, 0.587, 0.114 ) );
   vec4 bcol = vec4( vec3( step( mcolb, 0.5 ) ), 1.0 );
 

@@ -1,10 +1,13 @@
 import { GLCatFramebuffer, GLCatTexture } from '@fms-cat/glcat-ts';
 import { RenderTarget } from './RenderTarget';
+import { createMipmapFramebuffers } from '../utils/createMipmapFramebuffers';
 import { gl, glCat } from '../globals/canvas';
 
 export interface BufferRenderTargetOptions {
   width: number;
   height: number;
+  framebuffer?: GLCatFramebuffer;
+  levels?: number;
   numBuffers?: number;
   isFloat?: boolean;
   name?: string;
@@ -15,6 +18,7 @@ export class BufferRenderTarget extends RenderTarget {
   public static nameMap = new Map<string, BufferRenderTarget>();
 
   public readonly framebuffer: GLCatFramebuffer;
+  public readonly mipmapTargets: BufferRenderTarget[] | null;
   public readonly width: number;
   public readonly height: number;
   public readonly numBuffers: number;
@@ -49,14 +53,44 @@ export class BufferRenderTarget extends RenderTarget {
   public constructor( options: BufferRenderTargetOptions ) {
     super();
 
-    this.framebuffer = glCat.lazyDrawbuffers(
-      options.width,
-      options.height,
-      options.numBuffers ?? 1,
-      {
-        isFloat: options.isFloat ?? true
-      }
-    );
+    if ( options?.framebuffer != null ) {
+      this.framebuffer = options.framebuffer;
+      this.mipmapTargets = null;
+
+    } else if ( options?.levels != null ) {
+      const framebuffers = createMipmapFramebuffers(
+        options.width,
+        options.height,
+        options.levels,
+      );
+      this.framebuffer = framebuffers[ 0 ];
+
+      let width = options.width;
+      let height = options.height;
+      this.mipmapTargets = framebuffers.map( ( framebuffer, i ) => {
+        const rt = new BufferRenderTarget( {
+          width,
+          height,
+          framebuffer,
+          name: process.env.DEV ? `${ options.name }/level${ i + 1 }` : undefined,
+        } );
+        width /= 2.0;
+        height /= 2.0;
+        return rt;
+      } );
+
+    } else {
+      this.framebuffer = glCat.lazyDrawbuffers(
+        options.width,
+        options.height,
+        options.numBuffers ?? 1,
+        {
+          isFloat: options.isFloat ?? true
+        }
+      );
+      this.mipmapTargets = null;
+
+    }
 
     this.width = options.width;
     this.height = options.height;
@@ -86,6 +120,10 @@ export class BufferRenderTarget extends RenderTarget {
   }
 
   public dispose(): void {
-    this.framebuffer.dispose();
+    if ( this.mipmapTargets != null ) {
+      this.mipmapTargets.map( ( target ) => target.dispose() );
+    } else {
+      this.framebuffer.dispose();
+    }
   }
 }

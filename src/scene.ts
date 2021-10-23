@@ -87,8 +87,8 @@ const light1 = new PointLightEntity( {
   name: process.env.DEV && 'light1',
   brtNamePrefix: process.env.DEV && 'SceneBegin/light1',
 } );
-light1.color = [ 250.0, 250.0, 250.0 ];
-light1.transform.lookAt( [ 4.0, 2.0, 4.0 ], [ 0.0, 1.0, 0.0 ] );
+light1.color = [ 2500.0, 2500.0, 2500.0 ];
+light1.transform.lookAt( [ 8.0, 4.0, 8.0 ], [ 0.0, 1.0, 0.0 ] );
 
 const light2 = new PointLightEntity( {
   scenes: [ dog.root ],
@@ -99,7 +99,7 @@ const light2 = new PointLightEntity( {
   brtNamePrefix: process.env.DEV && 'SceneBegin/light2',
 } );
 light2.color = [ 200.0, 230.0, 260.0 ];
-light2.transform.lookAt( [ 0.01, 6.0, 0.01 ], [ 0.0, 1.0, 0.0 ] );
+light2.transform.lookAt( [ 0.01, 9.0, 0.01 ], [ 0.0, 1.0, 0.0 ] );
 
 const light3 = new PointLightEntity( {
   scenes: [ dog.root ],
@@ -109,7 +109,7 @@ const light3 = new PointLightEntity( {
   name: process.env.DEV && 'light3',
   brtNamePrefix: process.env.DEV && 'SceneBegin/light3',
 } );
-light3.color = [ 60.0, 4.0, 10.0 ];
+light3.color = [ 300.0, 30.0, 70.0 ];
 light3.transform.lookAt( [ -8.0, 0.0, -4.0 ], [ 0.0, 1.0, 0.0 ] );
 
 const deferredCamera = new DeferredCamera( {
@@ -117,13 +117,13 @@ const deferredCamera = new DeferredCamera( {
   target: swap.i,
   textureIBLLUT: iblLutCalc.texture,
 } );
-deferredCamera.transform.position = [ 0.0, 1.0, 5.0 ];
+deferredCamera.transform.position = [ 0.0, 1.6, 10.0 ];
 
 const forwardCamera = new ForwardCamera( {
   scenes: [ dog.root ],
   target: swap.i,
 } );
-forwardCamera.transform.position = [ 0.0, 1.0, 5.0 ];
+forwardCamera.transform = deferredCamera.transform;
 
 const floor = new Floor(
   forwardCamera,
@@ -146,7 +146,8 @@ if ( process.env.DEV && module.hot ) {
     replacer.replace( dog.root );
   } );
 }
-fluid.transform.position = [ -2.0, 1.0, 0.0 ];
+fluid.transform.position = [ -4.0, 3.0, 0.0 ];
+fluid.transform.scale = [ 3.0, 3.0, 3.0 ];
 
 const plane = new Plane();
 if ( process.env.DEV && module.hot ) {
@@ -155,7 +156,8 @@ if ( process.env.DEV && module.hot ) {
     replacer.replace( dog.root );
   } );
 }
-plane.transform.position = [ 0.0, 1.0, 0.0 ];
+plane.transform.position = [ 0.0, 3.0, 0.0 ];
+plane.transform.scale = [ 3.0, 3.0, 3.0 ];
 
 const sssBox = new SSSBox();
 if ( process.env.DEV && module.hot ) {
@@ -164,7 +166,8 @@ if ( process.env.DEV && module.hot ) {
     replacer.replace( dog.root );
   } );
 }
-sssBox.transform.position = [ 0.0, 1.0, 0.0 ];
+sssBox.transform.position = [ 0.0, 3.0, 0.0 ];
+sssBox.transform.scale = [ 3.0, 3.0, 3.0 ];
 
 const mengerSponge = new MengerSponge();
 if ( process.env.DEV && module.hot ) {
@@ -173,7 +176,8 @@ if ( process.env.DEV && module.hot ) {
     replacer.replace( dog.root );
   } );
 }
-mengerSponge.transform.position = [ 2.0, 1.0, 0.0 ];
+mengerSponge.transform.position = [ 4.0, 3.0, 0.0 ];
+mengerSponge.transform.scale = [ 3.0, 3.0, 3.0 ];
 
 swap.swap();
 

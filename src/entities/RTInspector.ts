@@ -116,6 +116,12 @@ export class RTInspector extends Entity {
     const single = ha?.value( 'RTInspector/single', '' );
     const singleIndex = ha?.value( 'RTInspector/index', 0, { step: 1 } );
 
+    this.materialSingle.addUniform(
+      'lod',
+      '1f',
+      ha?.value( 'RTInspector/lod', 0, { step: 1 } ) ?? 0.0,
+    );
+
     if ( ha?.value( 'RTInspector/multiple', false ) ) {
       this.entityMultiple.active = true;
       this.entitySingle.active = false;
