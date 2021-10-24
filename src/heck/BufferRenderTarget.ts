@@ -72,7 +72,7 @@ export class BufferRenderTarget extends RenderTarget {
           width,
           height,
           framebuffer,
-          name: process.env.DEV ? `${ options.name }/level${ i + 1 }` : undefined,
+          name: process.env.DEV ? `${ options.name }/level${ i }` : undefined,
         } );
         width /= 2.0;
         height /= 2.0;

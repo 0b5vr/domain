@@ -1,19 +1,20 @@
+import { Blit } from '../heck/components/Blit';
 import { BufferRenderTarget } from '../heck/BufferRenderTarget';
 import { Entity } from '../heck/Entity';
 import { Geometry } from '../heck/Geometry';
-import { HALF_SQRT_TWO } from '../utils/constants';
+import { HALF_SQRT_TWO, ONE_SUB_ONE_POINT_FIVE_POW_I } from '../utils/constants';
 import { Lambda } from '../heck/components/Lambda';
 import { Material } from '../heck/Material';
 import { Mesh } from '../heck/components/Mesh';
 import { PerspectiveCamera } from '../heck/components/PerspectiveCamera';
 import { Quad } from '../heck/components/Quad';
-import { RawMatrix4, TRIANGLE_STRIP_QUAD_3D, TRIANGLE_STRIP_QUAD_NORMAL, TRIANGLE_STRIP_QUAD_UV } from '@0b5vr/experimental';
+import { RESOLUTION } from '../config';
+import { RawMatrix4, Swap, TRIANGLE_STRIP_QUAD_3D, TRIANGLE_STRIP_QUAD_NORMAL, TRIANGLE_STRIP_QUAD_UV } from '@0b5vr/experimental';
+import { bloomDownFrag } from '../shaders/bloomDownFrag';
 import { createLightUniformsLambda } from './utils/createLightUniformsLambda';
-import { dryFrag } from '../shaders/dryFrag';
 import { dummyRenderTarget } from '../globals/dummyRenderTarget';
 import { floorFrag } from '../shaders/floorFrag';
 import { gl, glCat } from '../globals/canvas';
-import { mipmapDownFrag } from '../shaders/mipmapDownFrag';
 import { objectVert } from '../shaders/objectVert';
 import { quadGeometry } from '../globals/quadGeometry';
 import { quadVert } from '../shaders/quadVert';
@@ -53,8 +54,8 @@ export class Floor extends Entity {
     this.primaryCameraEntity = primaryCameraEntity;
     this.primaryCamera = primaryCamera;
     this.mirrorTarget = new BufferRenderTarget( {
-      width: 1280,
-      height: 720,
+      width: RESOLUTION[ 0 ],
+      height: RESOLUTION[ 1 ],
       name: process.env.DEV && 'Floor/mirrorTarget',
     } );
 
@@ -69,9 +70,22 @@ export class Floor extends Entity {
     this.mirrorCameraEntity.components.push( this.mirrorCamera );
 
     // -- create mipmaps ---------------------------------------------------------------------------
+    const swapMirrorDownsampleTarget = new Swap(
+      new BufferRenderTarget( {
+        width: RESOLUTION[ 0 ],
+        height: RESOLUTION[ 1 ],
+        name: process.env.DEV && 'Floor/mirrorDownsampleTarget/swap0',
+      } ),
+      new BufferRenderTarget( {
+        width: RESOLUTION[ 0 ],
+        height: RESOLUTION[ 1 ],
+        name: process.env.DEV && 'Floor/mirrorDownsampleTarget/swap1',
+      } ),
+    );
+
     this.mipmapMirrorTarget = new BufferRenderTarget( {
-      width: 1280,
-      height: 720,
+      width: RESOLUTION[ 0 ] / 2,
+      height: RESOLUTION[ 1 ] / 2,
       levels: 6,
       name: process.env.DEV && 'Floor/mipmapMirrorTarget',
     } );
@@ -81,22 +95,53 @@ export class Floor extends Entity {
     } );
     this.children.push( mipmapEntity );
 
-    this.mipmapMirrorTarget.mipmapTargets!.map( ( target, i ) => {
+    let srcRange = [ -1.0, -1.0, 1.0, 1.0 ];
+
+    this.mipmapMirrorTarget.mipmapTargets?.map( ( target, i ) => {
       const material = new Material(
         quadVert,
-        i === 0 ? dryFrag : mipmapDownFrag,
-        { initOptions: { geometry: quadGeometry, target: dummyRenderTarget } },
+        bloomDownFrag( false ),
+        { initOptions: { target: dummyRenderTarget, geometry: quadGeometry } },
       );
 
-      material.addUniform( 'lod', '1f', i );
-      material.addUniformTextures( 'sampler0', this.mirrorTarget.texture );
+      material.addUniform( 'gain', '1f', 1.0 );
+      material.addUniform( 'bias', '1f', 0.0 );
+      material.addUniformVector( 'srcRange', '4fv', srcRange.map( ( v ) => 0.5 + 0.5 * v ) );
+      material.addUniformTextures(
+        'sampler0',
+        ( i === 0 ) ? this.mirrorTarget.texture : swapMirrorDownsampleTarget.o.texture,
+      );
 
-      const quad = new Quad( {
-        target,
+      const range: [ number, number, number, number ] = [
+        2.0 * ONE_SUB_ONE_POINT_FIVE_POW_I[ i ] - 1.0,
+        2.0 * ONE_SUB_ONE_POINT_FIVE_POW_I[ i ] - 1.0,
+        2.0 * ONE_SUB_ONE_POINT_FIVE_POW_I[ i + 1 ] - 1.0,
+        2.0 * ONE_SUB_ONE_POINT_FIVE_POW_I[ i + 1 ] - 1.0,
+      ];
+
+      mipmapEntity.components.push( new Quad( {
+        target: swapMirrorDownsampleTarget.i,
         material,
-        name: process.env.DEV && 'quad',
-      } );
-      mipmapEntity.components.push( quad );
+        range,
+        name: `quadDown${ i }`,
+      } ) );
+
+      swapMirrorDownsampleTarget.swap();
+      srcRange = range;
+
+      const srcRect: [ number, number, number, number ] = [
+        RESOLUTION[ 0 ] * ONE_SUB_ONE_POINT_FIVE_POW_I[ i ],
+        RESOLUTION[ 1 ] * ONE_SUB_ONE_POINT_FIVE_POW_I[ i ],
+        RESOLUTION[ 0 ] * ONE_SUB_ONE_POINT_FIVE_POW_I[ i + 1 ],
+        RESOLUTION[ 1 ] * ONE_SUB_ONE_POINT_FIVE_POW_I[ i + 1 ],
+      ];
+
+      mipmapEntity.components.push( new Blit( {
+        src: swapMirrorDownsampleTarget.o,
+        dst: target,
+        srcRect,
+        name: `blitDown${ i }`,
+      } ) );
     } );
 
     // -- entity for mesh --------------------------------------------------------------------------

@@ -2,6 +2,7 @@ import { Blit } from '../heck/components/Blit';
 import { BufferRenderTarget } from '../heck/BufferRenderTarget';
 import { Entity } from '../heck/Entity';
 import { Material } from '../heck/Material';
+import { ONE_SUB_ONE_POINT_FIVE_POW_I } from '../utils/constants';
 import { Quad } from '../heck/components/Quad';
 import { RenderTarget } from '../heck/RenderTarget';
 import { Swap } from '@0b5vr/experimental';
@@ -44,25 +45,28 @@ export class Bloom extends Entity {
     } ) );
 
     // -- down -------------------------------------------------------------------------------------
-    for ( let i = 0; i < 6; i ++ ) {
-      const isFirst = i === 0;
+    let srcRange = [ -1.0, -1.0, 1.0, 1.0 ];
 
+    for ( let i = 0; i < 6; i ++ ) {
       const material = new Material(
         quadVert,
-        bloomDownFrag,
+        bloomDownFrag( 0 === 0 ),
         { initOptions: { target: dummyRenderTarget, geometry: quadGeometry } },
       );
 
-      material.addUniform( 'level', '1f', i );
+      material.addUniform( 'bias', '1f', -0.3 );
+      material.addUniform( 'gain', '1f', 2.0 );
+      material.addUniformVector( 'srcRange', '4fv', srcRange.map( ( v ) => 0.5 + 0.5 * v ) );
       material.addUniformTextures(
         'sampler0',
-        isFirst ? options.input.texture : swap.i.texture,
+        ( i === 0 ) ? options.input.texture : swap.i.texture,
       );
 
-      const p = 2.0 * Math.pow( 0.5, i );
-      const range: [ number, number, number, number ] = isFirst
-        ? [ -1.0, -1.0, 0.0, 0.0 ]
-        : [ 1.0 - p, 1.0 - p, 1.0 - 0.5 * p, 1.0 - 0.5 * p ];
+      const rangeMin = 2.0 * ONE_SUB_ONE_POINT_FIVE_POW_I[ i ] - 1.0;
+      const rangeMax = 2.0 * ONE_SUB_ONE_POINT_FIVE_POW_I[ i + 1 ] - 1.0;
+      const range: [ number, number, number, number ] = (
+        [ rangeMin, rangeMin, rangeMax, rangeMax ]
+      );
 
       this.components.push( new Quad( {
         target: swap.o,
@@ -72,6 +76,7 @@ export class Bloom extends Entity {
       } ) );
 
       swap.swap();
+      srcRange = range;
     }
 
     // -- up ---------------------------------------------------------------------------------------
@@ -87,16 +92,17 @@ export class Bloom extends Entity {
         },
       );
 
-      material.addUniform( 'level', '1f', i );
+      material.addUniformVector( 'srcRange', '4fv', srcRange.map( ( v ) => 0.5 + 0.5 * v ) );
       material.addUniformTextures(
         'sampler0',
         swap.i.texture,
       );
 
-      const p = 4.0 * Math.pow( 0.5, i );
+      const rangeMin = 2.0 * ONE_SUB_ONE_POINT_FIVE_POW_I[ i - 1 ] - 1.0;
+      const rangeMax = isLast ? 1.0 : 2.0 * ONE_SUB_ONE_POINT_FIVE_POW_I[ i ] - 1.0;
       const range: [ number, number, number, number ] = isLast
         ? [ -1.0, -1.0, 1.0, 1.0 ]
-        : [ 1.0 - p, 1.0 - p, 1.0 - 0.5 * p, 1.0 - 0.5 * p ];
+        : [ rangeMin, rangeMin, rangeMax, rangeMax ];
 
       this.components.push( new Quad( {
         target: isLast ? options.target : swap.o,
@@ -106,6 +112,7 @@ export class Bloom extends Entity {
       } ) );
 
       swap.swap();
+      srcRange = range;
     }
   }
 }

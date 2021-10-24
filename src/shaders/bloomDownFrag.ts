@@ -1,7 +1,7 @@
-import { add, addAssign, assign, build, clamp, def, defFn, defInNamed, defOut, defUniformNamed, div, dot, eq, ifThen, insert, lt, main, max, mix, mul, pow, retFn, step, sub, sw, tern, texture, vec2, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { add, addAssign, assign, build, clamp, def, defFn, defInNamed, defOut, defUniformNamed, div, dot, insert, lt, main, max, mix, mul, retFn, sub, sw, tern, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { downsampleTap13 } from './modules/downsampleTap13';
 
-export const bloomDownFrag = build( () => {
+export const bloomDownFrag = ( useLevelModifier: boolean ): string => build( () => {
   insert( 'precision highp float;' );
 
   const LUMA = vec3( 0.299, 0.587, 0.114 );
@@ -10,7 +10,9 @@ export const bloomDownFrag = build( () => {
 
   const fragColor = defOut( 'vec4' );
 
-  const level = defUniformNamed( 'float', 'level' );
+  const gain = defUniformNamed( 'float', 'gain' );
+  const bias = defUniformNamed( 'float', 'bias' );
+  const srcRange = defUniformNamed( 'vec4', 'srcRange' );
   const resolution = defUniformNamed( 'vec2', 'resolution' );
   const sampler0 = defUniformNamed( 'sampler2D', 'sampler0' );
 
@@ -21,12 +23,10 @@ export const bloomDownFrag = build( () => {
   } );
 
   main( () => {
-    const p = mul( 2.0, def( 'float', pow( 0.5, level ) ) ); // 2.0, 1.0, 0.5, 0.25...
-
     const deltaTexel = def( 'vec2', div( 1.0, resolution ) );
 
-    const uv0 = def( 'vec2', mul( step( 0.5, level ), vec2( sub( 1.0, p ) ) ) );
-    const uv1 = def( 'vec2', vec2( sub( 1.0, mul( step( 0.5, level ), 0.5, p ) ) ) );
+    const uv0 = sw( srcRange, 'xy' );
+    const uv1 = sw( srcRange, 'zw' );
     const uv = def( 'vec2', mix( uv0, uv1, vUv ) );
     assign( uv, clamp(
       uv,
@@ -42,11 +42,11 @@ export const bloomDownFrag = build( () => {
 
     const col = def( 'vec3', div( sw( accum, 'rgb' ), sw( accum, 'w' ) ) );
 
-    ifThen( eq( level, 0.0 ), () => {
+    if ( useLevelModifier ) {
       const brightness = def( 'float', dot( LUMA, col ) );
       const normalized = tern( lt( brightness, 1E-4 ), vec3( brightness ), div( col, brightness ) );
-      assign( col, mul( max( 0.0, sub( brightness, 0.6 ) ), normalized ) );
-    } );
+      assign( col, mul( gain, max( 0.0, add( brightness, bias ) ), normalized ) );
+    }
 
     assign( fragColor, vec4( col, 1.0 ) );
   } );

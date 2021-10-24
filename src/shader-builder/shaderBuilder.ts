@@ -661,6 +661,10 @@ export const textureLod: {
   ( sampler: Ex<'sampler2D'>, x: Ex<'vec2'>, lod: Exf ): Ex<'vec4'>;
 } = __callFn( 'textureLod' ) as any;
 
+export const texelFetch: {
+  ( sampler: Ex<'sampler2D'>, x: Ex<'ivec2'>, lod?: Ex<'int'> ): Ex<'vec4'>;
+} = __callFn( 'texelFetch' ) as any;
+
 type FloatArg =
   | Exf
   | Ex<'int'>
