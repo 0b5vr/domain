@@ -4,8 +4,10 @@ import { Entity } from '../heck/Entity';
 import { Lambda } from '../heck/components/Lambda';
 import { Material } from '../heck/Material';
 import { Quad } from '../heck/components/Quad';
+import { RESOLUTION } from '../config';
 import { RenderTarget } from '../heck/RenderTarget';
-import { canvas, gl } from '../globals/canvas';
+import { canvas, gl, glCat } from '../globals/canvas';
+import { dryFrag } from '../shaders/dryFrag';
 import { dummyRenderTarget } from '../globals/dummyRenderTarget';
 import { gui } from '../globals/gui';
 import { quadGeometry } from '../globals/quadGeometry';
@@ -72,9 +74,15 @@ export class RTInspector extends Entity {
     const width = Math.floor( options.target.width / grid );
     const height = Math.floor( options.target.height / grid );
 
-    // then add blits
+    // determine grid positions
+    const entries: {
+      src: BufferRenderTarget;
+      attachment: GLenum;
+      dstRect: [ number, number, number, number ];
+      name: string;
+    }[] = [];
+
     let iBlit = 0;
-    this.blitsMultiple = [];
     for ( const src of BufferRenderTarget.nameMap.values() ) {
       for ( let iAttachment = 0; iAttachment < src.numBuffers; iAttachment ++ ) {
         const x = iBlit % grid;
@@ -86,21 +94,83 @@ export class RTInspector extends Entity {
           height * ( y + 1.0 ),
         ];
 
-        const blit = new Blit( {
+        let name = `${ src.name }`;
+        if ( src.numBuffers > 1 ) {
+          name += `[${ iAttachment }]`;
+        }
+
+        entries.push( {
           src,
-          dst: options.target,
           attachment: gl.COLOR_ATTACHMENT0 + iAttachment,
           dstRect,
-          name: `${ src.name }/${ iAttachment }`,
-          ignoreBreakpoints: true,
+          name,
         } );
-
-        this.blitsMultiple.push( blit );
-        this.entityMultiple.components.push( blit );
 
         iBlit ++;
       }
     }
+
+    // then add blits + render names to canvas
+    this.blitsMultiple = [];
+    for ( const { src, attachment, dstRect, name } of entries ) {
+      const blit = new Blit( {
+        src,
+        dst: options.target,
+        attachment,
+        dstRect,
+        name,
+        ignoreBreakpoints: true,
+      } );
+
+      this.blitsMultiple.push( blit );
+      this.entityMultiple.components.push( blit );
+    }
+
+    // text canvas
+    const textureText = glCat.createTexture();
+
+    const textCanvas = document.createElement( 'canvas' );
+    textCanvas.width = RESOLUTION[ 0 ];
+    textCanvas.height = RESOLUTION[ 1 ];
+
+    const textContext = textCanvas.getContext( '2d' )!;
+
+    this.entityMultiple.components.push( new Lambda( {
+      onUpdate: () => {
+        textContext.clearRect( 0, 0, RESOLUTION[ 0 ], RESOLUTION[ 1 ] );
+
+        textContext.font = '500 10px Wt-Position';
+        textContext.fillStyle = '#fff';
+        textContext.strokeStyle = '#000';
+
+        for ( const { dstRect, name } of entries ) {
+          textContext.strokeText( name, dstRect[ 0 ], RESOLUTION[ 1 ] - dstRect[ 1 ] );
+          textContext.fillText( name, dstRect[ 0 ], RESOLUTION[ 1 ] - dstRect[ 1 ] );
+        }
+
+        textureText.setTexture( textCanvas );
+      },
+      name: 'lambdaUpdateTextCanvas',
+    } ) );
+
+    const materialMultipleText = new Material(
+      quadVert,
+      dryFrag,
+      {
+        initOptions: { target: dummyRenderTarget, geometry: quadGeometry },
+        blend: [ gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA ],
+      },
+    );
+    materialMultipleText.addUniformTextures( 'sampler0', textureText );
+
+    const quadMultipleText = new Quad( {
+      target: options.target,
+      material: materialMultipleText,
+      name: 'quadMultipleText',
+      ignoreBreakpoints: true,
+      range: [ -1.0, 1.0, 1.0, -1.0 ],
+    } );
+    this.entityMultiple.components.push( quadMultipleText );
 
     // -- see the config ---------------------------------------------------------------------------
     this.components.push( new Lambda( {

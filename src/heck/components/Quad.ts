@@ -43,6 +43,7 @@ export class Quad extends Component {
     target.bind();
     material.setBlendMode();
 
+    gl.disable( gl.CULL_FACE );
     gl.enable( gl.DEPTH_TEST );
     gl.depthMask( true );
 
