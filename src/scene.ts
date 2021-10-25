@@ -81,13 +81,13 @@ const iblLutCalc = new IBLLUTCalc();
 
 const light1 = new PointLightEntity( {
   scenes: [ dog.root ],
-  shadowMapFov: 40.0,
+  shadowMapFov: 35.0,
   shadowMapNear: 1.0,
   shadowMapFar: 20.0,
   name: process.env.DEV && 'light1',
   brtNamePrefix: process.env.DEV && 'SceneBegin/light1',
 } );
-light1.color = [ 1500.0, 1500.0, 1500.0 ];
+light1.color = [ 500.0, 500.0, 500.0 ];
 light1.spotness = 1.0;
 light1.transform.lookAt( [ 5.0, 1.0, 8.0 ], [ 0.0, 3.0, 0.0 ] );
 

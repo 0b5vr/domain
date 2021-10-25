@@ -1,4 +1,4 @@
-import { GLSLExpression, GLSLFloatExpression, add, addAssign, assign, build, clamp, def, defFn, defInNamed, defOut, defUniformArrayNamed, defUniformNamed, div, dot, eq, glFragDepth, ifChain, insert, main, mul, mulAssign, normalize, retFn, sq, sub, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { GLSLExpression, GLSLFloatExpression, add, addAssign, assign, build, clamp, def, defFn, defInNamed, defOut, defUniformArrayNamed, defUniformNamed, div, dot, eq, glFragDepth, ifChain, insert, main, max, mul, mulAssign, normalize, retFn, sq, sub, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcL } from './modules/calcL';
 import { defDoSomethingUsingSamplerArray } from './modules/defDoSomethingUsingSamplerArray';
 import { doAnalyticLighting } from './modules/doAnalyticLighting';
@@ -74,7 +74,7 @@ export const deferredShadeFrag = build( () => {
       forEachLights( ( { iLight, lightPos, lightColor, lightNearFar, lightParams, lightPV } ) => {
         const [ L, lenL ] = calcL( lightPos, position );
 
-        const dotNL = dot( normal, L );
+        const dotNL = max( dot( normal, L ), 1E-3 );
 
         // shading
         const lightShaded = def( 'vec3', mul(

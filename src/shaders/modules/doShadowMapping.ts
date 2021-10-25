@@ -26,18 +26,19 @@ export function doShadowMapping(
         ) );
         const lightPXY = sw( lightP, 'xy' );
 
-        const shadow = def( 'float', 1.0 );
-
-        const bias = mul( 0.0001, sub( 2.0, dotNL ) );
+        const bias = mul( 1E-3, sub( 2.0, dotNL ) );
         subAssign( depth, bias );
 
-        const variance = glslSaturate( sub( sw( tex, 'y' ), sq( sw( tex, 'x' ) ) ) );
+        const variance = add(
+          glslSaturate( sub( sw( tex, 'y' ), sq( sw( tex, 'x' ) ) ) ),
+          1E-3,
+        );
         const md = sub( depth, sw( tex, 'x' ) );
         const p = def( 'float', div( variance, add( variance, sq( md ) ) ) );
         assign( p, glslLinearstep( 0.2, 1.0, p ) );
 
         // edgeclip
-        mulAssign( shadow, mix(
+        const shadow = def( 'float', mix(
           tern( lt( md, 0.0 ), 1.0, p ),
           1.0,
           smoothstep( 0.8, 1.0, maxOfVec2( abs( lightPXY ) ) ),
