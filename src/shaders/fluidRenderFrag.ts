@@ -1,7 +1,7 @@
-import { GLSLExpression, abs, add, addAssign, assign, build, def, defConst, defFn, defInNamed, defOut, defUniformArrayNamed, defUniformNamed, div, eq, exp, forBreak, forLoop, glFragCoord, gt, ifThen, insert, length, lt, main, max, mix, mul, mulAssign, retFn, sq, sub, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { GLSLExpression, abs, add, addAssign, assign, build, def, defConst, defFn, defInNamed, defOut, defUniformNamed, div, eq, exp, forBreak, forLoop, glFragCoord, gt, ifThen, insert, length, lt, main, max, mix, mul, mulAssign, retFn, sq, sub, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcL } from './modules/calcL';
 import { defFluidSampleLinear3D } from './modules/defFluidSampleLinear3D';
-import { defForEachLights } from './modules/forEachLights';
+import { forEachLights } from './modules/forEachLights';
 import { glslDefRandom } from './modules/glslDefRandom';
 import { glslSaturate } from './modules/glslSaturate';
 import { setupRoRd } from './modules/setupRoRd';
@@ -29,15 +29,6 @@ export const fluidRenderFrag = (
   const inversePVM = defUniformNamed( 'mat4', 'inversePVM' );
   const samplerDensity = defUniformNamed( 'sampler2D', 'samplerDensity' );
   const samplerRandom = defUniformNamed( 'sampler2D', 'samplerRandom' );
-
-  const forEachLights = defForEachLights(
-    defUniformNamed( 'int', 'lightCount' ),
-    defUniformArrayNamed( 'vec3', 'lightPos', 8 ),
-    defUniformArrayNamed( 'vec3', 'lightColor', 8 ),
-    defUniformArrayNamed( 'vec2', 'lightNearFar', 8 ),
-    defUniformArrayNamed( 'vec4', 'lightParams', 8 ),
-    defUniformArrayNamed( 'mat4', 'lightPV', 8 ),
-  );
 
   const { init, random } = glslDefRandom();
 

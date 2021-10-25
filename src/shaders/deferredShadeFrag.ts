@@ -1,9 +1,9 @@
 import { GLSLFloatExpression, GLSLToken, add, addAssign, assign, build, clamp, def, defFn, defInNamed, defOut, defUniformArrayNamed, defUniformNamed, div, dot, eq, glFragDepth, ifChain, insert, main, mul, mulAssign, normalize, retFn, sq, sub, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcL } from './modules/calcL';
 import { defDoSomethingUsingSamplerArray } from './modules/defDoSomethingUsingSamplerArray';
-import { defForEachLights } from './modules/forEachLights';
 import { doAnalyticLighting } from './modules/doAnalyticLighting';
 import { doShadowMapping } from './modules/doShadowMapping';
+import { forEachLights } from './modules/forEachLights';
 
 export const MTL_NONE = 0;
 export const MTL_UNLIT = 1;
@@ -41,15 +41,6 @@ export const deferredShadeFrag = build( () => {
       ( sampler ) => texture( sampler, uv )
     ) );
   } );
-
-  const forEachLights = defForEachLights(
-    defUniformNamed( 'int', 'lightCount' ),
-    defUniformArrayNamed( 'vec3', 'lightPos', 8 ),
-    defUniformArrayNamed( 'vec3', 'lightColor', 8 ),
-    defUniformArrayNamed( 'vec2', 'lightNearFar', 8 ),
-    defUniformArrayNamed( 'vec4', 'lightParams', 8 ),
-    defUniformArrayNamed( 'mat4', 'lightPV', 8 ),
-  );
 
   main( () => {
     const tex0 = texture( sampler0, vUv );

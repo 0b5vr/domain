@@ -3,9 +3,9 @@ import { calcDepth } from './modules/calcDepth';
 import { calcL } from './modules/calcL';
 import { cyclicNoise } from './modules/cyclicNoise';
 import { defDoSomethingUsingSamplerArray } from './modules/defDoSomethingUsingSamplerArray';
-import { defForEachLights } from './modules/forEachLights';
 import { doAnalyticLighting } from './modules/doAnalyticLighting';
 import { doShadowMapping } from './modules/doShadowMapping';
+import { forEachLights } from './modules/forEachLights';
 import { simplex4d } from './modules/simplex4d';
 
 export const floorFrag = ( tag: 'forward' | 'depth' ): string => build( () => {
@@ -30,15 +30,6 @@ export const floorFrag = ( tag: 'forward' | 'depth' ): string => build( () => {
       ( sampler ) => texture( sampler, uv )
     ) );
   } );
-
-  const forEachLights = defForEachLights(
-    defUniformNamed( 'int', 'lightCount' ),
-    defUniformArrayNamed( 'vec3', 'lightPos', 8 ),
-    defUniformArrayNamed( 'vec3', 'lightColor', 8 ),
-    defUniformArrayNamed( 'vec2', 'lightNearFar', 8 ),
-    defUniformArrayNamed( 'vec4', 'lightParams', 8 ),
-    defUniformArrayNamed( 'mat4', 'lightPV', 8 ),
-  );
 
   main( () => {
     const posXYZ = sw( vPosition, 'xyz' );

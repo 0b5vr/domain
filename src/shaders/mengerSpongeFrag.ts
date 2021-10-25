@@ -1,10 +1,10 @@
 import { MTL_PBR_EMISSIVE } from './deferredShadeFrag';
-import { abs, add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformArrayNamed, defUniformNamed, discard, div, dot, glFragCoord, glFragDepth, gt, ifThen, insert, length, main, max, mod, mul, neg, normalize, retFn, sin, sq, step, sub, sw, texture, unrollLoop, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { abs, add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, discard, div, dot, glFragCoord, glFragDepth, gt, ifThen, insert, length, main, max, mod, mul, neg, normalize, retFn, sin, sq, step, sub, sw, texture, unrollLoop, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcDepth } from './modules/calcDepth';
 import { calcL } from './modules/calcL';
 import { calcNormal } from './modules/calcNormal';
-import { defForEachLights } from './modules/forEachLights';
 import { doAnalyticLighting } from './modules/doAnalyticLighting';
+import { forEachLights } from './modules/forEachLights';
 import { glslDefRandom } from './modules/glslDefRandom';
 import { raymarch } from './modules/raymarch';
 import { sdbox } from './modules/sdbox';
@@ -31,15 +31,6 @@ export const mengerSpongeFrag = ( tag: 'forward' | 'deferred' | 'depth' ): strin
   const cameraPos = defUniformNamed( 'vec3', 'cameraPos' );
   const inversePVM = defUniformNamed( 'mat4', 'inversePVM' );
   const samplerRandom = defUniformNamed( 'sampler2D', 'samplerRandom' );
-
-  const forEachLights = defForEachLights(
-    defUniformNamed( 'int', 'lightCount' ),
-    defUniformArrayNamed( 'vec3', 'lightPos', 8 ),
-    defUniformArrayNamed( 'vec3', 'lightColor', 8 ),
-    defUniformArrayNamed( 'vec2', 'lightNearFar', 8 ),
-    defUniformArrayNamed( 'vec4', 'lightParams', 8 ),
-    defUniformArrayNamed( 'mat4', 'lightPV', 8 ),
-  );
 
   const { init } = glslDefRandom();
 

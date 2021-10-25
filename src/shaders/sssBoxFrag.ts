@@ -1,13 +1,13 @@
 import { DIELECTRIC_SPECULAR, INV_PI, ONE_SUB_DIELECTRIC_SPECULAR } from '../utils/constants';
 import { MTL_PRESHADED_PUNCTUALS } from './deferredShadeFrag';
-import { add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformArrayNamed, defUniformNamed, discard, div, dot, glFragCoord, glFragDepth, gt, ifThen, insert, length, main, max, mix, mul, neg, normalize, retFn, sq, sub, subAssign, sw, tern, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, discard, div, dot, glFragCoord, glFragDepth, gt, ifThen, insert, length, main, max, mix, mul, neg, normalize, retFn, sq, sub, subAssign, sw, tern, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcDepth } from './modules/calcDepth';
 import { calcL } from './modules/calcL';
 import { calcNormal } from './modules/calcNormal';
 import { calcSS } from './modules/calcSS';
 import { cyclicNoise } from './modules/cyclicNoise';
 import { dGGX } from './modules/dGGX';
-import { defForEachLights } from './modules/forEachLights';
+import { forEachLights } from './modules/forEachLights';
 import { fresnelSchlick } from './modules/fresnelSchlick';
 import { glslDefRandom } from './modules/glslDefRandom';
 import { raymarch } from './modules/raymarch';
@@ -40,15 +40,6 @@ export const sssBoxFrag = ( tag: 'forward' | 'deferred' | 'depth' ): string => b
   const { init } = glslDefRandom();
 
   const shouldCalcVoronoi = def( 'bool', false );
-
-  const forEachLights = defForEachLights(
-    defUniformNamed( 'int', 'lightCount' ),
-    defUniformArrayNamed( 'vec3', 'lightPos', 8 ),
-    defUniformArrayNamed( 'vec3', 'lightColor', 8 ),
-    defUniformArrayNamed( 'vec2', 'lightNearFar', 8 ),
-    defUniformArrayNamed( 'vec4', 'lightParams', 8 ),
-    defUniformArrayNamed( 'mat4', 'lightPV', 8 ),
-  );
 
   const map = defFn( 'vec4', [ 'vec3' ], ( p ) => {
     // const d = def( 'float', sub( length( p ), 0.1 ) );
@@ -103,8 +94,14 @@ export const sssBoxFrag = ( tag: 'forward' | 'deferred' | 'depth' ): string => b
     const N = def( 'vec3', calcNormal( { rp, map } ) );
     const roughness = 0.1;
     const metallic = 0.0;
-    const baseColor = mul( 0.5, vec3( 0.9, 0.7, 0.4 ) );
+    const baseColor = def( 'vec3', mul( 0.5, vec3( 0.9, 0.7, 0.4 ) ) );
     const subsurfaceColor = mul( 0.5, vec3( 0.7, 0.04, 0.04 ) );
+
+    assign( baseColor, mix(
+      baseColor,
+      vec3( 0.0 ),
+      mul( 0.1, sw( isect, 'y' ) )
+    ) );
 
     // don't calc voronoi for ss
     assign( shouldCalcVoronoi, false );
