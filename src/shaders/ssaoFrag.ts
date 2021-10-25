@@ -1,4 +1,4 @@
-import { GLSLExpression, add, addAssign, assign, build, def, defInNamed, defOut, defUniformNamed, div, divAssign, dot, ifThen, insert, length, lt, main, mul, normalize, pow, sub, sw, texture, unrollLoop, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { GLSLExpression, add, addAssign, assign, build, def, defInNamed, defOut, defUniformNamed, div, divAssign, dot, ifThen, insert, length, lt, main, mul, normalize, sq, sub, sw, texture, unrollLoop, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { glslDefRandom } from './modules/glslDefRandom';
 import { glslSaturate } from './modules/glslSaturate';
 import { uniformHemisphere } from './modules/uniformHemisphere';
@@ -53,7 +53,7 @@ export const ssaoFrag = build( () => {
       } );
     } );
 
-    return pow( div( accum, AO_ITER ), 2.0 );
+    return sq( glslSaturate( div( accum, AO_ITER ) ) );
   }
 
   main( () => {

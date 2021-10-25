@@ -1,4 +1,3 @@
-
 import { RaymarcherEntity } from './utils/RaymarcherEntity';
 import { sp4ghetFrag } from '../shaders/sp4ghetFrag';
 

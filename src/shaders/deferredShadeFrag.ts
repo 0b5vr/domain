@@ -1,4 +1,4 @@
-import { GLSLFloatExpression, GLSLToken, add, addAssign, assign, build, clamp, def, defFn, defInNamed, defOut, defUniformArrayNamed, defUniformNamed, div, dot, eq, glFragDepth, ifChain, insert, main, mul, mulAssign, normalize, retFn, sq, sub, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { GLSLExpression, GLSLFloatExpression, add, addAssign, assign, build, clamp, def, defFn, defInNamed, defOut, defUniformArrayNamed, defUniformNamed, div, dot, eq, glFragDepth, ifChain, insert, main, mul, mulAssign, normalize, retFn, sq, sub, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcL } from './modules/calcL';
 import { defDoSomethingUsingSamplerArray } from './modules/defDoSomethingUsingSamplerArray';
 import { doAnalyticLighting } from './modules/doAnalyticLighting';
@@ -67,7 +67,7 @@ export const deferredShadeFrag = build( () => {
     const shadePBR = (
       roughness: GLSLFloatExpression,
       metallic: GLSLFloatExpression,
-    ): GLSLToken<'vec3'> => {
+    ): GLSLExpression<'vec3'> => {
       // begin lighting
       const shaded = def( 'vec3', vec3( 0.0 ) );
 
@@ -147,7 +147,7 @@ export const deferredShadeFrag = build( () => {
     // fog
     // mulAssign( outColor, exp( mul( -0.4, max( sub( lenV, 3.0 ), 0.0 ) ) ) );
 
-    assign( fragColor, vec4( outColor, 1.0 ) );
+    assign( fragColor, vec4( clamp( outColor, 0.0, 1E3 ), 1.0 ) );
 
     assign( glFragDepth, add( 0.5, mul( 0.5, depth ) ) );
   } );

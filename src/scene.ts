@@ -81,13 +81,13 @@ const iblLutCalc = new IBLLUTCalc();
 
 const light1 = new PointLightEntity( {
   scenes: [ dog.root ],
-  shadowMapFov: 20.0,
+  shadowMapFov: 40.0,
   shadowMapNear: 1.0,
   shadowMapFar: 20.0,
   name: process.env.DEV && 'light1',
   brtNamePrefix: process.env.DEV && 'SceneBegin/light1',
 } );
-light1.color = [ 2500.0, 2500.0, 2500.0 ];
+light1.color = [ 1500.0, 1500.0, 1500.0 ];
 light1.spotness = 1.0;
 light1.transform.lookAt( [ 5.0, 1.0, 8.0 ], [ 0.0, 3.0, 0.0 ] );
 
@@ -156,7 +156,7 @@ if ( process.env.DEV && module.hot ) {
     replacer.replace( dog.root );
   } );
 }
-fluid.transform.position = [ -4.0, 3.0, 0.0 ];
+fluid.transform.position = [ 0.0, 3.0, 0.0 ];
 fluid.transform.scale = [ 3.0, 3.0, 3.0 ];
 
 const plane = new Plane();
@@ -196,7 +196,7 @@ if ( process.env.DEV && module.hot ) {
     replacer.replace( dog.root );
   } );
 }
-mengerSponge.transform.position = [ 4.0, 3.0, 0.0 ];
+mengerSponge.transform.position = [ 0.0, 3.0, 0.0 ];
 mengerSponge.transform.scale = [ 3.0, 3.0, 3.0 ];
 
 swap.swap();
@@ -222,8 +222,8 @@ dog.root.children.push(
   // fluid,
   // plane,
   // sssBox,
-  sp4ghet,
-  // mengerSponge,
+  // sp4ghet,
+  mengerSponge,
   deferredCamera,
   forwardCamera,
   bloom,

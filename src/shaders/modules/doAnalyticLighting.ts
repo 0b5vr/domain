@@ -26,10 +26,10 @@ export function doAnalyticLighting(
 
         const H = def( 'vec3', normalize( add( L, V ) ) );
 
-        const dotNL = def( 'float', max( dot( N, L ), 0.0 ) );
-        const dotNV = def( 'float', max( dot( N, V ), 0.0 ) );
-        const dotNH = def( 'float', max( dot( N, H ), 0.0 ) );
-        const dotVH = def( 'float', max( dot( V, H ), 0.0 ) );
+        const dotNL = def( 'float', max( dot( N, L ), 1E-3 ) );
+        const dotNV = def( 'float', max( dot( N, V ), 1E-3 ) );
+        const dotNH = def( 'float', max( dot( N, H ), 1E-3 ) );
+        const dotVH = def( 'float', max( dot( V, H ), 1E-3 ) );
 
         const roughnessSq = mul( roughness, roughness );
 
