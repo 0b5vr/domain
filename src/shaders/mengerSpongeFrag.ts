@@ -21,9 +21,9 @@ export const mengerSpongeFrag = ( tag: 'forward' | 'deferred' | 'depth' ): strin
   const normalMatrix = defUniformNamed( 'mat3', 'normalMatrix' );
 
   const fragColor = defOut( 'vec4' );
-  const fragPosition = tag === 'deferred' ? defOut( 'vec4', 1 ) : null;
-  const fragNormal = tag === 'deferred' ? defOut( 'vec4', 2 ) : null;
-  const fragMisc = tag === 'deferred' ? defOut( 'vec4', 3 ) : null;
+  const fragPosition = defOut( 'vec4', 1 );
+  const fragNormal = defOut( 'vec4', 2 );
+  const fragMisc = defOut( 'vec4', 3 );
 
   const time = defUniformNamed( 'float', 'time' );
   const resolution = defUniformNamed( 'vec2', 'resolution' );
@@ -91,9 +91,9 @@ export const mengerSpongeFrag = ( tag: 'forward' | 'deferred' | 'depth' ): strin
 
     if ( tag === 'deferred' ) {
       assign( fragColor, vec4( baseColor, 1.0 ) );
-      assign( fragPosition!, vec4( sw( modelPos, 'xyz' ), depth ) );
-      assign( fragNormal!, vec4( normalize( mul( normalMatrix, N ) ), MTL_PBR_EMISSIVE ) );
-      assign( fragMisc!, vec4( roughness, metallic, 0.0, 0.0 ) );
+      assign( fragPosition, vec4( sw( modelPos, 'xyz' ), depth ) );
+      assign( fragNormal, vec4( normalize( mul( normalMatrix, N ) ), MTL_PBR_EMISSIVE ) );
+      assign( fragMisc, vec4( roughness, metallic, 0.0, 0.0 ) );
 
     } else if ( tag === 'forward' ) {
       const col = def( 'vec3', vec3( 0.0 ) );

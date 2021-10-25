@@ -26,9 +26,9 @@ export const sssBoxFrag = ( tag: 'forward' | 'deferred' | 'depth' ): string => b
   const normalMatrix = defUniformNamed( 'mat3', 'normalMatrix' );
 
   const fragColor = defOut( 'vec4' );
-  const fragPosition = tag === 'deferred' ? defOut( 'vec4', 1 ) : null;
-  const fragNormal = tag === 'deferred' ? defOut( 'vec4', 2 ) : null;
-  const fragMisc = tag === 'deferred' ? defOut( 'vec4', 3 ) : null;
+  const fragPosition = defOut( 'vec4', 1 );
+  const fragNormal = defOut( 'vec4', 2 );
+  const fragMisc = defOut( 'vec4', 3 );
 
   const time = defUniformNamed( 'float', 'time' );
   const resolution = defUniformNamed( 'vec2', 'resolution' );
@@ -169,9 +169,9 @@ export const sssBoxFrag = ( tag: 'forward' | 'deferred' | 'depth' ): string => b
       assign( fragColor, vec4( col, 1.0 ) );
 
       if ( tag === 'deferred' ) {
-        assign( fragPosition!, vec4( sw( modelPos, 'xyz' ), depth ) );
-        assign( fragNormal!, vec4( normalize( mul( normalMatrix, N ) ), MTL_PRESHADED_PUNCTUALS ) );
-        assign( fragMisc!, vec4( vec3( 0.0 ), roughness ) );
+        assign( fragPosition, vec4( sw( modelPos, 'xyz' ), depth ) );
+        assign( fragNormal, vec4( normalize( mul( normalMatrix, N ) ), MTL_PRESHADED_PUNCTUALS ) );
+        assign( fragMisc, vec4( vec3( 0.0 ), roughness ) );
       }
 
     } else if ( tag === 'depth' ) {
