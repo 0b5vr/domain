@@ -11,19 +11,19 @@ import { colorFrag } from '../shaders/colorFrag';
 import { createLightUniformsLambda } from './utils/createLightUniformsLambda';
 import { createRaymarchCameraUniformsLambda } from './utils/createRaymarchCameraUniformsLambda';
 import { dummyRenderTarget } from '../globals/dummyRenderTarget';
+import { fluidAdvectionFrag } from '../shaders/fluidAdvectionFrag';
+import { fluidCurlFrag } from '../shaders/fluidCurlFrag';
+import { fluidDivergenceFrag } from '../shaders/fluidDivergenceFrag';
+import { fluidPokeDensityFrag } from '../shaders/fluidPokeDensityFrag';
+import { fluidPressureFrag } from '../shaders/fluidPressureFrag';
+import { fluidRenderFrag } from '../shaders/fluidRenderFrag';
+import { fluidResolvePressureFrag } from '../shaders/fluidResolvePressureFrag';
 import { genCube } from '../geometries/genCube';
 import { gl } from '../globals/canvas';
 import { objectVert } from '../shaders/objectVert';
 import { quadGeometry } from '../globals/quadGeometry';
 import { quadVert } from '../shaders/quadVert';
 import { randomTexture } from '../globals/randomTexture';
-import fluidAdvectionFrag from '../shaders/fluid-advection.frag';
-import fluidCurlFrag from '../shaders/fluid-curl.frag';
-import fluidDivergenceFrag from '../shaders/fluid-divergence.frag';
-import fluidPokeDensityFrag from '../shaders/fluid-poke-density.frag';
-import fluidPressureFrag from '../shaders/fluid-pressure.frag';
-import fluidRenderFrag from '../shaders/fluid-render.frag';
-import fluidResolvePressureFrag from '../shaders/fluid-resolve-pressure.frag';
 
 const GRID_RESO_SQRT = 8;
 const GRID_RESO = GRID_RESO_SQRT * GRID_RESO_SQRT;
@@ -93,9 +93,8 @@ export class Fluid extends Entity {
     // -- density ----------------------------------------------------------------------------------
     const materialPokeDensity = new Material(
       quadVert,
-      fluidPokeDensityFrag,
+      fluidPokeDensityFrag( GRID_RESO_SQRT, GRID_RESO ),
       {
-        defines: [ `GRID_RESO ${ GRID_RESO }`, `GRID_RESO_SQRT ${ GRID_RESO_SQRT }` ],
         initOptions: { geometry: quadGeometry, target: dummyRenderTarget },
       },
     );
@@ -112,9 +111,8 @@ export class Fluid extends Entity {
     // -- curl -------------------------------------------------------------------------------------
     const materialCurl = new Material(
       quadVert,
-      fluidCurlFrag,
+      fluidCurlFrag( GRID_RESO_SQRT, GRID_RESO ),
       {
-        defines: [ `GRID_RESO ${ GRID_RESO }`, `GRID_RESO_SQRT ${ GRID_RESO_SQRT }` ],
         initOptions: { geometry: quadGeometry, target: dummyRenderTarget },
       },
     );
@@ -129,9 +127,8 @@ export class Fluid extends Entity {
     // -- divergence -------------------------------------------------------------------------------
     const materialDivergence = new Material(
       quadVert,
-      fluidDivergenceFrag,
+      fluidDivergenceFrag( GRID_RESO_SQRT, GRID_RESO ),
       {
-        defines: [ `GRID_RESO ${ GRID_RESO }`, `GRID_RESO_SQRT ${ GRID_RESO_SQRT }` ],
         initOptions: { geometry: quadGeometry, target: dummyRenderTarget },
       },
     );
@@ -165,9 +162,8 @@ export class Fluid extends Entity {
     const quadPressures = [ ...Array( 20 ) ].map( ( _, i ) => {
       const material = new Material(
         quadVert,
-        fluidPressureFrag,
+        fluidPressureFrag( GRID_RESO_SQRT, GRID_RESO ),
         {
-          defines: [ `GRID_RESO ${ GRID_RESO }`, `GRID_RESO_SQRT ${ GRID_RESO_SQRT }` ],
           initOptions: { geometry: quadGeometry, target: dummyRenderTarget },
         },
       );
@@ -188,7 +184,7 @@ export class Fluid extends Entity {
     // -- resolve pressure -------------------------------------------------------------------------
     const materialResolvePressure = new Material(
       quadVert,
-      fluidResolvePressureFrag,
+      fluidResolvePressureFrag( GRID_RESO_SQRT, GRID_RESO ),
       {
         defines: [ `GRID_RESO ${ GRID_RESO }`, `GRID_RESO_SQRT ${ GRID_RESO_SQRT }` ],
         initOptions: { geometry: quadGeometry, target: dummyRenderTarget },
@@ -210,9 +206,8 @@ export class Fluid extends Entity {
     // -- advection --------------------------------------------------------------------------------
     const materialAdvectionVelocity = new Material(
       quadVert,
-      fluidAdvectionFrag,
+      fluidAdvectionFrag( GRID_RESO_SQRT, GRID_RESO ),
       {
-        defines: [ `GRID_RESO ${ GRID_RESO }`, `GRID_RESO_SQRT ${ GRID_RESO_SQRT }` ],
         initOptions: { geometry: quadGeometry, target: dummyRenderTarget },
       },
     );
@@ -230,9 +225,8 @@ export class Fluid extends Entity {
 
     const materialAdvectionDensity = new Material(
       quadVert,
-      fluidAdvectionFrag,
+      fluidAdvectionFrag( GRID_RESO_SQRT, GRID_RESO ),
       {
-        defines: [ `GRID_RESO ${ GRID_RESO }`, `GRID_RESO_SQRT ${ GRID_RESO_SQRT }` ],
         initOptions: { geometry: quadGeometry, target: dummyRenderTarget },
       },
     );
@@ -266,9 +260,8 @@ export class Fluid extends Entity {
 
     const forward = new Material(
       objectVert( { ...locations } ),
-      fluidRenderFrag,
+      fluidRenderFrag( GRID_RESO_SQRT, GRID_RESO ),
       {
-        defines: [ `GRID_RESO ${ GRID_RESO }`, `GRID_RESO_SQRT ${ GRID_RESO_SQRT }` ],
         initOptions: { geometry, target: dummyRenderTarget },
         blend: [ gl.ONE, gl.ONE ],
       },
