@@ -12,8 +12,10 @@ export class Transform {
   }
 
   public set position( vector: RawVector3 ) {
-    this.__position.value = vector;
+    this.__position.setValue( vector );
 
+    this.__rotation.needsUpdate = false;
+    this.__scale.needsUpdate = false;
     this.__matrix.needsUpdate = true;
     this.__isIdentity = false;
   }
@@ -24,8 +26,10 @@ export class Transform {
   }
 
   public set rotation( quaternion: RawQuaternion ) {
-    this.__rotation.value = quaternion;
+    this.__rotation.setValue( quaternion );
 
+    this.__position.needsUpdate = false;
+    this.__scale.needsUpdate = false;
     this.__matrix.needsUpdate = true;
     this.__isIdentity = false;
   }
@@ -36,8 +40,10 @@ export class Transform {
   }
 
   public set scale( vector: RawVector3 ) {
-    this.__scale.value = vector;
+    this.__scale.setValue( vector );
 
+    this.__position.needsUpdate = false;
+    this.__rotation.needsUpdate = false;
     this.__matrix.needsUpdate = true;
     this.__isIdentity = false;
   }
@@ -47,7 +53,7 @@ export class Transform {
   }
 
   public set matrix( matrix: RawMatrix4 ) {
-    this.__matrix.value = matrix;
+    this.__matrix.setValue( matrix );
 
     this.__position.needsUpdate = true;
     this.__rotation.needsUpdate = true;
@@ -91,9 +97,9 @@ export class Transform {
 
   private __updateTRS(): { position: RawVector3, rotation: RawQuaternion, scale: RawVector3 } {
     const { position, rotation, scale } = mat4Decompose( this.matrix );
-    this.__position.value = position;
-    this.__rotation.value = rotation;
-    this.__scale.value = scale;
+    this.__position.setValue( position );
+    this.__rotation.setValue( rotation );
+    this.__scale.setValue( scale );
     return { position, rotation, scale };
   }
 }

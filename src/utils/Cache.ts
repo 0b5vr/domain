@@ -18,7 +18,7 @@ export class Cache<T> {
     return this.__cache;
   }
 
-  public set value( value: T ) {
+  public setValue( value: T ): void {
     this.__cache = value;
     this.needsUpdate = false;
   }
