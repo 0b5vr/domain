@@ -77,6 +77,7 @@ export class Entity {
     frameCount,
     globalTransform,
     time,
+    path: eventPath,
   }: EntityUpdateEvent ): void {
     if ( !this.active ) { return; }
     if ( this.lastUpdateFrame === frameCount ) { return; }
@@ -84,6 +85,11 @@ export class Entity {
 
     const measured = (): void => {
       const nextGlobalTransform = globalTransform.multiply( this.transform );
+
+      let path: string;
+      if ( process.env.DEV ) {
+        path = `${ eventPath }/${ this.name }`;
+      }
 
       this.components.forEach( ( component ) => {
         this.tags.map( ( tag ) => (
@@ -97,6 +103,7 @@ export class Entity {
           globalTransform: nextGlobalTransform,
           entitiesByTag,
           entity: this,
+          path,
         } );
       } );
 
@@ -108,6 +115,7 @@ export class Entity {
           globalTransform: nextGlobalTransform,
           entitiesByTag,
           parent: this,
+          path,
         } );
       } );
     };
@@ -130,10 +138,16 @@ export class Entity {
     renderTarget,
     time,
     viewMatrix,
+    path: eventPath,
   }: EntityDrawEvent ): void {
     if ( !this.visible ) { return; }
     const measured = (): void => {
       this.globalTransformCache = globalTransform.multiply( this.transform );
+
+      let path: string;
+      if ( process.env.DEV ) {
+        path = `${ eventPath }/${ this.name }`;
+      }
 
       this.components.forEach( ( component ) => {
         component.draw( {
@@ -148,6 +162,7 @@ export class Entity {
           entity: this,
           entitiesByTag,
           materialTag,
+          path,
         } );
       } );
 
@@ -163,6 +178,7 @@ export class Entity {
           camera,
           cameraTransform,
           materialTag,
+          path,
         } );
       } );
     };

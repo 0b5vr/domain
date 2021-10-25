@@ -151,6 +151,7 @@ export class RTInspector extends Entity {
         textureText.setTexture( textCanvas );
       },
       name: 'lambdaUpdateTextCanvas',
+      ignoreBreakpoints: true,
     } ) );
 
     const materialMultipleText = new Material(
@@ -176,7 +177,9 @@ export class RTInspector extends Entity {
     this.components.push( new Lambda( {
       onUpdate: () => {
         this.__updateTarget();
-      }
+      },
+      name: 'lambdaUpdateTarget',
+      ignoreBreakpoints: true,
     } ) );
   }
 

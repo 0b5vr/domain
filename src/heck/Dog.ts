@@ -1,3 +1,4 @@
+import { Component } from './components/Component';
 import { Entity } from './Entity';
 import { MapOfSet } from '../utils/MapOfSet';
 import { Transform } from './Transform';
@@ -32,6 +33,11 @@ export class Dog {
           parent: null,
           path: process.env.DEV && '',
         } );
+      }
+
+      if ( process.env.DEV ) {
+        Component.updateHaveReachedBreakpoint = false;
+        Component.drawHaveReachedBreakpoint = false;
       }
 
       requestAnimationFrame( update );
