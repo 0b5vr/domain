@@ -11,8 +11,7 @@ export function calcSS( {
   map,
   eta,
   iter = 50,
-  lenInit = 0.01,
-  lenStep = 0.01,
+  lenMultiplier = 0.01,
   intensity = 1.0,
   power = 3.0,
 }: {
@@ -23,17 +22,16 @@ export function calcSS( {
   map: ( p: GLSLExpression<'vec3'> ) => GLSLExpression<'vec4'>,
   eta?: GLSLFloatExpression,
   iter?: number,
-  lenInit?: GLSLFloatExpression,
-  lenStep?: GLSLFloatExpression,
+  lenMultiplier?: GLSLFloatExpression,
   intensity?: GLSLFloatExpression,
   power?: GLSLFloatExpression,
 } ): GLSLToken<'float'> {
   const sd = def( 'vec3', refract( neg( V ), N, eta ?? 1.0 / 1.5 ) );
-  const len = def( 'float', num( lenInit ) );
+  const len = def( 'float', num( lenMultiplier ) );
   const accum = def( 'float', 0.0 );
 
   forLoop( iter, () => {
-    addAssign( len, lenStep );
+    addAssign( len, lenMultiplier );
     let samplePoint = add( rp, mul( sampleLambert( sd ), len ) );
     samplePoint = add( samplePoint, mul( sampleLambert( L ), len ) );
     const d = sw( map( samplePoint ), 'x' );

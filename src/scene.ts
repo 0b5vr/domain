@@ -14,6 +14,7 @@ import { Plane } from './entities/Plane';
 import { PointLightEntity } from './entities/PointLightEntity';
 import { Post } from './entities/Post';
 import { SSSBox } from './entities/SSSBox';
+import { Sp4ghet } from './entities/Sp4ghet';
 import { Swap } from '@0b5vr/experimental';
 import { automaton } from './globals/automaton';
 import { clock } from './globals/clock';
@@ -178,6 +179,16 @@ if ( process.env.DEV && module.hot ) {
 sssBox.transform.position = [ 0.0, 3.0, 0.0 ];
 sssBox.transform.scale = [ 3.0, 3.0, 3.0 ];
 
+const sp4ghet = new Sp4ghet();
+if ( process.env.DEV && module.hot ) {
+  const replacer = new EntityReplacer( sp4ghet, () => new Sp4ghet() );
+  module.hot.accept( './entities/Sp4ghet', () => {
+    replacer.replace( dog.root );
+  } );
+}
+sp4ghet.transform.position = [ 0.0, 3.0, 0.0 ];
+sp4ghet.transform.scale = [ 3.0, 3.0, 3.0 ];
+
 const mengerSponge = new MengerSponge();
 if ( process.env.DEV && module.hot ) {
   const replacer = new EntityReplacer( mengerSponge, () => new MengerSponge() );
@@ -210,7 +221,8 @@ dog.root.children.push(
   floor,
   // fluid,
   // plane,
-  sssBox,
+  // sssBox,
+  sp4ghet,
   // mengerSponge,
   deferredCamera,
   forwardCamera,
