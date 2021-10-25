@@ -367,6 +367,17 @@ export const tern: {
   `(${cond}?${num( truthy )}:${num( falsy )})`
 ) as any;
 
+export const ternChain: {
+  ( falsy: Exf, ...condProcArgs: [ Ex<'bool'>, Exf ][] ): Ex<'float'>;
+  <T extends string>( falsy: T, ...condProcArgs: [ Ex<'bool'>, T ][] ): T;
+} = ( falsy: string | number, ...condProcArgs: [ Ex<'bool'>, string | number ][] ) => {
+  const joined = condProcArgs.map( ( [ cond, proc ] ) => (
+    `${cond}?${num( proc )}:`
+  ) ).join( '' );
+
+  return `(${ joined }${ num( falsy ) })` as any;
+};
+
 export const eq: {
   ( x: Exf, y: Exf ): Ex<'bool'>;
   <T extends string>( x: Ex<T>, y: Ex<T> ): Ex<'bool'>;

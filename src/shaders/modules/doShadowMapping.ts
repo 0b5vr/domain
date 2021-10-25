@@ -1,4 +1,4 @@
-import { GLSLExpression, abs, add, assign, cache, def, defFn, div, length, lt, mix, mul, mulAssign, retFn, smoothstep, sq, sub, subAssign, sw, tern } from '../../shader-builder/shaderBuilder';
+import { GLSLExpression, abs, add, assign, cache, def, defFn, div, length, lt, mix, mul, mulAssign, retFn, smoothstep, sq, step, sub, subAssign, sw, tern } from '../../shader-builder/shaderBuilder';
 import { glslLinearstep } from './glslLinearstep';
 import { glslSaturate } from './glslSaturate';
 import { maxOfVec2 } from './maxOfVec2';
@@ -6,10 +6,10 @@ import { maxOfVec2 } from './maxOfVec2';
 const symbol = Symbol();
 
 export function doShadowMapping(
+  tex: GLSLExpression<'vec4'>,
   lenL: GLSLExpression<'float'>,
   dotNL: GLSLExpression<'float'>,
-  tex: GLSLExpression<'vec4'>,
-  lightP: GLSLExpression<'vec2'>,
+  lightP: GLSLExpression<'vec3'>,
   lightNearFar: GLSLExpression<'vec2'>,
   spotness: GLSLExpression<'float'>,
 ): GLSLExpression<'float'> {
@@ -17,19 +17,16 @@ export function doShadowMapping(
     symbol,
     () => defFn(
       'float',
-      [ 'float', 'float', 'vec4', 'vec2', 'vec2', 'float' ],
-      ( lenL, dotNL, tex, lightP, lightNearFar, spotness ) => {
+      [ 'vec4', 'float', 'float', 'vec3', 'vec2', 'float' ],
+      ( tex, lenL, dotNL, lightP, lightNearFar, spotness ) => {
         const depth = def( 'float', glslLinearstep(
           sw( lightNearFar, 'x' ),
           sw( lightNearFar, 'y' ),
           lenL,
         ) );
+        const lightPXY = sw( lightP, 'xy' );
 
-        const shadow = def( 'float', mix(
-          1.0,
-          smoothstep( 1.0, 0.5, length( lightP ) ),
-          spotness
-        ) );
+        const shadow = def( 'float', 1.0 );
 
         const bias = mul( 0.0001, sub( 2.0, dotNL ) );
         subAssign( depth, bias );
@@ -39,10 +36,18 @@ export function doShadowMapping(
         const p = def( 'float', div( variance, add( variance, sq( md ) ) ) );
         assign( p, glslLinearstep( 0.2, 1.0, p ) );
 
+        // edgeclip
         mulAssign( shadow, mix(
           tern( lt( md, 0.0 ), 1.0, p ),
           1.0,
-          smoothstep( 0.8, 1.0, maxOfVec2( abs( lightP ) ) ) // edgeclip
+          smoothstep( 0.8, 1.0, maxOfVec2( abs( lightPXY ) ) ),
+        ) );
+
+        // spot
+        mulAssign( shadow, mix(
+          1.0,
+          mul( smoothstep( 1.0, 0.5, length( lightPXY ) ), step( sw( lightP, 'z' ), 1.0 ) ),
+          spotness,
         ) );
 
         retFn( shadow );
@@ -50,5 +55,5 @@ export function doShadowMapping(
     )
   );
 
-  return f( lenL, dotNL, tex, lightP, lightNearFar, spotness );
+  return f( tex, lenL, dotNL, lightP, lightNearFar, spotness );
 }

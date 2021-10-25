@@ -41,12 +41,6 @@ export class Floor extends Entity {
         const camTrans = this.mirrorCameraEntity.transform;
         camTrans.matrix = this.primaryCameraEntity.transform.matrix.concat() as RawMatrix4;
 
-        camTrans.matrix[ 0 ] *= -1.0;
-        camTrans.matrix[ 4 ] *= -1.0;
-        camTrans.matrix[ 8 ] *= -1.0;
-        camTrans.matrix[ 1 ] *= -1.0;
-        camTrans.matrix[ 5 ] *= -1.0;
-        camTrans.matrix[ 9 ] *= -1.0;
         camTrans.matrix[ 13 ] *= -1.0;
       },
     } ) );

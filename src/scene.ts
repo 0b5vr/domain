@@ -80,43 +80,53 @@ const iblLutCalc = new IBLLUTCalc();
 
 const light1 = new PointLightEntity( {
   scenes: [ dog.root ],
-  shadowMapFov: 30.0,
+  shadowMapFov: 20.0,
   shadowMapNear: 1.0,
   shadowMapFar: 20.0,
   name: process.env.DEV && 'light1',
   brtNamePrefix: process.env.DEV && 'SceneBegin/light1',
 } );
 light1.color = [ 2500.0, 2500.0, 2500.0 ];
-light1.transform.lookAt( [ 8.0, 4.0, 8.0 ], [ 0.0, 1.0, 0.0 ] );
+light1.spotness = 1.0;
+light1.transform.lookAt( [ 5.0, 1.0, 8.0 ], [ 0.0, 3.0, 0.0 ] );
 
 const light2 = new PointLightEntity( {
   scenes: [ dog.root ],
-  shadowMapFov: 30.0,
+  shadowMapFov: 50.0,
   shadowMapNear: 1.0,
   shadowMapFar: 20.0,
   name: process.env.DEV && 'light2',
   brtNamePrefix: process.env.DEV && 'SceneBegin/light2',
 } );
 light2.color = [ 200.0, 230.0, 260.0 ];
-light2.transform.lookAt( [ 0.01, 9.0, 0.01 ], [ 0.0, 1.0, 0.0 ] );
+light2.spotness = 1.0;
+light2.transform.lookAt( [ 0.01, 9.0, 0.01 ], [ 0.0, 3.0, 0.0 ] );
 
 const light3 = new PointLightEntity( {
   scenes: [ dog.root ],
-  shadowMapFov: 30.0,
+  shadowMapFov: 50.0,
   shadowMapNear: 1.0,
   shadowMapFar: 20.0,
   name: process.env.DEV && 'light3',
   brtNamePrefix: process.env.DEV && 'SceneBegin/light3',
 } );
 light3.color = [ 300.0, 30.0, 70.0 ];
-light3.transform.lookAt( [ -8.0, 0.0, -4.0 ], [ 0.0, 1.0, 0.0 ] );
+light3.transform.lookAt( [ -8.0, 2.0, -4.0 ], [ 0.0, 2.0, 0.0 ] );
 
 const deferredCamera = new DeferredCamera( {
   scenes: [ dog.root ],
   target: swap.i,
   textureIBLLUT: iblLutCalc.texture,
 } );
-deferredCamera.transform.position = [ 0.0, 1.6, 10.0 ];
+deferredCamera.transform.lookAt( [ 0.0, 1.6, 10.0 ], [ 0.0, 1.6, 0.0 ] );
+
+deferredCamera.components.push( new Lambda( {
+  onUpdate: ( { time } ) => {
+    const x = 10.0 * Math.cos( time );
+    const z = 10.0 * Math.sin( time );
+    deferredCamera.transform.lookAt( [ x, 1.6, z ], [ 0.0, 1.6, 0.0 ] );
+  },
+} ) );
 
 const forwardCamera = new ForwardCamera( {
   scenes: [ dog.root ],

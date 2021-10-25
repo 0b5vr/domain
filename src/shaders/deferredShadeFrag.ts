@@ -1,4 +1,5 @@
-import { GLSLExpression, GLSLFloatExpression, GLSLToken, add, addAssign, arrayIndex, assign, build, clamp, def, defFn, defInNamed, defOut, defUniformArrayNamed, defUniformNamed, div, divAssign, dot, eq, forBreak, forLoop, glFragDepth, gte, ifChain, ifThen, insert, int, length, main, max, mul, mulAssign, normalize, retFn, sq, sub, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { GLSLFloatExpression, GLSLToken, add, addAssign, arrayIndex, assign, build, clamp, def, defFn, defInNamed, defOut, defUniformArrayNamed, defUniformNamed, div, divAssign, dot, eq, forBreak, forLoop, glFragDepth, gte, ifChain, ifThen, insert, length, main, max, mul, mulAssign, normalize, retFn, sq, sub, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { defDoSomethingUsingSamplerArray } from './modules/defDoSomethingUsingSamplerArray';
 import { doAnalyticLighting } from './modules/doAnalyticLighting';
 import { doShadowMapping } from './modules/doShadowMapping';
 
@@ -37,12 +38,11 @@ export const deferredShadeFrag = build( () => {
   // const samplerEnv = defUniformNamed( 'sampler2D', 'samplerEnv' );
   const samplerAo = defUniformNamed( 'sampler2D', 'samplerAo' );
 
+  const doSomethingUsingSamplerShadow = defDoSomethingUsingSamplerArray( samplerShadow, 8 );
   const fetchShadowMap = defFn( 'vec4', [ 'int', 'vec2' ], ( iLight, uv ) => {
-    ifChain( ...[ ...new Array( 8 ) ].map(
-      ( _, i ) => [
-        eq( iLight, int( i ) ),
-        () => retFn( texture( arrayIndex( samplerShadow, int( i ) ), uv ) ),
-      ] as [ GLSLExpression<'bool'>, () => void ]
+    retFn( doSomethingUsingSamplerShadow(
+      iLight,
+      ( sampler ) => texture( sampler, uv )
     ) );
   } );
 
@@ -95,14 +95,14 @@ export const deferredShadeFrag = build( () => {
 
         // fetch shadowmap + spot lighting
         const lightProj = mul( arrayIndex( lightPV, iLight ), vec4( position, 1.0 ) );
-        const lightP = div( sw( lightProj, 'xy' ), sw( lightProj, 'w' ) );
+        const lightP = div( sw( lightProj, 'xyz' ), sw( lightProj, 'w' ) );
 
         mulAssign(
           lightShaded,
           doShadowMapping(
+            fetchShadowMap( iLight, add( 0.5, mul( 0.5, sw( lightP, 'xy' ) ) ) ),
             lenL,
             dotNL,
-            fetchShadowMap( iLight, add( 0.5, mul( 0.5, lightP ) ) ),
             lightP,
             arrayIndex( lightNearFar, iLight ),
             sw( arrayIndex( lightParams, iLight ), 'x' ),
