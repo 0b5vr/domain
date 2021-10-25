@@ -1,7 +1,9 @@
 import { MTL_PBR_EMISSIVE } from './deferredShadeFrag';
-import { abs, add, addAssign, arrayIndex, assign, build, def, defFn, defInNamed, defOut, defUniformArrayNamed, defUniformNamed, discard, div, divAssign, dot, forBreak, forLoop, glFragCoord, glFragDepth, gt, gte, ifThen, insert, length, main, max, mod, mul, neg, normalize, retFn, sin, sq, step, sub, sw, texture, unrollLoop, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { abs, add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformArrayNamed, defUniformNamed, discard, div, dot, glFragCoord, glFragDepth, gt, ifThen, insert, length, main, max, mod, mul, neg, normalize, retFn, sin, sq, step, sub, sw, texture, unrollLoop, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcDepth } from './modules/calcDepth';
+import { calcL } from './modules/calcL';
 import { calcNormal } from './modules/calcNormal';
+import { defForEachLights } from './modules/forEachLights';
 import { doAnalyticLighting } from './modules/doAnalyticLighting';
 import { glslDefRandom } from './modules/glslDefRandom';
 import { raymarch } from './modules/raymarch';
@@ -23,15 +25,21 @@ export const mengerSpongeFrag = ( tag: 'forward' | 'deferred' | 'depth' ): strin
   const fragNormal = tag === 'deferred' ? defOut( 'vec4', 2 ) : null;
   const fragMisc = tag === 'deferred' ? defOut( 'vec4', 3 ) : null;
 
-  const lightCount = defUniformNamed( 'int', 'lightCount' );
-  const lightPos = defUniformArrayNamed( 'vec3', 'lightPos', 8 );
-  const lightColor = defUniformArrayNamed( 'vec3', 'lightColor', 8 );
   const time = defUniformNamed( 'float', 'time' );
   const resolution = defUniformNamed( 'vec2', 'resolution' );
   const cameraNearFar = defUniformNamed( 'vec2', 'cameraNearFar' );
   const cameraPos = defUniformNamed( 'vec3', 'cameraPos' );
   const inversePVM = defUniformNamed( 'mat4', 'inversePVM' );
   const samplerRandom = defUniformNamed( 'sampler2D', 'samplerRandom' );
+
+  const forEachLights = defForEachLights(
+    defUniformNamed( 'int', 'lightCount' ),
+    defUniformArrayNamed( 'vec3', 'lightPos', 8 ),
+    defUniformArrayNamed( 'vec3', 'lightColor', 8 ),
+    defUniformArrayNamed( 'vec2', 'lightNearFar', 8 ),
+    defUniformArrayNamed( 'vec4', 'lightParams', 8 ),
+    defUniformArrayNamed( 'mat4', 'lightPV', 8 ),
+  );
 
   const { init } = glslDefRandom();
 
@@ -92,18 +100,15 @@ export const mengerSpongeFrag = ( tag: 'forward' | 'deferred' | 'depth' ): strin
 
       const V = def( 'vec3', neg( rd ) );
 
-      // for each lights
-      forLoop( 8, ( iLight ) => {
-        ifThen( gte( iLight, lightCount ), () => { forBreak(); } );
-
-        const lp = mul( modelMatrixT3, arrayIndex( lightPos, iLight ) );
-        const L = def( 'vec3', sub( lp, rp ) );
-        const lenL = def( 'float', length( L ) );
-        divAssign( L, max( 1E-3, lenL ) );
+      forEachLights( ( { lightPos, lightColor } ) => {
+        const [ L, lenL ] = calcL(
+          mul( modelMatrixT3, lightPos ),
+          rp,
+        );
 
         const dotNL = def( 'float', max( dot( N, L ), 0.0 ) );
 
-        const lightCol = arrayIndex( lightColor, iLight );
+        const lightCol = lightColor;
         const lightDecay = div( 1.0, sq( lenL ) );
         const irradiance = def( 'vec3', mul( lightCol, dotNL, lightDecay ) );
 

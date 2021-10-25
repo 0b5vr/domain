@@ -1,7 +1,9 @@
-import { add, addAssign, arrayIndex, assign, build, def, defFn, defInNamed, defOutNamed, defUniformArrayNamed, defUniformNamed, div, divAssign, dot, forBreak, forLoop, glFragCoord, gte, ifThen, insert, length, main, max, mix, mul, mulAssign, normalize, pow, retFn, smoothstep, sq, sub, sw, texture, textureLod, unrollLoop, vec2, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { add, addAssign, assign, build, def, defFn, defInNamed, defOutNamed, defUniformArrayNamed, defUniformNamed, div, dot, glFragCoord, insert, length, main, max, mix, mul, mulAssign, normalize, pow, retFn, smoothstep, sq, sub, sw, texture, textureLod, unrollLoop, vec2, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcDepth } from './modules/calcDepth';
+import { calcL } from './modules/calcL';
 import { cyclicNoise } from './modules/cyclicNoise';
 import { defDoSomethingUsingSamplerArray } from './modules/defDoSomethingUsingSamplerArray';
+import { defForEachLights } from './modules/forEachLights';
 import { doAnalyticLighting } from './modules/doAnalyticLighting';
 import { doShadowMapping } from './modules/doShadowMapping';
 import { simplex4d } from './modules/simplex4d';
@@ -15,12 +17,6 @@ export const floorFrag = ( tag: 'forward' | 'depth' ): string => build( () => {
 
   const fragColor = defOutNamed( 'vec4', 'fragColor' );
 
-  const lightCount = defUniformNamed( 'int', 'lightCount' );
-  const lightNearFar = defUniformArrayNamed( 'vec2', 'lightNearFar', 8 );
-  const lightPos = defUniformArrayNamed( 'vec3', 'lightPos', 8 );
-  const lightColor = defUniformArrayNamed( 'vec3', 'lightColor', 8 );
-  const lightParams = defUniformArrayNamed( 'vec4', 'lightParams', 8 );
-  const lightPV = defUniformArrayNamed( 'mat4', 'lightPV', 8 );
   const resolution = defUniformNamed( 'vec2', 'resolution' );
   const cameraNearFar = defUniformNamed( 'vec2', 'cameraNearFar' );
   const cameraPos = defUniformNamed( 'vec3', 'cameraPos' );
@@ -34,6 +30,15 @@ export const floorFrag = ( tag: 'forward' | 'depth' ): string => build( () => {
       ( sampler ) => texture( sampler, uv )
     ) );
   } );
+
+  const forEachLights = defForEachLights(
+    defUniformNamed( 'int', 'lightCount' ),
+    defUniformArrayNamed( 'vec3', 'lightPos', 8 ),
+    defUniformArrayNamed( 'vec3', 'lightColor', 8 ),
+    defUniformArrayNamed( 'vec2', 'lightNearFar', 8 ),
+    defUniformArrayNamed( 'vec4', 'lightParams', 8 ),
+    defUniformArrayNamed( 'mat4', 'lightPV', 8 ),
+  );
 
   main( () => {
     const posXYZ = sw( vPosition, 'xyz' );
@@ -87,30 +92,32 @@ export const floorFrag = ( tag: 'forward' | 'depth' ): string => build( () => {
 
     const FReflect = pow( max( 0.0, sub( 1.0, dotVN ) ), 5.0 );
     const col = def( 'vec3', mul( sw( tex, 'xyz' ), FReflect ) );
-    // for each lights
-    forLoop( 8, ( iLight ) => {
-      ifThen( gte( iLight, lightCount ), () => { forBreak(); } );
 
-      const lp = arrayIndex( lightPos, iLight );
-      const L = def( 'vec3', sub( lp, posXYZ ) );
-      const lenL = def( 'float', length( L ) );
-      divAssign( L, max( 1E-3, lenL ) );
+    forEachLights( ( {
+      iLight,
+      lightPos,
+      lightColor,
+      lightPV,
+      lightNearFar,
+      lightParams,
+    } ) => {
+      const [ L, lenL ] = calcL( lightPos, posXYZ );
 
       const dotNL = def( 'float', max( dot( vNormal, L ), 0.0 ) );
 
-      const lightCol = arrayIndex( lightColor, iLight );
+      const lightCol = lightColor;
       const lightDecay = div( 1.0, sq( lenL ) );
 
       // fetch shadowmap + spot lighting
-      const lightProj = mul( arrayIndex( lightPV, iLight ), vPosition );
+      const lightProj = mul( lightPV, vPosition );
       const lightP = div( sw( lightProj, 'xyz' ), sw( lightProj, 'w' ) );
       const shadow = doShadowMapping(
         fetchShadowMap( iLight, add( 0.5, mul( 0.5, sw( lightP, 'xy' ) ) ) ),
         lenL,
         dotNL,
         lightP,
-        arrayIndex( lightNearFar, iLight ),
-        sw( arrayIndex( lightParams, iLight ), 'x' ),
+        lightNearFar,
+        sw( lightParams, 'x' ),
       );
       const irradiance = def( 'vec3', mul( lightCol, dotNL, lightDecay, shadow ) );
 

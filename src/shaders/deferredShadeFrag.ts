@@ -1,5 +1,7 @@
-import { GLSLFloatExpression, GLSLToken, add, addAssign, arrayIndex, assign, build, clamp, def, defFn, defInNamed, defOut, defUniformArrayNamed, defUniformNamed, div, divAssign, dot, eq, forBreak, forLoop, glFragDepth, gte, ifChain, ifThen, insert, length, main, max, mul, mulAssign, normalize, retFn, sq, sub, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { GLSLFloatExpression, GLSLToken, add, addAssign, assign, build, clamp, def, defFn, defInNamed, defOut, defUniformArrayNamed, defUniformNamed, div, dot, eq, glFragDepth, ifChain, insert, main, mul, mulAssign, normalize, retFn, sq, sub, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { calcL } from './modules/calcL';
 import { defDoSomethingUsingSamplerArray } from './modules/defDoSomethingUsingSamplerArray';
+import { defForEachLights } from './modules/forEachLights';
 import { doAnalyticLighting } from './modules/doAnalyticLighting';
 import { doShadowMapping } from './modules/doShadowMapping';
 
@@ -22,13 +24,7 @@ export const deferredShadeFrag = build( () => {
 
   const fragColor = defOut( 'vec4' );
 
-  const lightCount = defUniformNamed( 'int', 'lightCount' );
-  const lightNearFar = defUniformArrayNamed( 'vec2', 'lightNearFar', 8 );
   const cameraPos = defUniformNamed( 'vec3', 'cameraPos' );
-  const lightPos = defUniformArrayNamed( 'vec3', 'lightPos', 8 );
-  const lightColor = defUniformArrayNamed( 'vec3', 'lightColor', 8 );
-  const lightParams = defUniformArrayNamed( 'vec4', 'lightParams', 8 );
-  const lightPV = defUniformArrayNamed( 'mat4', 'lightPV', 8 );
   const sampler0 = defUniformNamed( 'sampler2D', 'sampler0' ); // color.rgba
   const sampler1 = defUniformNamed( 'sampler2D', 'sampler1' ); // position.xyz, depth
   const sampler2 = defUniformNamed( 'sampler2D', 'sampler2' ); // normal.xyz
@@ -45,6 +41,15 @@ export const deferredShadeFrag = build( () => {
       ( sampler ) => texture( sampler, uv )
     ) );
   } );
+
+  const forEachLights = defForEachLights(
+    defUniformNamed( 'int', 'lightCount' ),
+    defUniformArrayNamed( 'vec3', 'lightPos', 8 ),
+    defUniformArrayNamed( 'vec3', 'lightColor', 8 ),
+    defUniformArrayNamed( 'vec2', 'lightNearFar', 8 ),
+    defUniformArrayNamed( 'vec4', 'lightParams', 8 ),
+    defUniformArrayNamed( 'mat4', 'lightPV', 8 ),
+  );
 
   main( () => {
     const tex0 = texture( sampler0, vUv );
@@ -75,18 +80,14 @@ export const deferredShadeFrag = build( () => {
       // begin lighting
       const shaded = def( 'vec3', vec3( 0.0 ) );
 
-      // for each lights
-      forLoop( 8, ( iLight ) => {
-        ifThen( gte( iLight, lightCount ), () => { forBreak(); } );
+      forEachLights( ( { iLight, lightPos, lightColor, lightNearFar, lightParams, lightPV } ) => {
+        const [ L, lenL ] = calcL( lightPos, position );
 
-        const L = def( 'vec3', sub( arrayIndex( lightPos, iLight ), position ) );
-        const lenL = def( 'float', length( L ) );
-        divAssign( L, max( EPSILON, lenL ) );
         const dotNL = dot( normal, L );
 
         // shading
         const lightShaded = def( 'vec3', mul(
-          arrayIndex( lightColor, iLight ),
+          lightColor,
           div( 1.0, sq( lenL ) ),
           dotNL,
           doAnalyticLighting( V, L, normal, color, roughness, metallic ),
@@ -94,7 +95,7 @@ export const deferredShadeFrag = build( () => {
         ) );
 
         // fetch shadowmap + spot lighting
-        const lightProj = mul( arrayIndex( lightPV, iLight ), vec4( position, 1.0 ) );
+        const lightProj = mul( lightPV, vec4( position, 1.0 ) );
         const lightP = div( sw( lightProj, 'xyz' ), sw( lightProj, 'w' ) );
 
         mulAssign(
@@ -104,8 +105,8 @@ export const deferredShadeFrag = build( () => {
             lenL,
             dotNL,
             lightP,
-            arrayIndex( lightNearFar, iLight ),
-            sw( arrayIndex( lightParams, iLight ), 'x' ),
+            lightNearFar,
+            sw( lightParams, 'x' ),
           ),
         );
 

@@ -1,11 +1,13 @@
 import { DIELECTRIC_SPECULAR, INV_PI, ONE_SUB_DIELECTRIC_SPECULAR } from '../utils/constants';
 import { MTL_PRESHADED_PUNCTUALS } from './deferredShadeFrag';
-import { add, addAssign, arrayIndex, assign, build, def, defFn, defInNamed, defOut, defUniformArrayNamed, defUniformNamed, discard, div, divAssign, dot, forBreak, forLoop, glFragCoord, glFragDepth, gt, gte, ifThen, insert, length, main, max, mix, mul, neg, normalize, retFn, sq, sub, subAssign, sw, tern, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformArrayNamed, defUniformNamed, discard, div, dot, glFragCoord, glFragDepth, gt, ifThen, insert, length, main, max, mix, mul, neg, normalize, retFn, sq, sub, subAssign, sw, tern, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcDepth } from './modules/calcDepth';
+import { calcL } from './modules/calcL';
 import { calcNormal } from './modules/calcNormal';
 import { calcSS } from './modules/calcSS';
 import { cyclicNoise } from './modules/cyclicNoise';
 import { dGGX } from './modules/dGGX';
+import { defForEachLights } from './modules/forEachLights';
 import { fresnelSchlick } from './modules/fresnelSchlick';
 import { glslDefRandom } from './modules/glslDefRandom';
 import { raymarch } from './modules/raymarch';
@@ -28,9 +30,6 @@ export const sssBoxFrag = ( tag: 'forward' | 'deferred' | 'depth' ): string => b
   const fragNormal = tag === 'deferred' ? defOut( 'vec4', 2 ) : null;
   const fragMisc = tag === 'deferred' ? defOut( 'vec4', 3 ) : null;
 
-  const lightCount = defUniformNamed( 'int', 'lightCount' );
-  const lightPos = defUniformArrayNamed( 'vec3', 'lightPos', 8 );
-  const lightColor = defUniformArrayNamed( 'vec3', 'lightColor', 8 );
   const time = defUniformNamed( 'float', 'time' );
   const resolution = defUniformNamed( 'vec2', 'resolution' );
   const cameraNearFar = defUniformNamed( 'vec2', 'cameraNearFar' );
@@ -41,6 +40,15 @@ export const sssBoxFrag = ( tag: 'forward' | 'deferred' | 'depth' ): string => b
   const { init } = glslDefRandom();
 
   const shouldCalcVoronoi = def( 'bool', false );
+
+  const forEachLights = defForEachLights(
+    defUniformNamed( 'int', 'lightCount' ),
+    defUniformArrayNamed( 'vec3', 'lightPos', 8 ),
+    defUniformArrayNamed( 'vec3', 'lightColor', 8 ),
+    defUniformArrayNamed( 'vec2', 'lightNearFar', 8 ),
+    defUniformArrayNamed( 'vec4', 'lightParams', 8 ),
+    defUniformArrayNamed( 'mat4', 'lightPV', 8 ),
+  );
 
   const map = defFn( 'vec4', [ 'vec3' ], ( p ) => {
     // const d = def( 'float', sub( length( p ), 0.1 ) );
@@ -117,14 +125,11 @@ export const sssBoxFrag = ( tag: 'forward' | 'deferred' | 'depth' ): string => b
       const f0 = mix( DIELECTRIC_SPECULAR, baseColor, metallic );
       const f90 = vec3( 1.0 );
 
-      // for each lights
-      forLoop( 8, ( iLight ) => {
-        ifThen( gte( iLight, lightCount ), () => { forBreak(); } );
-
-        const lp = mul( modelMatrixT3, arrayIndex( lightPos, iLight ) );
-        const L = def( 'vec3', sub( lp, rp ) );
-        const lenL = def( 'float', length( L ) );
-        divAssign( L, max( 1E-3, lenL ) );
+      forEachLights( ( { lightPos, lightColor } ) => {
+        const [ L, lenL ] = calcL(
+          mul( modelMatrixT3, lightPos ),
+          rp,
+        );
 
         const H = def( 'vec3', normalize( add( L, V ) ) );
 
@@ -135,7 +140,7 @@ export const sssBoxFrag = ( tag: 'forward' | 'deferred' | 'depth' ): string => b
 
         const roughnessSq = mul( roughness, roughness );
 
-        const lightCol = arrayIndex( lightColor, iLight );
+        const lightCol = lightColor;
         const lightDecay = div( 1.0, sq( lenL ) );
         const irradiance = def( 'vec3', mul( lightCol, dotNL, lightDecay ) );
 
