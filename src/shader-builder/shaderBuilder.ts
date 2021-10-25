@@ -420,16 +420,22 @@ export const gte: {
   `(${num( x )}>=${num( y )})`
 ) as any;
 
+export const not: {
+  ( x: Ex<'bool'> ): Ex<'bool'>;
+} = ( x: string | boolean ) => (
+  `(!${ x })`
+) as any;
+
 export const and: {
-  ( x: Ex<'bool'>, y: Ex<'bool'> ): Ex<'bool'>;
-} = ( x: string | number, y: string | number ) => (
-  `(${num( x )}&&${num( y )})`
+  ( ...args: Ex<'bool'>[] ): Ex<'bool'>;
+} = ( ...args: ( string | boolean )[] ) => (
+  `(${args.map( ( arg ) => num( arg ) ).join( '&&' )})`
 ) as any;
 
 export const or: {
-  ( x: Ex<'bool'>, y: Ex<'bool'> ): Ex<'bool'>;
-} = ( x: string | number, y: string | number ) => (
-  `(${num( x )}||${num( y )})`
+  ( ...args: Ex<'bool'>[] ): Ex<'bool'>;
+} = ( ...args: ( string | number | boolean )[] ) => (
+  `(${args.map( ( arg ) => num( arg ) ).join( '||' )})`
 ) as any;
 
 export const arrayIndex: {

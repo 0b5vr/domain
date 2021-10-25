@@ -1,3 +1,4 @@
+import { Asphalt } from './entities/Asphalt';
 import { Bloom } from './entities/Bloom';
 import { BufferRenderTarget } from './heck/BufferRenderTarget';
 import { CanvasRenderTarget } from './heck/CanvasRenderTarget';
@@ -189,6 +190,16 @@ if ( process.env.DEV && module.hot ) {
 sp4ghet.transform.position = [ 0.0, 3.0, 0.0 ];
 sp4ghet.transform.scale = [ 3.0, 3.0, 3.0 ];
 
+const asphalt = new Asphalt();
+if ( process.env.DEV && module.hot ) {
+  const replacer = new EntityReplacer( asphalt, () => new Asphalt() );
+  module.hot.accept( './entities/Asphalt', () => {
+    replacer.replace( dog.root );
+  } );
+}
+asphalt.transform.position = [ 0.0, 3.0, 0.0 ];
+asphalt.transform.scale = [ 3.0, 3.0, 3.0 ];
+
 const mengerSponge = new MengerSponge();
 if ( process.env.DEV && module.hot ) {
   const replacer = new EntityReplacer( mengerSponge, () => new MengerSponge() );
@@ -223,7 +234,8 @@ dog.root.children.push(
   // plane,
   // sssBox,
   // sp4ghet,
-  mengerSponge,
+  asphalt,
+  // mengerSponge,
   deferredCamera,
   forwardCamera,
   bloom,
