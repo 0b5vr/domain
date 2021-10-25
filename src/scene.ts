@@ -13,7 +13,6 @@ import { MengerSponge } from './entities/MengerSponge';
 import { Plane } from './entities/Plane';
 import { PointLightEntity } from './entities/PointLightEntity';
 import { Post } from './entities/Post';
-import { RTInspector } from './entities/RTInspector';
 import { SSSBox } from './entities/SSSBox';
 import { Swap } from '@0b5vr/experimental';
 import { automaton } from './globals/automaton';
@@ -210,8 +209,10 @@ dog.root.children.push(
 );
 
 if ( process.env.DEV ) {
-  const rtInspector = new RTInspector( {
-    target: canvasRenderTarget
+  import( './entities/RTInspector' ).then( ( { RTInspector } ) => {
+    const rtInspector = new RTInspector( {
+      target: canvasRenderTarget
+    } );
+    dog.root.children.push( rtInspector );
   } );
-  dog.root.children.push( rtInspector );
 }
