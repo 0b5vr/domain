@@ -186,8 +186,8 @@ export class RTInspector extends Entity {
   private __updateTarget(): void {
     const ha = gui; // FIXME: weird error that prevents me using optional chaining...
 
-    const single = ha?.value( 'RTInspector/single', '' );
-    const singleIndex = ha?.value( 'RTInspector/index', 0, { step: 1 } );
+    const single: string = ha?.value( 'RTInspector/single', '' ) ?? '';
+    const singleIndex: number = ha?.value( 'RTInspector/index', 0, { step: 1 } ) ?? 0;
 
     this.materialSingle.addUniform(
       'lod',
@@ -201,18 +201,21 @@ export class RTInspector extends Entity {
     } else if ( single !== '' ) {
       this.entityMultiple.active = false;
 
-      const target = BufferRenderTarget.nameMap.get( single ?? '' ) ?? null;
-      const attachment = gl.COLOR_ATTACHMENT0 + ( singleIndex ?? 0 );
+      for ( const [ name, target ] of BufferRenderTarget.nameMap ) {
+        if ( !( new RegExp( single ).test( name ) ) ) { continue; }
 
-      if ( !target ) {
-        this.entitySingle.active = false;
-        return;
+        const attachment = gl.COLOR_ATTACHMENT0 + singleIndex;
+
+        if ( !target ) {
+          this.entitySingle.active = false;
+          return;
+        }
+
+        const texture = target.getTexture( attachment )!;
+        this.materialSingle.addUniformTextures( 'sampler0', texture );
+
+        this.entitySingle.active = true;
       }
-
-      const texture = target.getTexture( attachment )!;
-      this.materialSingle.addUniformTextures( 'sampler0', texture );
-
-      this.entitySingle.active = true;
     } else {
       // fallback to not render it
       this.entityMultiple.active = false;
