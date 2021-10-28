@@ -48,7 +48,7 @@ export const asphaltFrag = ( tag: 'forward' | 'deferred' | 'depth' ): string => 
       const voronoi = voronoi3d( voronoiSamplePos );
       const border = sw( voronoi3dBorder( voronoiSamplePos, voronoi ), 'w' );
       subAssign( d, div( border, 100.0 ) );
-      assign( line, smoothstep( 0.04, 0.2, border ) );
+      assign( line, smoothstep( 0.2, 0.1, border ) );
     }
 
     retFn( vec4( d, line, 0, 0 ) );
