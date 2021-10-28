@@ -1,13 +1,13 @@
-import { Entity } from '../heck/Entity';
 import { Geometry } from '../heck/Geometry';
 import { Material } from '../heck/Material';
 import { Mesh } from '../heck/components/Mesh';
+import { SceneNode } from '../heck/components/SceneNode';
 import { boundingBoxFrag } from '../shaders/boundingBoxFrag';
 import { dummyRenderTarget } from '../globals/dummyRenderTarget';
 import { gl, glCat } from '../globals/canvas';
 import { objectVert } from '../shaders/objectVert';
 
-export class BoundingBox extends Entity {
+export class BoundingBox extends SceneNode {
   public constructor() {
     super();
 
@@ -97,6 +97,6 @@ export class BoundingBox extends Entity {
       materials,
       name: process.env.DEV && 'mesh',
     } );
-    this.components.push( mesh );
+    this.children.push( mesh );
   }
 }

@@ -4,15 +4,15 @@ import { BufferRenderTarget } from './heck/BufferRenderTarget';
 import { CanvasRenderTarget } from './heck/CanvasRenderTarget';
 import { DeferredCamera } from './entities/DeferredCamera';
 import { Dog } from './heck/Dog';
-import { EntityReplacer } from './utils/EntityReplacer';
 import { Floor } from './entities/Floor';
 import { Fluid } from './entities/Fluid';
 import { ForwardCamera } from './entities/ForwardCamera';
 import { IBLLUTCalc } from './entities/IBLLUTCalc';
 import { Lambda } from './heck/components/Lambda';
 import { MengerSponge } from './entities/MengerSponge';
+import { NodeReplacer } from './utils/NodeReplacer';
 import { Plane } from './entities/Plane';
-import { PointLightEntity } from './entities/PointLightEntity';
+import { PointLightNode } from './entities/PointLightNode';
 import { Post } from './entities/Post';
 import { SSSBox } from './entities/SSSBox';
 import { Sp4ghet } from './entities/Sp4ghet';
@@ -28,7 +28,7 @@ export const dog = new Dog();
 const canvasRenderTarget = new CanvasRenderTarget();
 
 // Mr. Update Everything
-dog.root.components.push( new Lambda( {
+dog.root.children.push( new Lambda( {
   onUpdate: () => {
     randomTexture.update();
     automaton.update( clock.time );
@@ -80,7 +80,7 @@ const swap = new Swap(
 
 const iblLutCalc = new IBLLUTCalc();
 
-const light1 = new PointLightEntity( {
+const light1 = new PointLightNode( {
   scenes: [ dog.root ],
   shadowMapFov: 35.0,
   shadowMapNear: 1.0,
@@ -92,7 +92,7 @@ light1.color = [ 500.0, 500.0, 500.0 ];
 light1.spotness = 1.0;
 light1.transform.lookAt( [ 5.0, 1.0, 8.0 ], [ 0.0, 3.0, 0.0 ] );
 
-const light2 = new PointLightEntity( {
+const light2 = new PointLightNode( {
   scenes: [ dog.root ],
   shadowMapFov: 50.0,
   shadowMapNear: 1.0,
@@ -104,7 +104,7 @@ light2.color = [ 200.0, 230.0, 260.0 ];
 light2.spotness = 1.0;
 light2.transform.lookAt( [ 0.01, 9.0, 0.01 ], [ 0.0, 3.0, 0.0 ] );
 
-const light3 = new PointLightEntity( {
+const light3 = new PointLightNode( {
   scenes: [ dog.root ],
   shadowMapFov: 50.0,
   shadowMapNear: 1.0,
@@ -122,7 +122,7 @@ const deferredCamera = new DeferredCamera( {
 } );
 deferredCamera.transform.lookAt( [ 0.0, 1.6, 10.0 ], [ 0.0, 1.6, 0.0 ] );
 
-deferredCamera.components.push( new Lambda( {
+deferredCamera.children.push( new Lambda( {
   onUpdate: ( { time } ) => {
     const x = 10.0 * Math.cos( time );
     const z = 10.0 * Math.sin( time );
@@ -141,7 +141,7 @@ const floor = new Floor(
   forwardCamera.camera,
 );
 if ( process.env.DEV && module.hot ) {
-  const replacer = new EntityReplacer( floor, () => new Floor(
+  const replacer = new NodeReplacer( floor, () => new Floor(
     forwardCamera,
     forwardCamera.camera
   ) );
@@ -152,7 +152,7 @@ if ( process.env.DEV && module.hot ) {
 
 const fluid = new Fluid();
 if ( process.env.DEV && module.hot ) {
-  const replacer = new EntityReplacer( fluid, () => new Fluid() );
+  const replacer = new NodeReplacer( fluid, () => new Fluid() );
   module.hot.accept( './entities/Fluid', () => {
     replacer.replace( dog.root );
   } );
@@ -162,7 +162,7 @@ fluid.transform.scale = [ 3.0, 3.0, 3.0 ];
 
 const plane = new Plane();
 if ( process.env.DEV && module.hot ) {
-  const replacer = new EntityReplacer( plane, () => new Plane() );
+  const replacer = new NodeReplacer( plane, () => new Plane() );
   module.hot.accept( './entities/Plane', () => {
     replacer.replace( dog.root );
   } );
@@ -172,7 +172,7 @@ plane.transform.scale = [ 3.0, 3.0, 3.0 ];
 
 const sssBox = new SSSBox();
 if ( process.env.DEV && module.hot ) {
-  const replacer = new EntityReplacer( sssBox, () => new SSSBox() );
+  const replacer = new NodeReplacer( sssBox, () => new SSSBox() );
   module.hot.accept( './entities/SSSBox', () => {
     replacer.replace( dog.root );
   } );
@@ -182,7 +182,7 @@ sssBox.transform.scale = [ 3.0, 3.0, 3.0 ];
 
 const sp4ghet = new Sp4ghet();
 if ( process.env.DEV && module.hot ) {
-  const replacer = new EntityReplacer( sp4ghet, () => new Sp4ghet() );
+  const replacer = new NodeReplacer( sp4ghet, () => new Sp4ghet() );
   module.hot.accept( './entities/Sp4ghet', () => {
     replacer.replace( dog.root );
   } );
@@ -192,7 +192,7 @@ sp4ghet.transform.scale = [ 3.0, 3.0, 3.0 ];
 
 const asphalt = new Asphalt();
 if ( process.env.DEV && module.hot ) {
-  const replacer = new EntityReplacer( asphalt, () => new Asphalt() );
+  const replacer = new NodeReplacer( asphalt, () => new Asphalt() );
   module.hot.accept( './entities/Asphalt', () => {
     replacer.replace( dog.root );
   } );
@@ -202,7 +202,7 @@ asphalt.transform.scale = [ 3.0, 3.0, 3.0 ];
 
 const mengerSponge = new MengerSponge();
 if ( process.env.DEV && module.hot ) {
-  const replacer = new EntityReplacer( mengerSponge, () => new MengerSponge() );
+  const replacer = new NodeReplacer( mengerSponge, () => new MengerSponge() );
   module.hot.accept( './entities/MengerSponge', () => {
     replacer.replace( dog.root );
   } );
@@ -230,11 +230,11 @@ dog.root.children.push(
   light3,
   iblLutCalc,
   floor,
-  // fluid,
+  fluid,
   // plane,
   // sssBox,
   // sp4ghet,
-  asphalt,
+  // asphalt,
   // mengerSponge,
   deferredCamera,
   forwardCamera,

@@ -1,9 +1,9 @@
 import { Camera } from './Camera';
 import { ComponentOptions, ComponentUpdateEvent } from './Component';
 import { CubemapRenderTarget } from '../CubemapRenderTarget';
-import { Entity } from '../Entity';
 import { MaterialTag } from '../Material';
 import { RawQuaternion, mat4Compose, mat4Perspective } from '@0b5vr/experimental';
+import { SceneNode } from './SceneNode';
 import { Transform } from '../Transform';
 import { gl } from '../../globals/canvas';
 
@@ -23,7 +23,7 @@ export interface CubemapCameraOptions extends ComponentOptions {
   renderTarget?: CubemapRenderTarget;
   near?: number;
   far?: number;
-  scenes?: Entity[];
+  scenes?: SceneNode[];
   clear?: Array<number | undefined> | false;
 }
 

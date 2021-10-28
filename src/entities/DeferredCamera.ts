@@ -1,12 +1,12 @@
 import { AO_RESOLUTION_RATIO } from '../config';
 import { BufferRenderTarget } from '../heck/BufferRenderTarget';
-import { Entity } from '../heck/Entity';
 import { GLCatTexture } from '@fms-cat/glcat-ts';
 import { Lambda } from '../heck/components/Lambda';
 import { Material } from '../heck/Material';
 import { PerspectiveCamera } from '../heck/components/PerspectiveCamera';
 import { Quad } from '../heck/components/Quad';
 import { RenderTarget } from '../heck/RenderTarget';
+import { SceneNode } from '../heck/components/SceneNode';
 import { createLightUniformsLambda } from './utils/createLightUniformsLambda';
 import { deferredShadeFrag } from '../shaders/deferredShadeFrag';
 import { dummyRenderTarget } from '../globals/dummyRenderTarget';
@@ -18,13 +18,13 @@ import { randomTexture } from '../globals/randomTexture';
 import { ssaoFrag } from '../shaders/ssaoFrag';
 
 export interface DeferredCameraOptions {
-  scenes: Entity[];
+  scenes: SceneNode[];
   target: RenderTarget;
   textureIBLLUT: GLCatTexture;
   // textureEnv: GLCatTexture;
 }
 
-export class DeferredCamera extends Entity {
+export class DeferredCamera extends SceneNode {
   public cameraTarget: BufferRenderTarget;
   public camera: PerspectiveCamera;
 
@@ -152,7 +152,7 @@ export class DeferredCamera extends Entity {
     // shadingMaterial.addUniformTextures( 'samplerEnv', options.textureEnv );
     shadingMaterial.addUniformTextures( 'samplerRandom', randomTexture.texture );
 
-    this.components.push(
+    this.children.push(
       this.camera,
       lambdaAoSetCameraUniforms,
       aoQuad,

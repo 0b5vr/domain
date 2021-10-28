@@ -1,8 +1,8 @@
 import { BufferRenderTarget } from '../heck/BufferRenderTarget';
-import { Entity } from '../heck/Entity';
 import { Material } from '../heck/Material';
 import { Quad } from '../heck/components/Quad';
 import { RenderTarget } from '../heck/RenderTarget';
+import { SceneNode } from '../heck/components/SceneNode';
 import { auto } from '../globals/automaton';
 import { dummyRenderTarget } from '../globals/dummyRenderTarget';
 import { postFrag } from '../shaders/postFrag';
@@ -33,7 +33,7 @@ const colorPresets = [
   },
 ];
 
-export class Post extends Entity {
+export class Post extends SceneNode {
   public constructor( options: PostOptions ) {
     super();
 
@@ -61,7 +61,7 @@ export class Post extends Entity {
       material,
       name: process.env.DEV && 'quad',
     } );
-    this.components.push( quad );
+    this.children.push( quad );
 
     // -- auto -------------------------------------------------------------------------------------
     auto( 'Post/colorPreset', ( { value } ) => {

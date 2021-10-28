@@ -1,8 +1,8 @@
 import { Camera } from './Camera';
 import { ComponentOptions } from './Component';
-import { Entity } from '../Entity';
 import { MaterialTag } from '../Material';
 import { RenderTarget } from '../RenderTarget';
+import { SceneNode } from './SceneNode';
 import { mat4Perspective } from '@0b5vr/experimental';
 
 export interface PerspectiveCameraOptions extends ComponentOptions {
@@ -11,7 +11,7 @@ export interface PerspectiveCameraOptions extends ComponentOptions {
   near?: number;
   far?: number;
   fov?: number;
-  scenes?: Entity[];
+  scenes?: SceneNode[];
   clear?: Array<number | undefined> | false;
 }
 

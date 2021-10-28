@@ -1,11 +1,11 @@
 import { Blit } from '../heck/components/Blit';
 import { BufferRenderTarget } from '../heck/BufferRenderTarget';
-import { Entity } from '../heck/Entity';
 import { Lambda } from '../heck/components/Lambda';
 import { Material } from '../heck/Material';
 import { Quad } from '../heck/components/Quad';
 import { RESOLUTION } from '../config';
 import { RenderTarget } from '../heck/RenderTarget';
+import { SceneNode } from '../heck/components/SceneNode';
 import { canvas, gl, glCat } from '../globals/canvas';
 import { dryFrag } from '../shaders/dryFrag';
 import { dummyRenderTarget } from '../globals/dummyRenderTarget';
@@ -18,9 +18,9 @@ export interface RTInspectorOptions {
   target: RenderTarget;
 }
 
-export class RTInspector extends Entity {
-  public entitySingle: Entity;
-  public entityMultiple: Entity;
+export class RTInspector extends SceneNode {
+  public nodeSingle: SceneNode;
+  public nodeMultiple: SceneNode;
   public materialSingle: Material;
   public quadSingle: Quad;
   public blitsMultiple: Blit[];
@@ -29,10 +29,10 @@ export class RTInspector extends Entity {
     super();
 
     // -- single -----------------------------------------------------------------------------------
-    this.entitySingle = new Entity( {
-      name: 'entitySingle',
+    this.nodeSingle = new SceneNode( {
+      name: 'nodeSingle',
     } );
-    this.children.push( this.entitySingle );
+    this.children.push( this.nodeSingle );
 
     this.materialSingle = new Material(
       quadVert,
@@ -46,7 +46,7 @@ export class RTInspector extends Entity {
       name: 'quadSingle',
       ignoreBreakpoints: true,
     } );
-    this.entitySingle.components.push( this.quadSingle );
+    this.nodeSingle.children.push( this.quadSingle );
 
     // -- mouse listener ---------------------------------------------------------------------------
     canvas.addEventListener( 'mousemove', ( { offsetX, offsetY } ) => {
@@ -58,10 +58,10 @@ export class RTInspector extends Entity {
     } );
 
     // -- multiple ---------------------------------------------------------------------------------
-    this.entityMultiple = new Entity( {
-      name: 'entityMultiple',
+    this.nodeMultiple = new SceneNode( {
+      name: 'nodeMultiple',
     } );
-    this.children.push( this.entityMultiple );
+    this.children.push( this.nodeMultiple );
 
     // count first?
     let count = 0;
@@ -123,7 +123,7 @@ export class RTInspector extends Entity {
       } );
 
       this.blitsMultiple.push( blit );
-      this.entityMultiple.components.push( blit );
+      this.nodeMultiple.children.push( blit );
     }
 
     // text canvas
@@ -135,7 +135,7 @@ export class RTInspector extends Entity {
 
     const textContext = textCanvas.getContext( '2d' )!;
 
-    this.entityMultiple.components.push( new Lambda( {
+    this.nodeMultiple.children.push( new Lambda( {
       onUpdate: () => {
         textContext.clearRect( 0, 0, RESOLUTION[ 0 ], RESOLUTION[ 1 ] );
 
@@ -171,10 +171,10 @@ export class RTInspector extends Entity {
       ignoreBreakpoints: true,
       range: [ -1.0, 1.0, 1.0, -1.0 ],
     } );
-    this.entityMultiple.components.push( quadMultipleText );
+    this.nodeMultiple.children.push( quadMultipleText );
 
     // -- see the config ---------------------------------------------------------------------------
-    this.components.push( new Lambda( {
+    this.children.push( new Lambda( {
       onUpdate: () => {
         this.__updateTarget();
       },
@@ -196,10 +196,10 @@ export class RTInspector extends Entity {
     );
 
     if ( ha?.value( 'RTInspector/multiple', false ) ) {
-      this.entityMultiple.active = true;
-      this.entitySingle.active = false;
+      this.nodeMultiple.active = true;
+      this.nodeSingle.active = false;
     } else if ( single !== '' ) {
-      this.entityMultiple.active = false;
+      this.nodeMultiple.active = false;
 
       for ( const [ name, target ] of BufferRenderTarget.nameMap ) {
         if ( !( new RegExp( single ).test( name ) ) ) { continue; }
@@ -207,19 +207,19 @@ export class RTInspector extends Entity {
         const attachment = gl.COLOR_ATTACHMENT0 + singleIndex;
 
         if ( !target ) {
-          this.entitySingle.active = false;
+          this.nodeSingle.active = false;
           return;
         }
 
         const texture = target.getTexture( attachment )!;
         this.materialSingle.addUniformTextures( 'sampler0', texture );
 
-        this.entitySingle.active = true;
+        this.nodeSingle.active = true;
       }
     } else {
       // fallback to not render it
-      this.entityMultiple.active = false;
-      this.entitySingle.active = false;
+      this.nodeMultiple.active = false;
+      this.nodeSingle.active = false;
     }
   }
 }

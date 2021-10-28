@@ -1,8 +1,8 @@
 
-import { RaymarcherEntity } from './utils/RaymarcherEntity';
+import { RaymarcherNode } from './utils/RaymarcherNode';
 import { sssBoxFrag } from '../shaders/sssBoxFrag';
 
-export class SSSBox extends RaymarcherEntity {
+export class SSSBox extends RaymarcherNode {
   public constructor() {
     super( sssBoxFrag );
 

@@ -1,19 +1,19 @@
-import { Entity } from '../../heck/Entity';
+import { Component } from '../../heck/components/Component';
 import { Lambda } from '../../heck/components/Lambda';
 import { MapOfSet } from '../../utils/MapOfSet';
 import { Material } from '../../heck/Material';
-import { PointLightEntity, PointLightTag } from '../PointLightEntity';
+import { PointLightNode, PointLightTag } from '../PointLightNode';
 import { mat4Inverse, mat4Multiply } from '@0b5vr/experimental';
 
 export function createLightUniformsLambda( materials: Material[] ): Lambda {
-  const lambda = ( { frameCount, entitiesByTag }: {
+  const lambda = ( { frameCount, componentsByTag }: {
     frameCount: number,
-    entitiesByTag: MapOfSet<symbol, Entity>,
+    componentsByTag: MapOfSet<symbol, Component>,
   } ): void => {
-    const activeLights = Array.from( entitiesByTag.get( PointLightTag ) )
+    const activeLights = Array.from( componentsByTag.get( PointLightTag ) )
       .filter( ( light ) => (
         frameCount === light.lastUpdateFrame
-      ) ) as PointLightEntity[];
+      ) ) as PointLightNode[];
 
     materials.map( ( material ) => {
       material.addUniform(

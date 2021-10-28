@@ -1,7 +1,7 @@
-import { RaymarcherEntity } from './utils/RaymarcherEntity';
+import { RaymarcherNode } from './utils/RaymarcherNode';
 import { asphaltFrag } from '../shaders/asphaltFrag';
 
-export class Asphalt extends RaymarcherEntity {
+export class Asphalt extends RaymarcherNode {
   public constructor() {
     super( asphaltFrag );
 

@@ -1,9 +1,9 @@
 import { Camera } from './Camera';
-import { Entity } from '../Entity';
 import { MapOfSet } from '../../utils/MapOfSet';
 import { MaterialTag } from '../Material';
 import { RawMatrix4 } from '@0b5vr/experimental';
 import { RenderTarget } from '../RenderTarget';
+import { SceneNode } from './SceneNode';
 import { Transform } from '../Transform';
 import { gui, guiMeasureDraw, guiMeasureUpdate } from '../../globals/gui';
 
@@ -12,8 +12,8 @@ export interface ComponentUpdateEvent {
   time: number;
   deltaTime: number;
   globalTransform: Transform;
-  entity: Entity;
-  entitiesByTag: MapOfSet<symbol, Entity>;
+  ancestors: SceneNode[];
+  componentsByTag: MapOfSet<symbol, Component>;
   path?: string;
 }
 
@@ -27,8 +27,8 @@ export interface ComponentDrawEvent {
   globalTransform: Transform;
   viewMatrix: RawMatrix4;
   projectionMatrix: RawMatrix4;
-  entity: Entity;
-  entitiesByTag: MapOfSet<symbol, Entity>;
+  ancestors: SceneNode[];
+  componentsByTag: MapOfSet<symbol, Component>;
   path?: string;
 }
 
@@ -43,17 +43,23 @@ export class Component {
   public static updateHaveReachedBreakpoint = false;
   public static drawHaveReachedBreakpoint = false;
 
-  public lastUpdateFrame = 0;
+  public lastUpdateFrame: number;
 
   public active: boolean;
   public visible: boolean;
+
+  public tags: symbol[];
 
   public name?: string;
   public ignoreBreakpoints?: boolean;
 
   public constructor( options?: ComponentOptions ) {
+    this.lastUpdateFrame = 0;
+
     this.active = options?.active ?? true;
     this.visible = options?.visible ?? true;
+
+    this.tags = [];
 
     if ( process.env.DEV ) {
       this.name = options?.name ?? ( this as any ).constructor.name;
@@ -65,6 +71,10 @@ export class Component {
     if ( !this.active ) { return; }
     if ( this.lastUpdateFrame === event.frameCount ) { return; }
     this.lastUpdateFrame = event.frameCount;
+
+    this.tags.map( ( tag ) => (
+      event.componentsByTag.add( tag, this )
+    ) );
 
     if ( process.env.DEV ) {
       if ( Component.updateHaveReachedBreakpoint && !this.ignoreBreakpoints ) { return; }

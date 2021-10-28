@@ -1,7 +1,7 @@
-import { RaymarcherEntity } from './utils/RaymarcherEntity';
+import { RaymarcherNode } from './utils/RaymarcherNode';
 import { mengerSpongeFrag } from '../shaders/mengerSpongeFrag';
 
-export class MengerSponge extends RaymarcherEntity {
+export class MengerSponge extends RaymarcherNode {
   public constructor() {
     super( mengerSpongeFrag );
 

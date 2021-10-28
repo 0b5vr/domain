@@ -1,12 +1,12 @@
 import { BoundingBox } from './BoundingBox';
 import { BufferRenderTarget } from '../heck/BufferRenderTarget';
-import { Entity } from '../heck/Entity';
 import { Geometry } from '../heck/Geometry';
 import { Lambda } from '../heck/components/Lambda';
 import { Material } from '../heck/Material';
 import { Mesh } from '../heck/components/Mesh';
 import { Quad } from '../heck/components/Quad';
 import { RawVector3, Swap, quatFromAxisAngle, vecNormalize } from '@0b5vr/experimental';
+import { SceneNode } from '../heck/components/SceneNode';
 import { colorFrag } from '../shaders/colorFrag';
 import { createLightUniformsLambda } from './utils/createLightUniformsLambda';
 import { createRaymarchCameraUniformsLambda } from './utils/createRaymarchCameraUniformsLambda';
@@ -29,7 +29,7 @@ const GRID_RESO_SQRT = 8;
 const GRID_RESO = GRID_RESO_SQRT * GRID_RESO_SQRT;
 const BUFFER_RESO = GRID_RESO * GRID_RESO_SQRT;
 
-export class Fluid extends Entity {
+export class Fluid extends SceneNode {
   public constructor() {
     super();
 
@@ -294,7 +294,7 @@ export class Fluid extends Entity {
     } );
 
     // -- components -------------------------------------------------------------------------------
-    this.components = [
+    this.children = [
       lambdaSpeen,
       quadPokeDensity,
       quadCurl,

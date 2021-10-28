@@ -1,10 +1,10 @@
 import { BufferRenderTarget } from '../heck/BufferRenderTarget';
-import { Entity } from '../heck/Entity';
 import { GLCatTexture } from '@fms-cat/glcat-ts';
 import { IBLLUT_ITER, IBLLUT_SIZE } from '../config';
 import { Lambda } from '../heck/components/Lambda';
 import { Material } from '../heck/Material';
 import { Quad } from '../heck/components/Quad';
+import { SceneNode } from '../heck/components/SceneNode';
 import { Swap } from '@0b5vr/experimental';
 import { dummyRenderTarget } from '../globals/dummyRenderTarget';
 import { gl } from '../globals/canvas';
@@ -13,7 +13,7 @@ import { quadGeometry } from '../globals/quadGeometry';
 import { quadVert } from '../shaders/quadVert';
 import { vdc } from '../utils/vdc';
 
-export class IBLLUTCalc extends Entity {
+export class IBLLUTCalc extends SceneNode {
   public swap: Swap<BufferRenderTarget>;
 
   public get texture(): GLCatTexture {
@@ -58,7 +58,7 @@ export class IBLLUTCalc extends Entity {
     } );
 
     // -- swapper ----------------------------------------------------------------------------------
-    this.components.push( new Lambda( {
+    this.children.push( new Lambda( {
       onUpdate: () => {
         samples ++;
         this.swap.swap();
@@ -76,6 +76,6 @@ export class IBLLUTCalc extends Entity {
       name: process.env.DEV && 'swapper',
     } ) );
 
-    this.components.push( quad );
+    this.children.push( quad );
   }
 }

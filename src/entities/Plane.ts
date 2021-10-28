@@ -1,16 +1,16 @@
-import { Entity, EntityOptions } from '../heck/Entity';
 import { Geometry } from '../heck/Geometry';
 import { Lambda } from '../heck/components/Lambda';
 import { Material } from '../heck/Material';
 import { Mesh, MeshCull } from '../heck/components/Mesh';
 import { RawVector3, TRIANGLE_STRIP_QUAD_3D, TRIANGLE_STRIP_QUAD_NORMAL, TRIANGLE_STRIP_QUAD_UV, quatFromAxisAngle, vecNormalize } from '@0b5vr/experimental';
+import { SceneNode, SceneNodeOptions } from '../heck/components/SceneNode';
 import { dummyRenderTarget } from '../globals/dummyRenderTarget';
 import { gl, glCat } from '../globals/canvas';
 import { objectVert } from '../shaders/objectVert';
 import { uvFrag } from '../shaders/uvFrag';
 
-export class Plane extends Entity {
-  public constructor( options?: EntityOptions ) {
+export class Plane extends SceneNode {
+  public constructor( options?: SceneNodeOptions ) {
     super( options );
 
     // -- geometry ---------------------------------------------------------------------------------
@@ -65,6 +65,6 @@ export class Plane extends Entity {
     } );
 
     // -- components -------------------------------------------------------------------------------
-    this.components = [ lambdaSpeen, mesh ];
+    this.children = [ lambdaSpeen, mesh ];
   }
 }

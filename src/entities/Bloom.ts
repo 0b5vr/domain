@@ -1,10 +1,10 @@
 import { Blit } from '../heck/components/Blit';
 import { BufferRenderTarget } from '../heck/BufferRenderTarget';
-import { Entity } from '../heck/Entity';
 import { Material } from '../heck/Material';
 import { ONE_SUB_ONE_POINT_FIVE_POW_I } from '../utils/constants';
 import { Quad } from '../heck/components/Quad';
 import { RenderTarget } from '../heck/RenderTarget';
+import { SceneNode } from '../heck/components/SceneNode';
 import { Swap } from '@0b5vr/experimental';
 import { bloomDownFrag } from '../shaders/bloomDownFrag';
 import { bloomUpFrag } from '../shaders/bloomUpFrag';
@@ -18,7 +18,7 @@ export interface BloomOptions {
   target: RenderTarget;
 }
 
-export class Bloom extends Entity {
+export class Bloom extends SceneNode {
   public constructor( options: BloomOptions ) {
     super();
 
@@ -38,7 +38,7 @@ export class Bloom extends Entity {
     );
 
     // -- dry --------------------------------------------------------------------------------------
-    this.components.push( new Blit( {
+    this.children.push( new Blit( {
       src: options.input,
       dst: options.target,
       name: process.env.DEV && 'blitDry',
@@ -68,7 +68,7 @@ export class Bloom extends Entity {
         [ rangeMin, rangeMin, rangeMax, rangeMax ]
       );
 
-      this.components.push( new Quad( {
+      this.children.push( new Quad( {
         target: swap.o,
         material,
         range,
@@ -104,7 +104,7 @@ export class Bloom extends Entity {
         ? [ -1.0, -1.0, 1.0, 1.0 ]
         : [ rangeMin, rangeMin, rangeMax, rangeMax ];
 
-      this.components.push( new Quad( {
+      this.children.push( new Quad( {
         target: isLast ? options.target : swap.o,
         material,
         range,

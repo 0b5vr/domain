@@ -1,10 +1,10 @@
 import { BoundingBox } from '../BoundingBox';
-import { Entity } from '../../heck/Entity';
 import { Geometry } from '../../heck/Geometry';
 import { Lambda } from '../../heck/components/Lambda';
 import { Material } from '../../heck/Material';
 import { Mesh } from '../../heck/components/Mesh';
 import { RawVector3, quatFromAxisAngle, vecNormalize } from '@0b5vr/experimental';
+import { SceneNode } from '../../heck/components/SceneNode';
 import { createLightUniformsLambda } from './createLightUniformsLambda';
 import { createRaymarchCameraUniformsLambda } from './createRaymarchCameraUniformsLambda';
 import { dummyRenderTarget, dummyRenderTargetFourDrawBuffers } from '../../globals/dummyRenderTarget';
@@ -12,7 +12,7 @@ import { genCube } from '../../geometries/genCube';
 import { objectVert } from '../../shaders/objectVert';
 import { randomTexture } from '../../globals/randomTexture';
 
-export class RaymarcherEntity extends Entity {
+export class RaymarcherNode extends SceneNode {
   public materials: {
     cubemap: Material,
     deferred: Material,
@@ -100,7 +100,7 @@ export class RaymarcherEntity extends Entity {
     } );
 
     // -- components -------------------------------------------------------------------------------
-    this.components = [
+    this.children = [
       lambdaSpeen,
       lambdaLightUniforms,
       lambdaRaymarchCameraUniforms,

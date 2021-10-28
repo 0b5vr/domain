@@ -1,6 +1,5 @@
 import { Blit } from '../heck/components/Blit';
 import { BufferRenderTarget } from '../heck/BufferRenderTarget';
-import { Entity } from '../heck/Entity';
 import { Geometry } from '../heck/Geometry';
 import { HALF_SQRT_TWO, ONE_SUB_ONE_POINT_FIVE_POW_I } from '../utils/constants';
 import { Lambda } from '../heck/components/Lambda';
@@ -10,6 +9,7 @@ import { PerspectiveCamera } from '../heck/components/PerspectiveCamera';
 import { Quad } from '../heck/components/Quad';
 import { RESOLUTION } from '../config';
 import { RawMatrix4, Swap, TRIANGLE_STRIP_QUAD_3D, TRIANGLE_STRIP_QUAD_NORMAL, TRIANGLE_STRIP_QUAD_UV } from '@0b5vr/experimental';
+import { SceneNode } from '../heck/components/SceneNode';
 import { bloomDownFrag } from '../shaders/bloomDownFrag';
 import { createLightUniformsLambda } from './utils/createLightUniformsLambda';
 import { dummyRenderTarget } from '../globals/dummyRenderTarget';
@@ -19,33 +19,33 @@ import { objectVert } from '../shaders/objectVert';
 import { quadGeometry } from '../globals/quadGeometry';
 import { quadVert } from '../shaders/quadVert';
 
-export class Floor extends Entity {
-  public mirrorCameraEntity: Entity;
-  public primaryCameraEntity: Entity;
+export class Floor extends SceneNode {
+  public mirrorCameraNode: SceneNode;
+  public primaryCameraNode: SceneNode;
   public primaryCamera: PerspectiveCamera;
   public mirrorCamera: PerspectiveCamera;
   public mirrorTarget: BufferRenderTarget;
   public mipmapMirrorTarget: BufferRenderTarget;
 
-  public constructor( primaryCameraEntity: Entity, primaryCamera: PerspectiveCamera ) {
+  public constructor( primaryCameraNode: SceneNode, primaryCamera: PerspectiveCamera ) {
     super();
 
     // -- https://www.nicovideo.jp/watch/sm21005672 ------------------------------------------------
-    this.mirrorCameraEntity = new Entity( {
-      name: process.env.DEV && 'mirrorCameraEntity',
+    this.mirrorCameraNode = new SceneNode( {
+      name: process.env.DEV && 'mirrorCameraNode',
     } );
-    this.children.push( this.mirrorCameraEntity );
+    this.children.push( this.mirrorCameraNode );
 
-    this.components.push( new Lambda( {
+    this.children.push( new Lambda( {
       onUpdate: () => {
-        const camTrans = this.mirrorCameraEntity.transform;
-        camTrans.matrix = this.primaryCameraEntity.transform.matrix.concat() as RawMatrix4;
+        const camTrans = this.mirrorCameraNode.transform;
+        camTrans.matrix = this.primaryCameraNode.transform.matrix.concat() as RawMatrix4;
 
         camTrans.matrix[ 13 ] *= -1.0;
       },
     } ) );
 
-    this.primaryCameraEntity = primaryCameraEntity;
+    this.primaryCameraNode = primaryCameraNode;
     this.primaryCamera = primaryCamera;
     this.mirrorTarget = new BufferRenderTarget( {
       width: RESOLUTION[ 0 ],
@@ -61,7 +61,7 @@ export class Floor extends Entity {
       fov: this.primaryCamera.fov,
       scenes: this.primaryCamera.scenes,
     } );
-    this.mirrorCameraEntity.components.push( this.mirrorCamera );
+    this.mirrorCameraNode.children.push( this.mirrorCamera );
 
     // -- create mipmaps ---------------------------------------------------------------------------
     const swapMirrorDownsampleTarget = new Swap(
@@ -84,10 +84,10 @@ export class Floor extends Entity {
       name: process.env.DEV && 'Floor/mipmapMirrorTarget',
     } );
 
-    const mipmapEntity = new Entity( {
-      name: process.env.DEV && 'mipmapEntity',
+    const mipmapNode = new SceneNode( {
+      name: process.env.DEV && 'mipmapNode',
     } );
-    this.children.push( mipmapEntity );
+    this.children.push( mipmapNode );
 
     let srcRange = [ -1.0, -1.0, 1.0, 1.0 ];
 
@@ -113,7 +113,7 @@ export class Floor extends Entity {
         2.0 * ONE_SUB_ONE_POINT_FIVE_POW_I[ i + 1 ] - 1.0,
       ];
 
-      mipmapEntity.components.push( new Quad( {
+      mipmapNode.children.push( new Quad( {
         target: swapMirrorDownsampleTarget.i,
         material,
         range,
@@ -130,7 +130,7 @@ export class Floor extends Entity {
         RESOLUTION[ 1 ] * ONE_SUB_ONE_POINT_FIVE_POW_I[ i + 1 ],
       ];
 
-      mipmapEntity.components.push( new Blit( {
+      mipmapNode.children.push( new Blit( {
         src: swapMirrorDownsampleTarget.o,
         dst: target,
         srcRect,
@@ -139,11 +139,11 @@ export class Floor extends Entity {
     } );
 
     // -- entity for mesh --------------------------------------------------------------------------
-    const meshEntity = new Entity();
-    this.children.push( meshEntity );
+    const meshNode = new SceneNode();
+    this.children.push( meshNode );
 
-    meshEntity.transform.rotation = [ -HALF_SQRT_TWO, 0.0, 0.0, HALF_SQRT_TWO ];
-    meshEntity.transform.scale = [ 20.0, 20.0, 20.0 ];
+    meshNode.transform.rotation = [ -HALF_SQRT_TWO, 0.0, 0.0, HALF_SQRT_TWO ];
+    meshNode.transform.scale = [ 20.0, 20.0, 20.0 ];
 
     // -- create buffers ---------------------------------------------------------------------------
     const bufferPos = glCat.createBuffer();
@@ -190,7 +190,7 @@ export class Floor extends Entity {
 
     forward.addUniformTextures( 'samplerMirror', this.mipmapMirrorTarget.texture );
 
-    this.components.push( createLightUniformsLambda( [ forward ] ) );
+    this.children.push( createLightUniformsLambda( [ forward ] ) );
 
     const materials = { forward, depth };
 
@@ -215,6 +215,6 @@ export class Floor extends Entity {
       materials,
       name: process.env.DEV && 'mesh',
     } );
-    meshEntity.components.push( mesh );
+    meshNode.children.push( mesh );
   }
 }

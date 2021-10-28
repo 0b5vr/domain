@@ -1,7 +1,7 @@
-import { RaymarcherEntity } from './utils/RaymarcherEntity';
+import { RaymarcherNode } from './utils/RaymarcherNode';
 import { sp4ghetFrag } from '../shaders/sp4ghetFrag';
 
-export class Sp4ghet extends RaymarcherEntity {
+export class Sp4ghet extends RaymarcherNode {
   public constructor() {
     super( sp4ghetFrag );
 

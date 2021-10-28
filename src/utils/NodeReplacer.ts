@@ -1,6 +1,6 @@
-import { Entity } from '../heck/Entity';
+import { SceneNode } from '../heck/components/SceneNode';
 
-export class EntityReplacer<T extends Entity> {
+export class NodeReplacer<T extends SceneNode> {
   public current: T;
   public creator: () => T;
 
@@ -9,7 +9,7 @@ export class EntityReplacer<T extends Entity> {
     this.creator = creator;
   }
 
-  public replace( parent: Entity ): void {
+  public replace( parent: SceneNode ): void {
     const currentIndex = parent.children.indexOf( this.current );
     this.current = this.creator();
     parent.children.splice( currentIndex, 1, this.current );

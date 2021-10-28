@@ -1,16 +1,14 @@
-import { Entity, EntityOptions } from '../heck/Entity';
-// import { LightEntity } from './LightEntity';
 import { PerspectiveCamera } from '../heck/components/PerspectiveCamera';
 import { RenderTarget } from '../heck/RenderTarget';
+import { SceneNode, SceneNodeOptions } from '../heck/components/SceneNode';
 
-export interface ForwardCameraOptions extends EntityOptions {
-  scenes: Entity[];
+export interface ForwardCameraOptions extends SceneNodeOptions {
+  scenes: SceneNode[];
   target: RenderTarget;
   clear?: Array<number | undefined> | false;
-  // lights: LightEntity[];
 }
 
-export class ForwardCamera extends Entity {
+export class ForwardCamera extends SceneNode {
   public camera: PerspectiveCamera;
 
   public constructor( options: ForwardCameraOptions ) {
@@ -26,6 +24,6 @@ export class ForwardCamera extends Entity {
       materialTag: 'forward',
     } );
 
-    this.components.push( this.camera );
+    this.children.push( this.camera );
   }
 }

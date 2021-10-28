@@ -1,8 +1,8 @@
 import { BufferRenderTarget } from '../heck/BufferRenderTarget';
-import { Entity, EntityOptions } from '../heck/Entity';
 import { Material } from '../heck/Material';
 import { PerspectiveCamera } from '../heck/components/PerspectiveCamera';
 import { Quad } from '../heck/components/Quad';
+import { SceneNode, SceneNodeOptions } from '../heck/components/SceneNode';
 import { Swap } from '@0b5vr/experimental';
 import { dummyRenderTarget } from '../globals/dummyRenderTarget';
 import { quadGeometry } from '../globals/quadGeometry';
@@ -11,8 +11,8 @@ import { shadowBlurFrag } from '../shaders/shadowBlurFrag';
 
 export const PointLightTag = Symbol();
 
-export interface PointLightEntityOptions extends EntityOptions {
-  scenes: Entity[];
+export interface PointLightNodeOptions extends SceneNodeOptions {
+  scenes: SceneNode[];
   shadowMapFov?: number;
   shadowMapNear?: number;
   shadowMapFar?: number;
@@ -20,7 +20,7 @@ export interface PointLightEntityOptions extends EntityOptions {
   brtNamePrefix?: string;
 }
 
-export class PointLightEntity extends Entity {
+export class PointLightNode extends SceneNode {
   public spotness: number = 0.0;
   public color: [ number, number, number ] = [ 1.0, 1.0, 1.0 ];
   public camera: PerspectiveCamera;
@@ -38,7 +38,7 @@ export class PointLightEntity extends Entity {
     return this.camera.far;
   }
 
-  public constructor( options: PointLightEntityOptions ) {
+  public constructor( options: PointLightNodeOptions ) {
     super( options );
 
     this.tags.push( PointLightTag );
@@ -74,7 +74,7 @@ export class PointLightEntity extends Entity {
       materialTag: 'depth',
     } );
     this.camera.clear = [ 1.0, 1.0, 1.0, 1.0 ];
-    this.components.push( this.camera );
+    this.children.push( this.camera );
 
     swap.swap();
 
@@ -87,7 +87,7 @@ export class PointLightEntity extends Entity {
       );
       material.addUniformTextures( 'sampler0', swap.i.texture );
 
-      this.components.push( new Quad( {
+      this.children.push( new Quad( {
         target: swap.o,
         material,
         name: process.env.DEV && `quadShadowBlur${ i }`,

@@ -1,8 +1,8 @@
 import { Component, ComponentOptions, ComponentUpdateEvent } from './Component';
-import { Entity } from '../Entity';
 import { MaterialTag } from '../Material';
 import { RawMatrix4, mat4Inverse } from '@0b5vr/experimental';
 import { RenderTarget } from '../RenderTarget';
+import { SceneNode } from './SceneNode';
 import { Transform } from '../Transform';
 import { glCat } from '../../globals/canvas';
 
@@ -10,7 +10,7 @@ export interface CameraOptions extends ComponentOptions {
   renderTarget?: RenderTarget;
   projectionMatrix: RawMatrix4;
   materialTag: MaterialTag;
-  scenes?: Entity[];
+  scenes?: SceneNode[];
   clear?: Array<number | undefined> | false;
 }
 
@@ -19,7 +19,7 @@ export abstract class Camera extends Component {
 
   public renderTarget?: RenderTarget;
 
-  public scenes?: Entity[];
+  public scenes?: SceneNode[];
 
   public clear: Array<number | undefined> | false;
 
@@ -42,7 +42,7 @@ export abstract class Camera extends Component {
   }
 
   protected __updateImpl( {
-    entitiesByTag,
+    componentsByTag,
     frameCount,
     globalTransform,
     time,
@@ -72,10 +72,11 @@ export abstract class Camera extends Component {
         renderTarget,
         cameraTransform: globalTransform,
         globalTransform: new Transform(),
-        entitiesByTag,
+        componentsByTag,
         viewMatrix,
         projectionMatrix: this.projectionMatrix,
         camera: this,
+        ancestors: [],
         materialTag: this.materialTag,
         path: process.env.DEV && `(${ this.materialTag }) `,
       } );
