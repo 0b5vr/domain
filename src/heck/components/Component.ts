@@ -79,16 +79,22 @@ export class Component {
     if ( process.env.DEV ) {
       if ( Component.updateHaveReachedBreakpoint && !this.ignoreBreakpoints ) { return; }
 
-      guiMeasureUpdate( this.name!, () => {
+      if ( this.name != null ) {
+        guiMeasureUpdate( this.name!, () => {
+          this.__updateImpl( event );
+        } );
+      } else {
         this.__updateImpl( event );
-      } );
+      }
 
-      const path = `${ event.path }/${ this.name }`;
+      if ( this.name != null ) {
+        const path = `${ event.path }/${ this.name }`;
 
-      const ha = gui;
-      const breakpoint = ha?.value( 'breakpoint/update', '' ) ?? '';
-      if ( breakpoint !== '' && new RegExp( breakpoint ).test( path ) ) {
-        Component.updateHaveReachedBreakpoint = true;
+        const ha = gui;
+        const breakpoint = ha?.value( 'breakpoint/update', '' ) ?? '';
+        if ( breakpoint !== '' && new RegExp( breakpoint ).test( path ) ) {
+          Component.updateHaveReachedBreakpoint = true;
+        }
       }
     } else {
       this.__updateImpl( event );
@@ -105,16 +111,22 @@ export class Component {
     if ( process.env.DEV ) {
       if ( Component.drawHaveReachedBreakpoint && !this.ignoreBreakpoints ) { return; }
 
-      guiMeasureDraw( this.name!, () => {
+      if ( this.name != null ) {
+        guiMeasureDraw( this.name, () => {
+          this.__drawImpl( event );
+        } );
+      } else {
         this.__drawImpl( event );
-      } );
+      }
 
-      const path = `${ event.path }/${ this.name }`;
+      if ( this.name != null ) {
+        const path = `${ event.path }/${ this.name }`;
 
-      const ha = gui;
-      const breakpoint = ha?.value( 'breakpoint/draw', '' ) ?? '';
-      if ( breakpoint !== '' && new RegExp( breakpoint ).test( path ) ) {
-        Component.drawHaveReachedBreakpoint = true;
+        const ha = gui;
+        const breakpoint = ha?.value( 'breakpoint/draw', '' ) ?? '';
+        if ( breakpoint !== '' && new RegExp( breakpoint ).test( path ) ) {
+          Component.drawHaveReachedBreakpoint = true;
+        }
       }
     } else {
       this.__drawImpl( event );
