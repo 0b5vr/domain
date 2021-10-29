@@ -642,14 +642,18 @@ export const mix: {
 
 export const min: {
   ( a: Exf, b: Exf ): Ex<'float'>;
+  ( a: Ex<'vec2'>, b: Ex<'vec2'> ): Ex<'vec2'>;
+  ( a: Ex<'vec3'>, b: Ex<'vec3'> ): Ex<'vec3'>;
+  ( a: Ex<'vec4'>, b: Ex<'vec4'> ): Ex<'vec4'>;
   <T extends GLSLGenType>( a: Ex<T>, b: Exf ): Ex<T>;
-  <T extends GLSLGenType>( a: Ex<T>, b: Ex<T> ): Ex<T>;
 } = __callFn( 'min' ) as any;
 
 export const max: {
   ( a: Exf, b: Exf ): Ex<'float'>;
+  ( a: Ex<'vec2'>, b: Ex<'vec2'> ): Ex<'vec2'>;
+  ( a: Ex<'vec3'>, b: Ex<'vec3'> ): Ex<'vec3'>;
+  ( a: Ex<'vec4'>, b: Ex<'vec4'> ): Ex<'vec4'>;
   <T extends GLSLGenType>( a: Ex<T>, b: Exf ): Ex<T>;
-  <T extends GLSLGenType>( a: Ex<T>, b: Ex<T> ): Ex<T>;
 } = __callFn( 'max' ) as any;
 
 export const clamp: {

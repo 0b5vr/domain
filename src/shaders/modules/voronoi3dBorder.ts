@@ -1,3 +1,13 @@
+/*!
+ * voronoi2dBorder
+ *
+ * The idea is stolen from iq
+ * (c) 2013 Inigo Quilez, The MIT License
+ *
+ * Ref: https://www.iquilezles.org/www/articles/voronoilines/voronoilines.htm
+ * Ref: https://www.shadertoy.com/view/ldl3W8
+ */
+
 import { GLSLExpression, add, and, assign, cache, def, defConst, defFn, dot, eq, forLoop, ifThen, int, lt, mul, normalize, not, retFn, sub, sw, vec3, vec4 } from '../../shader-builder/shaderBuilder';
 import { pcg3df } from './pcg3df';
 

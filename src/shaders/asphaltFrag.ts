@@ -1,5 +1,5 @@
 import { MTL_PBR_EMISSIVE } from './deferredShadeFrag';
-import { abs, add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, discard, div, dot, glFragCoord, glFragDepth, gt, ifThen, insert, length, main, max, mix, mul, mulAssign, neg, normalize, retFn, smoothstep, sq, step, sub, subAssign, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { abs, add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, discard, div, dot, glFragCoord, glFragDepth, gt, ifThen, insert, length, main, max, mix, mul, mulAssign, neg, normalize, retFn, sq, step, sub, subAssign, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcDepth } from './modules/calcDepth';
 import { calcL } from './modules/calcL';
 import { calcNormal } from './modules/calcNormal';
@@ -7,11 +7,10 @@ import { cyclicNoise } from './modules/cyclicNoise';
 import { doAnalyticLighting } from './modules/doAnalyticLighting';
 import { forEachLights } from './modules/forEachLights';
 import { glslDefRandom } from './modules/glslDefRandom';
+import { orthBas } from './modules/orthBas';
 import { raymarch } from './modules/raymarch';
 import { sdbox } from './modules/sdbox';
 import { setupRoRd } from './modules/setupRoRd';
-import { voronoi3d } from './modules/voronoi3d';
-import { voronoi3dBorder } from './modules/voronoi3dBorder';
 
 export const asphaltFrag = ( tag: 'forward' | 'deferred' | 'depth' ): string => build( () => {
   insert( 'precision highp float;' );
@@ -31,6 +30,7 @@ export const asphaltFrag = ( tag: 'forward' | 'deferred' | 'depth' ): string => 
   const cameraNearFar = defUniformNamed( 'vec2', 'cameraNearFar' );
   const cameraPos = defUniformNamed( 'vec3', 'cameraPos' );
   const inversePVM = defUniformNamed( 'mat4', 'inversePVM' );
+  const samplerSurface = defUniformNamed( 'sampler2D', 'samplerSurface' );
   const samplerRandom = defUniformNamed( 'sampler2D', 'samplerRandom' );
 
   const { init } = glslDefRandom();
@@ -39,16 +39,21 @@ export const asphaltFrag = ( tag: 'forward' | 'deferred' | 'depth' ): string => 
     addAssign( p, mul( 0.04, cyclicNoise( p ) ) );
 
     const d = def( 'float', sdbox( p, vec3( 0.45 ) ) );
-    subAssign( d, 0.02 );
+    // subAssign( d, 0.05 );
 
     const line = def( 'float', 0.0 );
 
     if ( tag !== 'depth' ) {
-      const voronoiSamplePos = mul( 50.0, add( p, 1.0 ) );
-      const voronoi = voronoi3d( voronoiSamplePos );
-      const border = sw( voronoi3dBorder( voronoiSamplePos, voronoi ), 'w' );
-      subAssign( d, div( border, 100.0 ) );
-      assign( line, smoothstep( 0.2, 0.1, border ) );
+      const N = normalize( max( sub( abs( p ), 0.45 ), 0.0 ) );
+      const b = orthBas( N );
+      const uv = def( 'vec2', add( 0.5, mul( 0.5, sw( mul( b, p ), 'xy' ) ) ) );
+
+      subAssign( d, sw( texture( samplerSurface, uv ), 'x' ) );
+      // const voronoiSamplePos = mul( 50.0, add( p, 1.0 ) );
+      // const voronoi = voronoi3d( voronoiSamplePos );
+      // const border = sw( voronoi3dBorder( voronoiSamplePos, voronoi ), 'w' );
+      // subAssign( d, div( border, 100.0 ) );
+      // assign( line, smoothstep( 0.2, 0.1, border ) );
     }
 
     retFn( vec4( d, line, 0, 0 ) );
@@ -88,8 +93,8 @@ export const asphaltFrag = ( tag: 'forward' | 'deferred' | 'depth' ): string => 
     }
 
     const N = def( 'vec3', calcNormal( { rp, map } ) );
-    const roughness = 0.4;
-    const metallic = 0.3;
+    const roughness = 0.6;
+    const metallic = 0.0;
 
     const baseColor = mix(
       vec3( 0.1 ),

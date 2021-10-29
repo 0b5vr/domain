@@ -115,4 +115,8 @@ export class RaymarcherNode extends SceneNode {
     // -- done ---------------------------------------------------------------------------------------
     return this;
   }
+
+  public forEachMaterials( fn: ( material: Material ) => void ): void {
+    Object.values( this.materials ).map( ( material ) => fn( material ) );
+  }
 }

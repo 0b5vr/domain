@@ -18,17 +18,17 @@ export class Quad extends Component {
   public material?: Material;
   public target?: RenderTarget;
   public range: [ number, number, number, number ] = [ -1.0, -1.0, 1.0, 1.0 ];
-  public clear: Array<number | undefined> | false = false;
+  public clear: Array<number | undefined> | false;
 
-  public constructor( options: QuadOptions ) {
+  public constructor( options?: QuadOptions ) {
     super( options );
 
     this.visible = false;
 
-    this.material = options.material;
-    this.target = options.target;
-    if ( options.range !== undefined ) { this.range = options.range; }
-    if ( options.clear !== undefined ) { this.clear = options.clear; }
+    this.material = options?.material;
+    this.target = options?.target;
+    this.range = options?.range ?? [ -1.0, -1.0, 1.0, 1.0 ];
+    this.clear = options?.clear ?? false;
   }
 
   public drawImmediate( event?: Partial<ComponentUpdateEvent> ): void {
