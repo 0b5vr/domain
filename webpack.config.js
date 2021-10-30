@@ -58,6 +58,11 @@ module.exports = ( env, argv ) => {
     module: {
       rules: [
         {
+          test: /\.js$/,
+          enforce: 'pre',
+          use: [ 'source-map-loader' ],
+        },
+        {
           test: /automaton\.json$/,
           use: [
             {
