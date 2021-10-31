@@ -9,7 +9,8 @@
     "build-js": "webpack --mode production",
     "build-png": "jsexe -cn -po ./dist/bundle.js ./dist/out.png.html",
     "lint": "eslint \"src/**/*.{ts,tsx}\"",
-    "lint-fix": "eslint --fix \"src/**/*.{ts,tsx}\""
+    "lint-fix": "eslint --fix \"src/**/*.{ts,tsx}\"",
+    "analys": "webpack --profile --json > ./dist/stats.json && npx webpack-bundle-analyzer -m json ./dist/stats.json -r ./dist/report.json"
   },
   "keywords": [],
   "author": "",
