@@ -1,5 +1,6 @@
 import { GPUMeasureHandler } from './gui/GPUMeasureHandler';
 import { GPUTimer } from './gui/GPUTimer';
+import { NullMeasureHandler } from './gui/NullMeasureHandler';
 import type { ImPane } from '@0b5vr/imtweakpane';
 
 export let gui: ImPane | undefined;
@@ -16,7 +17,10 @@ export const promiseGui = new Promise<ImPane>( ( resolve ) => {
       const tpDfwv = gui.pane.element.parentNode! as HTMLDivElement;
       tpDfwv.style.zIndex = '100';
 
-      const gpuTimer = new GPUTimer();
+      const gpuTimer = GPUTimer.isSupported() ? new GPUTimer() : null;
+      const createGPUMeasureHandler = (): any => (
+        gpuTimer != null ? new GPUMeasureHandler( gpuTimer ) : new NullMeasureHandler()
+      );
 
       resolve( gui );
 
@@ -31,7 +35,7 @@ export const promiseGui = new Promise<ImPane>( ( resolve ) => {
         profilerUpdateGpu = gui_.blade( 'profilers/update/gpu', {
           view: 'profiler',
           label: 'gpu',
-          measureHandler: new GPUMeasureHandler( gpuTimer ),
+          measureHandler: createGPUMeasureHandler(),
         } );
 
         profilerDrawCpu = gui_.blade( 'profilers/draw/cpu', {
@@ -42,7 +46,7 @@ export const promiseGui = new Promise<ImPane>( ( resolve ) => {
         profilerDrawGpu = gui_.blade( 'profilers/draw/gpu', {
           view: 'profiler',
           label: 'gpu',
-          measureHandler: new GPUMeasureHandler( gpuTimer ),
+          measureHandler: createGPUMeasureHandler(),
         } );
       } );
     } );

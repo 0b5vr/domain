@@ -1,24 +1,21 @@
 import { Asphalt } from './entities/Asphalt';
-import { Bloom } from './entities/Bloom';
-import { BufferRenderTarget } from './heck/BufferRenderTarget';
+import { CameraStack } from './entities/CameraStack';
 import { CanvasRenderTarget } from './heck/CanvasRenderTarget';
-import { DeferredCamera } from './entities/DeferredCamera';
 import { Dog } from './heck/Dog';
 import { Floor } from './entities/Floor';
 import { Fluid } from './entities/Fluid';
-import { ForwardCamera } from './entities/ForwardCamera';
 import { IBLLUTCalc } from './entities/IBLLUTCalc';
 import { Lambda } from './heck/components/Lambda';
 import { MengerSponge } from './entities/MengerSponge';
 import { NodeReplacer } from './utils/NodeReplacer';
 import { Plane } from './entities/Plane';
 import { PointLightNode } from './entities/PointLightNode';
-import { Post } from './entities/Post';
 import { SSSBox } from './entities/SSSBox';
 import { Sp4ghet } from './entities/Sp4ghet';
-import { Swap } from '@0b5vr/experimental';
+import { VRCameraStack } from './entities/VRCameraStack';
 import { automaton } from './globals/automaton';
 import { clock } from './globals/clock';
+import { createVRSesh } from './globals/createVRSesh';
 import { promiseGui } from './globals/gui';
 import { randomTexture } from './globals/randomTexture';
 
@@ -57,23 +54,6 @@ if ( process.env.DEV ) {
   } );
 }
 
-// == render buffer ================================================================================
-const swapOptions = {
-  width: canvasRenderTarget.width,
-  height: canvasRenderTarget.height
-};
-
-const swap = new Swap(
-  new BufferRenderTarget( {
-    ...swapOptions,
-    name: process.env.DEV && 'main/postSwap0',
-  } ),
-  new BufferRenderTarget( {
-    ...swapOptions,
-    name: process.env.DEV && 'main/postSwap1',
-  } ),
-);
-
 // == entities =====================================================================================
 // const plane = new Plane();
 // dog.root.children.push( plane );
@@ -88,7 +68,7 @@ const light1 = new PointLightNode( {
   name: process.env.DEV && 'light1',
   brtNamePrefix: process.env.DEV && 'SceneBegin/light1',
 } );
-light1.color = [ 500.0, 500.0, 500.0 ];
+light1.color = [ 1500.0, 1500.0, 1500.0 ];
 light1.spotness = 1.0;
 light1.transform.lookAt( [ 5.0, 1.0, 8.0 ], [ 0.0, 3.0, 0.0 ] );
 
@@ -100,7 +80,7 @@ const light2 = new PointLightNode( {
   name: process.env.DEV && 'light2',
   brtNamePrefix: process.env.DEV && 'SceneBegin/light2',
 } );
-light2.color = [ 200.0, 230.0, 260.0 ];
+light2.color = [ 500.0, 550.0, 590.0 ];
 light2.spotness = 1.0;
 light2.transform.lookAt( [ 0.01, 9.0, 0.01 ], [ 0.0, 3.0, 0.0 ] );
 
@@ -115,39 +95,36 @@ const light3 = new PointLightNode( {
 light3.color = [ 300.0, 30.0, 70.0 ];
 light3.transform.lookAt( [ -8.0, 2.0, -4.0 ], [ 0.0, 2.0, 0.0 ] );
 
-const deferredCamera = new DeferredCamera( {
-  scenes: [ dog.root ],
-  target: swap.i,
-  textureIBLLUT: iblLutCalc.texture,
-} );
-deferredCamera.transform.lookAt( [ 0.0, 1.6, 10.0 ], [ 0.0, 1.6, 0.0 ] );
-
-deferredCamera.children.push( new Lambda( {
-  onUpdate: ( { time } ) => {
-    const x = 10.0 * Math.cos( time );
-    const z = 10.0 * Math.sin( time );
-    deferredCamera.transform.lookAt( [ x, 1.6, z ], [ 0.0, 1.6, 0.0 ] );
-  },
-} ) );
-
-const forwardCamera = new ForwardCamera( {
-  scenes: [ dog.root ],
-  target: swap.i,
-} );
-forwardCamera.transform = deferredCamera.transform;
-
-const floor = new Floor(
-  forwardCamera,
-  forwardCamera.camera,
-);
+const floor = new Floor();
 if ( process.env.DEV && module.hot ) {
-  const replacer = new NodeReplacer( floor, () => new Floor(
-    forwardCamera,
-    forwardCamera.camera
-  ) );
+  const replacer = new NodeReplacer( floor, () => new Floor() );
   module.hot.accept( './entities/Floor', () => {
     replacer.replace( dog.root );
   } );
+}
+
+const cameraStackOptions = {
+  scenes: [ dog.root ],
+  textureIBLLUT: iblLutCalc.texture,
+  floor,
+};
+
+const cameraStack = new CameraStack( {
+  ...cameraStackOptions,
+  target: canvasRenderTarget,
+} );
+cameraStack.transform.lookAt( [ 0.0, 1.6, 5.0 ], [ 0.0, 1.6, 0.0 ] );
+
+cameraStack.children.push( new Lambda( {
+  onUpdate: ( { time } ) => {
+    const x = 10.0 * Math.cos( time );
+    const z = 10.0 * Math.sin( time );
+    cameraStack.transform.lookAt( [ x, 1.6, z ], [ 0.0, 1.6, 0.0 ] );
+  },
+} ) );
+
+if ( process.env.DEV ) {
+  cameraStack.name = 'cameraStack';
 }
 
 const fluid = new Fluid();
@@ -210,20 +187,6 @@ if ( process.env.DEV && module.hot ) {
 mengerSponge.transform.position = [ 0.0, 3.0, 0.0 ];
 mengerSponge.transform.scale = [ 3.0, 3.0, 3.0 ];
 
-swap.swap();
-
-const bloom = new Bloom( {
-  input: swap.o,
-  target: swap.i,
-} );
-
-swap.swap();
-
-const post = new Post( {
-  input: swap.o,
-  target: canvasRenderTarget
-} );
-
 dog.root.children.push(
   light1,
   light2,
@@ -232,21 +195,46 @@ dog.root.children.push(
   floor,
   // fluid,
   // plane,
-  // sssBox,
+  sssBox,
   // sp4ghet,
-  asphalt,
+  // asphalt,
   // mengerSponge,
-  deferredCamera,
-  forwardCamera,
-  bloom,
-  post,
+  cameraStack,
 );
 
 if ( process.env.DEV ) {
   import( './entities/RTInspector' ).then( ( { RTInspector } ) => {
     const rtInspector = new RTInspector( {
-      target: canvasRenderTarget
+      target: canvasRenderTarget,
     } );
     dog.root.children.push( rtInspector );
   } );
 }
+
+// -- desktop --------------------------------------------------------------------------------------
+function update(): void {
+  if ( cameraStack.active ) {
+    dog.update();
+  }
+
+  requestAnimationFrame( update );
+}
+update();
+
+// -- vr -------------------------------------------------------------------------------------------
+promiseGui.then( ( gui ) => {
+  gui.button( 'vr (what)' ).on( 'click', async () => {
+    const vrSesh = await createVRSesh();
+
+    const vrCameraStack = new VRCameraStack( {
+      ...cameraStackOptions,
+      vrSesh,
+      dog,
+    } );
+    vrCameraStack.transform.position = [ 0.0, 0.0, 5.0 ];
+
+    dog.root.children.push( vrCameraStack );
+
+    cameraStack.active = false;
+  } );
+} );

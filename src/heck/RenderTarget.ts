@@ -1,7 +1,13 @@
 export abstract class RenderTarget {
-  public abstract get width(): number;
+  public abstract viewport: [ number, number, number, number ];
 
-  public abstract get height(): number;
+  public get width(): number {
+    return this.viewport[ 2 ];
+  }
+
+  public get height(): number {
+    return this.viewport[ 3 ];
+  }
 
   public abstract bind(): void;
 }

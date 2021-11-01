@@ -11,11 +11,12 @@ export interface CubemapRenderTargetOptions {
 export class CubemapRenderTarget extends RenderTarget {
   public readonly framebuffer: GLCatFramebuffer;
   public readonly texture: GLCatTextureCubemap;
-  public readonly width: number;
-  public readonly height: number;
+  public viewport: [ number, number, number, number ];
 
   public constructor( options: CubemapRenderTargetOptions ) {
     super();
+
+    this.viewport = [ 0, 0, options.width, options.height ];
 
     const { framebuffer, texture } = glCat.lazyCubemapFramebuffer(
       options.width,
@@ -26,15 +27,12 @@ export class CubemapRenderTarget extends RenderTarget {
     );
     this.framebuffer = framebuffer;
     this.texture = texture;
-
-    this.width = options.width;
-    this.height = options.height;
   }
 
   public bind(): void {
     gl.bindFramebuffer( gl.FRAMEBUFFER, this.framebuffer.raw );
     glCat.drawBuffers( 1 );
-    gl.viewport( 0, 0, this.width, this.height );
+    gl.viewport( ...this.viewport );
   }
 
   public dispose(): void {

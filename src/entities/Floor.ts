@@ -1,142 +1,21 @@
-import { Blit } from '../heck/components/Blit';
 import { BufferRenderTarget } from '../heck/BufferRenderTarget';
 import { Geometry } from '../heck/Geometry';
-import { HALF_SQRT_TWO, ONE_SUB_ONE_POINT_FIVE_POW_I } from '../utils/constants';
-import { Lambda } from '../heck/components/Lambda';
+import { HALF_SQRT_TWO } from '../utils/constants';
 import { Material } from '../heck/Material';
 import { Mesh } from '../heck/components/Mesh';
-import { PerspectiveCamera } from '../heck/components/PerspectiveCamera';
-import { Quad } from '../heck/components/Quad';
-import { RESOLUTION } from '../config';
-import { RawMatrix4, Swap, TRIANGLE_STRIP_QUAD_3D, TRIANGLE_STRIP_QUAD_NORMAL, TRIANGLE_STRIP_QUAD_UV } from '@0b5vr/experimental';
 import { SceneNode } from '../heck/components/SceneNode';
-import { bloomDownFrag } from '../shaders/bloomDownFrag';
+import { TRIANGLE_STRIP_QUAD_3D, TRIANGLE_STRIP_QUAD_NORMAL, TRIANGLE_STRIP_QUAD_UV } from '@0b5vr/experimental';
 import { createLightUniformsLambda } from './utils/createLightUniformsLambda';
 import { dummyRenderTarget } from '../globals/dummyRenderTarget';
 import { floorFrag } from '../shaders/floorFrag';
 import { gl, glCat } from '../globals/canvas';
 import { objectVert } from '../shaders/objectVert';
-import { quadGeometry } from '../globals/quadGeometry';
-import { quadVert } from '../shaders/quadVert';
 
 export class Floor extends SceneNode {
-  public mirrorCameraNode: SceneNode;
-  public primaryCameraNode: SceneNode;
-  public primaryCamera: PerspectiveCamera;
-  public mirrorCamera: PerspectiveCamera;
-  public mirrorTarget: BufferRenderTarget;
-  public mipmapMirrorTarget: BufferRenderTarget;
+  public forward: Material;
 
-  public constructor( primaryCameraNode: SceneNode, primaryCamera: PerspectiveCamera ) {
+  public constructor() {
     super();
-
-    // -- https://www.nicovideo.jp/watch/sm21005672 ------------------------------------------------
-    this.mirrorCameraNode = new SceneNode( {
-      name: process.env.DEV && 'mirrorCameraNode',
-    } );
-    this.children.push( this.mirrorCameraNode );
-
-    this.children.push( new Lambda( {
-      onUpdate: () => {
-        const camTrans = this.mirrorCameraNode.transform;
-        camTrans.matrix = this.primaryCameraNode.transform.matrix.concat() as RawMatrix4;
-
-        camTrans.matrix[ 13 ] *= -1.0;
-      },
-    } ) );
-
-    this.primaryCameraNode = primaryCameraNode;
-    this.primaryCamera = primaryCamera;
-    this.mirrorTarget = new BufferRenderTarget( {
-      width: RESOLUTION[ 0 ],
-      height: RESOLUTION[ 1 ],
-      name: process.env.DEV && 'Floor/mirrorTarget',
-    } );
-
-    this.mirrorCamera = new PerspectiveCamera( {
-      materialTag: 'cubemap',
-      renderTarget: this.mirrorTarget,
-      near: this.primaryCamera.near,
-      far: this.primaryCamera.far,
-      fov: this.primaryCamera.fov,
-      scenes: this.primaryCamera.scenes,
-    } );
-    this.mirrorCameraNode.children.push( this.mirrorCamera );
-
-    // -- create mipmaps ---------------------------------------------------------------------------
-    const swapMirrorDownsampleTarget = new Swap(
-      new BufferRenderTarget( {
-        width: RESOLUTION[ 0 ],
-        height: RESOLUTION[ 1 ],
-        name: process.env.DEV && 'Floor/mirrorDownsampleTarget/swap0',
-      } ),
-      new BufferRenderTarget( {
-        width: RESOLUTION[ 0 ],
-        height: RESOLUTION[ 1 ],
-        name: process.env.DEV && 'Floor/mirrorDownsampleTarget/swap1',
-      } ),
-    );
-
-    this.mipmapMirrorTarget = new BufferRenderTarget( {
-      width: RESOLUTION[ 0 ] / 2,
-      height: RESOLUTION[ 1 ] / 2,
-      levels: 6,
-      name: process.env.DEV && 'Floor/mipmapMirrorTarget',
-    } );
-
-    const mipmapNode = new SceneNode( {
-      name: process.env.DEV && 'mipmapNode',
-    } );
-    this.children.push( mipmapNode );
-
-    let srcRange = [ -1.0, -1.0, 1.0, 1.0 ];
-
-    this.mipmapMirrorTarget.mipmapTargets?.map( ( target, i ) => {
-      const material = new Material(
-        quadVert,
-        bloomDownFrag( false ),
-        { initOptions: { target: dummyRenderTarget, geometry: quadGeometry } },
-      );
-
-      material.addUniform( 'gain', '1f', 1.0 );
-      material.addUniform( 'bias', '1f', 0.0 );
-      material.addUniformVector( 'srcRange', '4fv', srcRange.map( ( v ) => 0.5 + 0.5 * v ) );
-      material.addUniformTextures(
-        'sampler0',
-        ( i === 0 ) ? this.mirrorTarget.texture : swapMirrorDownsampleTarget.o.texture,
-      );
-
-      const range: [ number, number, number, number ] = [
-        2.0 * ONE_SUB_ONE_POINT_FIVE_POW_I[ i ] - 1.0,
-        2.0 * ONE_SUB_ONE_POINT_FIVE_POW_I[ i ] - 1.0,
-        2.0 * ONE_SUB_ONE_POINT_FIVE_POW_I[ i + 1 ] - 1.0,
-        2.0 * ONE_SUB_ONE_POINT_FIVE_POW_I[ i + 1 ] - 1.0,
-      ];
-
-      mipmapNode.children.push( new Quad( {
-        target: swapMirrorDownsampleTarget.i,
-        material,
-        range,
-        name: `quadDown${ i }`,
-      } ) );
-
-      swapMirrorDownsampleTarget.swap();
-      srcRange = range;
-
-      const srcRect: [ number, number, number, number ] = [
-        RESOLUTION[ 0 ] * ONE_SUB_ONE_POINT_FIVE_POW_I[ i ],
-        RESOLUTION[ 1 ] * ONE_SUB_ONE_POINT_FIVE_POW_I[ i ],
-        RESOLUTION[ 0 ] * ONE_SUB_ONE_POINT_FIVE_POW_I[ i + 1 ],
-        RESOLUTION[ 1 ] * ONE_SUB_ONE_POINT_FIVE_POW_I[ i + 1 ],
-      ];
-
-      mipmapNode.children.push( new Blit( {
-        src: swapMirrorDownsampleTarget.o,
-        dst: target,
-        srcRect,
-        name: `blitDown${ i }`,
-      } ) );
-    } );
 
     // -- entity for mesh --------------------------------------------------------------------------
     const meshNode = new SceneNode();
@@ -172,7 +51,7 @@ export class Floor extends SceneNode {
       locationUv: 2,
     };
 
-    const forward = new Material(
+    const forward = this.forward = new Material(
       objectVert( { ...locations } ),
       floorFrag( 'forward' ),
       {
@@ -187,8 +66,6 @@ export class Floor extends SceneNode {
         initOptions: { geometry, target: dummyRenderTarget },
       },
     );
-
-    forward.addUniformTextures( 'samplerMirror', this.mipmapMirrorTarget.texture );
 
     this.children.push( createLightUniformsLambda( [ forward ] ) );
 
@@ -216,5 +93,9 @@ export class Floor extends SceneNode {
       name: process.env.DEV && 'mesh',
     } );
     meshNode.children.push( mesh );
+  }
+
+  public setMipmapMirrorTarget( mipmapMirrorTarget: BufferRenderTarget ): void {
+    this.forward.addUniformTextures( 'samplerMirror', mipmapMirrorTarget.texture );
   }
 }

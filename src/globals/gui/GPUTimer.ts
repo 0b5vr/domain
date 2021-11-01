@@ -8,6 +8,10 @@ export class GPUTimer {
   private __freeQueries: WebGLQuery[];
   private __loopTasks: Set<() => void>;
 
+  public static isSupported(): boolean {
+    return glCat.getExtension( 'EXT_disjoint_timer_query_webgl2' ) != null;
+  }
+
   public constructor() {
     this.__freeQueries = [ ...new Array( 65536 ) ].map( () => gl.createQuery()! );
 

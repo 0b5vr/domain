@@ -1,18 +1,22 @@
 import { RenderTarget } from './RenderTarget';
 import { canvas, gl, glCat } from '../globals/canvas';
 
-export class CanvasRenderTarget extends RenderTarget {
-  public get width(): number {
-    return canvas.width;
-  }
+export interface CanvasRenderTargetOptions {
+  viewport?: [ number, number, number, number ];
+}
 
-  public get height(): number {
-    return canvas.height;
+export class CanvasRenderTarget extends RenderTarget {
+  public viewport: [ number, number, number, number ];
+
+  public constructor( options?: CanvasRenderTargetOptions ) {
+    super();
+
+    this.viewport = options?.viewport ?? [ 0, 0, canvas.width, canvas.height ];
   }
 
   public bind(): void {
     gl.bindFramebuffer( gl.FRAMEBUFFER, null );
     glCat.drawBuffers( [ gl.BACK ] );
-    gl.viewport( 0, 0, this.width, this.height );
+    gl.viewport( ...this.viewport );
   }
 }

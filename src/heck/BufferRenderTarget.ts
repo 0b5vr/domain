@@ -12,15 +12,15 @@ export interface BufferRenderTargetOptions {
   isFloat?: boolean;
   name?: string;
   filter?: GLenum;
+  viewport?: [ number, number, number, number ];
 }
 
 export class BufferRenderTarget extends RenderTarget {
   public static nameMap = new Map<string, BufferRenderTarget>();
 
+  public viewport: [ number, number, number, number ];
   public readonly framebuffer: GLCatFramebuffer;
   public readonly mipmapTargets: BufferRenderTarget[] | null;
-  public readonly width: number;
-  public readonly height: number;
   public readonly numBuffers: number;
 
   private __name?: string;
@@ -92,8 +92,7 @@ export class BufferRenderTarget extends RenderTarget {
 
     }
 
-    this.width = options.width;
-    this.height = options.height;
+    this.viewport = options?.viewport ?? [ 0, 0, options.width, options.height ];
     this.numBuffers = options.numBuffers ?? 1;
 
     if ( options.filter != null ) {
@@ -116,7 +115,7 @@ export class BufferRenderTarget extends RenderTarget {
   public bind(): void {
     gl.bindFramebuffer( gl.FRAMEBUFFER, this.framebuffer.raw );
     glCat.drawBuffers( this.numBuffers );
-    gl.viewport( 0, 0, this.width, this.height );
+    gl.viewport( ...this.viewport );
   }
 
   public dispose(): void {

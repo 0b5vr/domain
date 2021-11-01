@@ -168,6 +168,11 @@
   resolved "https://registry.yarnpkg.com/@types/webpack-env/-/webpack-env-1.16.3.tgz#b776327a73e561b71e7881d0cd6d34a1424db86a"
   integrity sha512-9gtOPPkfyNoEqCQgx4qJKkuNm/x0R2hKR7fdl7zvTJyHnIisuE/LfvXOsYWL0o3qq6uiBnKZNNNzi3l0y/X+xw==
 
+"@types/webxr@^0.2.3":
+  version "0.2.3"
+  resolved "https://registry.yarnpkg.com/@types/webxr/-/webxr-0.2.3.tgz#6e04a6c4aff9a6e9ae4265ad3eae6545dcfdcf0a"
+  integrity sha512-MCxbyG4KIcx8+g1RwX9uRYsEfRncWLKtGhzSFh+j8fNOgnuzuBAabGJZz45iU4JvPeqaKaLRqQt6o92NMprmwQ==
+
 "@typescript-eslint/eslint-plugin@^4.28.5":
   version "4.32.0"
   resolved "https://registry.yarnpkg.com/@typescript-eslint/eslint-plugin/-/eslint-plugin-4.32.0.tgz#46d2370ae9311092f2a6f7246d28357daf2d4e89"

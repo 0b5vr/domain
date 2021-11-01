@@ -1,4 +1,4 @@
-import { GLSLExpression, abs, add, addAssign, assign, build, def, defFn, defOutNamed, defUniformNamed, div, dot, float, glFragCoord, gt, ifThen, insert, length, log2, main, max, min, mix, mul, mulAssign, normalize, pow, retFn, sqrt, step, sub, sw, tan, texture, unrollLoop, vec2, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { GLSLExpression, abs, add, addAssign, assign, build, def, defFn, defInNamed, defOutNamed, defUniformNamed, div, dot, float, gt, ifThen, insert, length, log2, main, max, min, mix, mul, mulAssign, normalize, pow, retFn, sqrt, step, sub, sw, tan, texture, unrollLoop, vec2, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { PI } from '../utils/constants';
 import { glslDefRandom } from './modules/glslDefRandom';
 import { glslLofi } from './modules/glslLofi';
@@ -14,6 +14,8 @@ export const postFrag = build( () => {
   insert( 'precision highp float;' );
 
   const fragColor = defOutNamed( 'vec4', 'fragColor' );
+
+  const vUv = defInNamed( 'vec2', 'vUv' );
 
   const mosaicAmp = defUniformNamed( 'float', 'mosaicAmp' );
   const mixInvert = defUniformNamed( 'float', 'mixInvert' );
@@ -90,7 +92,7 @@ export const postFrag = build( () => {
   }
 
   main( () => {
-    const uv = def( 'vec2', div( sw( glFragCoord, 'xy' ), resolution ) );
+    const uv = def( 'vec2', vUv );
 
     init( texture( samplerRandom, uv ) );
 

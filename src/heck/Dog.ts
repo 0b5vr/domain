@@ -20,28 +20,25 @@ export class Dog {
     if ( process.env.DEV ) {
       this.root.name = 'root';
     }
+  }
 
-    const update = (): void => {
-      if ( this.active ) {
-        clock.update();
-        this.root.update( {
-          frameCount: this.__frameCount ++,
-          time: clock.time,
-          deltaTime: clock.deltaTime,
-          globalTransform: new Transform(),
-          componentsByTag: new MapOfSet(),
-          ancestors: [],
-          path: process.env.DEV && '',
-        } );
-      }
+  public update(): void {
+    if ( this.active ) {
+      clock.update();
+      this.root.update( {
+        frameCount: this.__frameCount ++,
+        time: clock.time,
+        deltaTime: clock.deltaTime,
+        globalTransform: new Transform(),
+        componentsByTag: new MapOfSet(),
+        ancestors: [],
+        path: process.env.DEV && '',
+      } );
+    }
 
-      if ( process.env.DEV ) {
-        Component.updateHaveReachedBreakpoint = false;
-        Component.drawHaveReachedBreakpoint = false;
-      }
-
-      requestAnimationFrame( update );
-    };
-    update();
+    if ( process.env.DEV ) {
+      Component.updateHaveReachedBreakpoint = false;
+      Component.drawHaveReachedBreakpoint = false;
+    }
   }
 }

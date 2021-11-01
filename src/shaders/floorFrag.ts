@@ -75,13 +75,17 @@ export const floorFrag = ( tag: 'forward' | 'depth' ): string => build( () => {
     const roughness = mix( 0.1, 0.2, noise );
     const metallic = 0.1;
 
-    const lod = mul( 8.0, noise ); // physically cringe rendering
+    const lod = add( 1.0, mul( 4.0, noise ) ); // physically cringe rendering
     const tex = def( 'vec4', textureLod( samplerMirror, screenUv, lod ) );
 
     const V = normalize( sub( cameraPos, posXYZ ) );
     const dotVN = dot( V, vNormal );
 
-    const FReflect = pow( max( 0.0, sub( 1.0, dotVN ) ), 5.0 );
+    const FReflect = mix(
+      0.08,
+      1.0,
+      pow( max( 0.0, sub( 1.0, dotVN ) ), 5.0 ),
+    );
     const col = def( 'vec3', mul( sw( tex, 'xyz' ), FReflect ) );
 
     forEachLights( ( {

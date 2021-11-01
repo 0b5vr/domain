@@ -24,6 +24,7 @@
     "@fms-cat/glcat-ts": "^0.15.0",
     "@tweakpane/core": "^1.0.6",
     "@types/webpack-env": "^1.16.3",
+    "@types/webxr": "^0.2.3",
     "@typescript-eslint/eslint-plugin": "^4.28.5",
     "@typescript-eslint/parser": "^4.28.5",
     "eslint": "^7.31.0",

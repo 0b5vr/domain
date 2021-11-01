@@ -10,6 +10,8 @@ export const objectVert = ( { locationPosition, locationNormal, locationUv }: {
   const uv = locationUv != null ? defIn( 'vec2', locationUv ) : null;
 
   const vPositionWithoutModel = defOutNamed( 'vec4', 'vPositionWithoutModel' );
+  const vProjPosition = defOutNamed( 'vec4', 'vProjPosition' );
+  const vViewPosition = defOutNamed( 'vec4', 'vViewPosition' );
   const vPosition = defOutNamed( 'vec4', 'vPosition' );
   const vNormal = normal != null ? defOutNamed( 'vec3', 'vNormal' ) : null;
   const vUv = uv != null ? defOutNamed( 'vec2', 'vUv' ) : null;
@@ -24,7 +26,9 @@ export const objectVert = ( { locationPosition, locationNormal, locationUv }: {
     assign( vPositionWithoutModel, vec4( position, 1.0 ) );
 
     assign( vPosition, mul( modelMatrix, vPositionWithoutModel ) );
-    const outPos = def( 'vec4', mul( projectionMatrix, viewMatrix, vPosition ) );
+    assign( vViewPosition, mul( viewMatrix, vPosition ) );
+    assign( vProjPosition, mul( projectionMatrix, vViewPosition ) );
+    const outPos = def( 'vec4', vProjPosition );
 
     const aspect = div( sw( resolution, 'x' ), sw( resolution, 'y' ) );
     divAssign( sw( outPos, 'x' ), aspect );
