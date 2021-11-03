@@ -4,6 +4,7 @@ import { CanvasRenderTarget } from './heck/CanvasRenderTarget';
 import { Dog } from './heck/Dog';
 import { Floor } from './entities/Floor';
 import { Fluid } from './entities/Fluid';
+import { GeometryTestbed } from './entities/GeometryTestbed';
 import { IBLLUTCalc } from './entities/IBLLUTCalc';
 import { Lambda } from './heck/components/Lambda';
 import { MengerSponge } from './entities/MengerSponge';
@@ -157,6 +158,16 @@ if ( process.env.DEV && module.hot ) {
 sssBox.transform.position = [ 0.0, 3.0, 0.0 ];
 sssBox.transform.scale = [ 3.0, 3.0, 3.0 ];
 
+const geometryTestbed = new GeometryTestbed();
+if ( process.env.DEV && module.hot ) {
+  const replacer = new NodeReplacer( geometryTestbed, () => new GeometryTestbed() );
+  module.hot.accept( './entities/GeometryTestbed', () => {
+    replacer.replace( dog.root );
+  } );
+}
+geometryTestbed.transform.position = [ 0.0, 3.0, 0.0 ];
+geometryTestbed.transform.scale = [ 1.0, 1.0, 1.0 ];
+
 const sp4ghet = new Sp4ghet();
 if ( process.env.DEV && module.hot ) {
   const replacer = new NodeReplacer( sp4ghet, () => new Sp4ghet() );
@@ -196,6 +207,7 @@ dog.root.children.push(
   // fluid,
   // plane,
   sssBox,
+  // geometryTestbed,
   // sp4ghet,
   // asphalt,
   // mengerSponge,
