@@ -189,7 +189,10 @@ export class Material {
   }
 
   /**
-   * https://scrapbox.io/fms-cat/WebGL:_%E3%82%B7%E3%82%A7%E3%83%BC%E3%83%80%E3%81%AE%E3%82%B3%E3%83%B3%E3%83%91%E3%82%A4%E3%83%AB%E3%81%8C%E9%81%85%E3%81%84
+   * "Compile the shader code".
+   * Blame ANGLE instead tbh
+   *
+   * See: https://scrapbox.io/0b5vr/WebGL:_%E3%82%B7%E3%82%A7%E3%83%BC%E3%83%80%E3%81%AE%E3%82%B3%E3%83%B3%E3%83%91%E3%82%A4%E3%83%AB%E3%81%8C%E6%8F%8F%E7%94%BB%E9%96%8B%E5%A7%8B%E6%99%82%E3%81%AB%E7%99%BA%E7%94%9F%E3%81%97%E3%81%A6stall%E3%81%99%E3%82%8B
    */
   public d3dSucks( { geometry, target }: MaterialInitOptions ): void {
     target.bind();
