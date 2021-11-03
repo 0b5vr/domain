@@ -27,6 +27,8 @@ export const promiseGui = new Promise<ImPane>( ( resolve ) => {
       import( '@0b5vr/tweakpane-plugin-profiler' ).then( ( plugin ) => {
         gui_.pane.registerPlugin( plugin as any );
 
+        gui_.value( 'profilers/active', false );
+
         profilerUpdateCpu = gui_.blade( 'profilers/update/cpu', {
           view: 'profiler',
           label: 'cpu',
@@ -56,7 +58,12 @@ export const promiseGui = new Promise<ImPane>( ( resolve ) => {
 } );
 
 export function guiMeasureUpdate( name: string, fn: () => void ): void {
-  if ( process.env.DEV && profilerUpdateCpu != null && profilerUpdateGpu != null ) {
+  if (
+    process.env.DEV &&
+    profilerUpdateCpu != null &&
+    profilerUpdateGpu != null &&
+    gui?.value( 'profilers/active' )
+  ) {
     profilerUpdateCpu.measure( name, () => {
       profilerUpdateGpu.measure( name, () => {
         fn();
@@ -68,7 +75,12 @@ export function guiMeasureUpdate( name: string, fn: () => void ): void {
 }
 
 export function guiMeasureDraw( name: string, fn: () => void ): void {
-  if ( process.env.DEV && profilerDrawCpu != null && profilerDrawGpu != null ) {
+  if (
+    process.env.DEV &&
+    profilerDrawCpu != null &&
+    profilerDrawGpu != null &&
+    gui?.value( 'profilers/active' )
+  ) {
     profilerDrawCpu.measure( name, () => {
       profilerDrawGpu.measure( name, () => {
         fn();
