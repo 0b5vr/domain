@@ -7,6 +7,7 @@ import { Fluid } from './entities/Fluid';
 import { GeometryTestbed } from './entities/GeometryTestbed';
 import { IBLLUTCalc } from './entities/IBLLUTCalc';
 import { Lambda } from './heck/components/Lambda';
+import { LightShaft } from './entities/LightShaft';
 import { MengerSponge } from './entities/MengerSponge';
 import { NodeReplacer } from './utils/NodeReplacer';
 import { Plane } from './entities/Plane';
@@ -63,15 +64,21 @@ const iblLutCalc = new IBLLUTCalc();
 
 const light1 = new PointLightNode( {
   scenes: [ dog.root ],
-  shadowMapFov: 35.0,
-  shadowMapNear: 1.0,
+  shadowMapFov: 50.0,
+  shadowMapNear: 0.1,
   shadowMapFar: 20.0,
   name: process.env.DEV && 'light1',
   brtNamePrefix: process.env.DEV && 'SceneBegin/light1',
 } );
-light1.color = [ 1500.0, 1500.0, 1500.0 ];
+light1.color = [ 500.0, 500.0, 500.0 ];
 light1.spotness = 1.0;
-light1.transform.lookAt( [ 5.0, 1.0, 8.0 ], [ 0.0, 3.0, 0.0 ] );
+light1.transform.lookAt( [ 3.0, 0.2, 3.0 ], [ 0.0, 3.0, 0.0 ] );
+
+const shaft1 = new LightShaft( {
+  light: light1,
+  intensity: 0.004,
+} );
+light1.children.push( shaft1 );
 
 const light2 = new PointLightNode( {
   scenes: [ dog.root ],
@@ -81,9 +88,15 @@ const light2 = new PointLightNode( {
   name: process.env.DEV && 'light2',
   brtNamePrefix: process.env.DEV && 'SceneBegin/light2',
 } );
-light2.color = [ 500.0, 550.0, 590.0 ];
+light2.color = [ 5000.0, 5500.0, 5900.0 ];
 light2.spotness = 1.0;
 light2.transform.lookAt( [ 0.01, 9.0, 0.01 ], [ 0.0, 3.0, 0.0 ] );
+
+const shaft2 = new LightShaft( {
+  light: light2,
+  intensity: 0.004,
+} );
+light2.children.push( shaft2 );
 
 const light3 = new PointLightNode( {
   scenes: [ dog.root ],
@@ -114,7 +127,7 @@ const cameraStack = new CameraStack( {
   ...cameraStackOptions,
   target: canvasRenderTarget,
 } );
-cameraStack.transform.lookAt( [ 0.0, 1.6, 5.0 ], [ 0.0, 1.6, 0.0 ] );
+cameraStack.transform.lookAt( [ 0.0, 1.6, 10.0 ], [ 0.0, 1.6, 0.0 ] );
 
 cameraStack.children.push( new Lambda( {
   onUpdate: ( { time } ) => {
@@ -199,11 +212,11 @@ mengerSponge.transform.position = [ 0.0, 3.0, 0.0 ];
 mengerSponge.transform.scale = [ 3.0, 3.0, 3.0 ];
 
 dog.root.children.push(
+  iblLutCalc,
+  floor,
   light1,
   light2,
   light3,
-  iblLutCalc,
-  floor,
   // fluid,
   // plane,
   sssBox,

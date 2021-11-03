@@ -6,6 +6,7 @@ import { Floor } from './Floor';
 import { FloorCamera } from './FloorCamera';
 import { GLCatTexture } from '@fms-cat/glcat-ts';
 import { Lambda } from '../heck/components/Lambda';
+import { LightShaft, LightShaftTag } from './LightShaft';
 import { Material } from '../heck/Material';
 import { PerspectiveCamera } from '../heck/components/PerspectiveCamera';
 import { Post } from './Post';
@@ -186,6 +187,14 @@ export class CameraStack extends SceneNode {
     }
 
     // -- forward ----------------------------------------------------------------------------------
+    const lambdaUpdateLightShaftDeferredRenderTarget = new Lambda( {
+      onUpdate: ( { componentsByTag } ) => {
+        Array.from( componentsByTag.get( LightShaftTag ) ).map( ( lightShaft ) => {
+          ( lightShaft as LightShaft ).setDefferedCameraTarget( deferredTarget );
+        } );
+      },
+    } );
+
     const forwardCamera = this.forwardCamera = new PerspectiveCamera( {
       scenes: scenes,
       renderTarget: postSwap.i,
@@ -221,6 +230,7 @@ export class CameraStack extends SceneNode {
       lambdaDeferredCameraUniforms,
       lambdaLightUniforms,
       shadingQuad,
+      lambdaUpdateLightShaftDeferredRenderTarget,
       forwardCamera,
       bloom,
       post,

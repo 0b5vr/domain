@@ -86,8 +86,8 @@ export const deferredShadeFrag = build( () => {
         ) );
 
         // fetch shadowmap + spot lighting
-        const lightProj = mul( lightPV, vec4( position, 1.0 ) );
-        const lightP = div( sw( lightProj, 'xyz' ), sw( lightProj, 'w' ) );
+        const lightProj = def( 'vec4', mul( lightPV, vec4( position, 1.0 ) ) );
+        const lightP = def( 'vec3', div( sw( lightProj, 'xyz' ), sw( lightProj, 'w' ) ) );
 
         mulAssign(
           lightShaded,

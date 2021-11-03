@@ -66,6 +66,7 @@ export const glPointCoord = 'gl_PointCoord' as Tok<'vec2'>;
 export const glFragCoord = 'gl_FragCoord' as Tok<'vec4'>;
 export const glFragColor = 'gl_FragColor' as Tok<'vec4'>;
 export const glFragDepth = 'gl_FragDepth' as Tok<'float'>;
+export const glFrontFacing = 'gl_FrontFacing' as Tok<'bool'>;
 
 export function insert( code: string ): void {
   __stack[ 0 ] += code;
@@ -191,6 +192,7 @@ export const defUniformArrayNamed: {
 
 export const assign: {
   ( dst: Tok<'bool'>, src: boolean ): void;
+  ( dst: Tok<'float'>, src: number ): void;
   <T extends string>( dst: Tok<T>, src: Ex<T> ): void;
 } = ( dst: string, src: string | number | boolean ) => (
   insert( `${dst}=${num( src )};` )
@@ -766,8 +768,8 @@ export function discard(): void {
   insert( 'discard;' );
 }
 
-export function retFn( val: string ): void {
-  insert( `return ${val};` );
+export function retFn( val?: string ): void {
+  insert( `return ${ val ?? '' };` );
 }
 
 export function ifThen( condition: Ex<'bool'>, truthy: () => void, falsy?: () => void ): void {

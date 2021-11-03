@@ -1,4 +1,4 @@
-import { add, addAssign, assign, build, def, defFn, defInNamed, defOutNamed, defUniformArrayNamed, defUniformNamed, div, dot, glFragCoord, insert, length, main, max, mix, mul, mulAssign, normalize, pow, retFn, smoothstep, sq, sub, sw, texture, textureLod, unrollLoop, vec2, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformArrayNamed, defUniformNamed, div, dot, glFragCoord, insert, length, main, max, mix, mul, mulAssign, normalize, pow, retFn, smoothstep, sq, sub, sw, texture, textureLod, unrollLoop, vec2, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcDepth } from './modules/calcDepth';
 import { calcL } from './modules/calcL';
 import { cyclicNoise } from './modules/cyclicNoise';
@@ -15,7 +15,7 @@ export const floorFrag = ( tag: 'forward' | 'depth' ): string => build( () => {
   const vNormal = defInNamed( 'vec3', 'vNormal' );
   const vUv = defInNamed( 'vec2', 'vUv' );
 
-  const fragColor = defOutNamed( 'vec4', 'fragColor' );
+  const fragColor = defOut( 'vec4' );
 
   const resolution = defUniformNamed( 'vec2', 'resolution' );
   const cameraNearFar = defUniformNamed( 'vec2', 'cameraNearFar' );
