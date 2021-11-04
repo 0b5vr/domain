@@ -1,6 +1,6 @@
 import { Automaton } from '@0b5vr/automaton';
 import { AutomatonWithGUI } from '@0b5vr/automaton-with-gui';
-import { Clock } from '@0b5vr/experimental';
+import { Music } from '../music/Music';
 import { fxDefinitions } from './automaton-fxs/fxDefinitions';
 import { getDivAutomaton } from './dom';
 import automatonData from '../automaton.json';
@@ -18,14 +18,6 @@ export const automaton = ( () => {
       },
     );
 
-    if ( module.hot ) {
-      module.hot.accept( '../automaton.json', () => {
-        // we probably don't need this feature for now...
-        // See: https://github.com/FMS-Cat/automaton/issues/120
-        // automatonWithGUI.deserialize( automatonData );
-      } );
-    }
-
     return automatonWithGUI;
   } else {
     return new Automaton(
@@ -38,16 +30,16 @@ export const automaton = ( () => {
 } )();
 
 /**
- * Since automaton and clock try to reference each other...
+ * Since automaton and music try to reference each other...
  */
-export function automatonSetupClock( clock: Clock ): void {
+export function automatonSetupMusic( music: Music ): void {
   if ( process.env.DEV ) {
     const automatonWithGUI = automaton as AutomatonWithGUI;
 
-    automatonWithGUI.on( 'play', () => { clock.play(); } );
-    automatonWithGUI.on( 'pause', () => { clock.pause(); } );
+    automatonWithGUI.on( 'play', () => { music.isPlaying = true; } );
+    automatonWithGUI.on( 'pause', () => { music.isPlaying = false; } );
     automatonWithGUI.on( 'seek', ( { time } ) => {
-      clock.setTime( Math.max( 0.0, time ) );
+      music.time = Math.max( 0.0, time );
       automatonWithGUI.reset();
     } );
   }

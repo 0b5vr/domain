@@ -1,6 +1,9 @@
+import { AutomatonWithGUI } from '@0b5vr/automaton-with-gui';
+import { automaton } from './globals/automaton';
 import { canvas } from './globals/canvas';
 import { dog } from './scene';
 import { getDivCanvasContainer } from './globals/dom';
+import { music } from './globals/music';
 
 // == dom ==========================================================================================
 document.body.style.margin = '0';
@@ -29,6 +32,11 @@ if ( process.env.DEV ) {
 
 // == load =========================================================================================
 async function load(): Promise<void> {
-  console.info( dog );
+  if ( process.env.DEV ) {
+    console.info( dog );
+    ( automaton as AutomatonWithGUI ).play();
+  }
+
+  await music.prepare();
 }
 load();

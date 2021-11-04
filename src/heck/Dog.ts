@@ -2,7 +2,7 @@ import { Component } from './components/Component';
 import { MapOfSet } from '../utils/MapOfSet';
 import { SceneNode } from './components/SceneNode';
 import { Transform } from './Transform';
-import { clock } from '../globals/clock';
+import { music } from '../globals/music';
 
 /**
  * And what a WONDERFUL Dog they are!!
@@ -24,11 +24,11 @@ export class Dog {
 
   public update(): void {
     if ( this.active ) {
-      clock.update();
+      music.update();
       this.root.update( {
         frameCount: this.__frameCount ++,
-        time: clock.time,
-        deltaTime: clock.deltaTime,
+        time: music.time,
+        deltaTime: music.deltaTime,
         globalTransform: new Transform(),
         componentsByTag: new MapOfSet(),
         ancestors: [],

@@ -115,6 +115,11 @@
   resolved "https://registry.yarnpkg.com/@tweakpane/core/-/core-1.0.6.tgz#cfdecd9612caab72f25abc60bfab9df2c1381f4c"
   integrity sha512-Q5331dFAgGyLvQHzrUdK11FV5nX7UTucW2x9w/Nl0h2zd/qtxs9mtbYSU5xEGnj5mtuI095CMV3mcQjYpyTCkQ==
 
+"@types/audiobuffer-to-wav@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@types/audiobuffer-to-wav/-/audiobuffer-to-wav-1.0.1.tgz#8c0d935587e9d7622b010e51a8164d854d6e9b8a"
+  integrity sha512-55YMxBf9BgL9ICdhBzumYwxSbqbyhbA8DgRACud3C2AZlZCS86tm9kkJ+tRs/6zAGLLBMpn1Vuv4FNoYMgeINw==
+
 "@types/eslint-scope@^3.7.0":
   version "3.7.1"
   resolved "https://registry.yarnpkg.com/@types/eslint-scope/-/eslint-scope-3.7.1.tgz#8dc390a7b4f9dd9f1284629efce982e41612116e"
@@ -537,6 +542,11 @@ async@^2.6.2:
   integrity sha512-zflvls11DCy+dQWzTW2dzuilv8Z5X/pjfmZOWba6TNIVDm+2UDaJmXSOXlasHKfNBs8oo3M0aT50fDEWfKZjXg==
   dependencies:
     lodash "^4.17.14"
+
+audiobuffer-to-wav@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/audiobuffer-to-wav/-/audiobuffer-to-wav-1.0.0.tgz#d5b432271455e7fee56b111cd0f8d620d7f9e105"
+  integrity sha1-1bQyJxRV5/7laxEc0PjWINf54QU=
 
 balanced-match@^1.0.0:
   version "1.0.2"

@@ -16,8 +16,8 @@ import { SSSBox } from './entities/SSSBox';
 import { Sp4ghet } from './entities/Sp4ghet';
 import { VRCameraStack } from './entities/VRCameraStack';
 import { automaton } from './globals/automaton';
-import { clock } from './globals/clock';
 import { createVRSesh } from './globals/createVRSesh';
+import { music } from './globals/music';
 import { promiseGui } from './globals/gui';
 import { randomTexture } from './globals/randomTexture';
 
@@ -30,7 +30,7 @@ const canvasRenderTarget = new CanvasRenderTarget();
 dog.root.children.push( new Lambda( {
   onUpdate: () => {
     randomTexture.update();
-    automaton.update( clock.time );
+    automaton.update( music.time );
   },
   name: process.env.DEV && 'update-everything',
 } ) );

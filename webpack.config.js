@@ -82,6 +82,10 @@ module.exports = ( env, argv ) => {
           type: 'asset/source',
         },
         {
+          test: /\.(opus|png)$/,
+          type: 'asset/inline',
+        },
+        {
           test: /\.tsx?$/,
           exclude: /node_modules/,
           use: [
