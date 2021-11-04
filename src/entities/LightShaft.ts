@@ -73,7 +73,7 @@ export class LightShaft extends SceneNode {
       }
     }
 
-    const materials = { forward };
+    const materials = { forward, cubemap: forward };
 
     // -- updater ----------------------------------------------------------------------------------
     const lambdaUniforms = new Lambda( {
@@ -100,7 +100,6 @@ export class LightShaft extends SceneNode {
           event.camera.far
         );
       },
-      name: process.env.DEV && 'updater',
     } );
 
     if ( process.env.DEV ) {
