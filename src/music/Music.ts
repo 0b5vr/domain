@@ -8,6 +8,7 @@ import { createIR } from './createIR';
 import { gl, glCat } from '../globals/canvas';
 import { injectCodeToShader } from '../utils/injectCodeToShader';
 import { musicVert } from '../shaders/musicVert';
+import { promiseGui } from '../globals/gui';
 import { randomTextureStatic } from '../globals/randomTexture';
 
 const discardFrag = '#version 300 es\nvoid main(){discard;}';
@@ -93,6 +94,15 @@ export abstract class Music {
     // == audio ====================================================================================
     this.__musicDest = audio.createGain();
     this.__musicDest.connect( audio.destination );
+
+    if ( process.env.DEV ) {
+      this.__musicDest.gain.value = 0.0;
+      promiseGui.then( ( gui ) => {
+        gui.input( 'audio/volume', 0.0, { min: 0.0, max: 1.0 } )?.on( 'change', ( { value } ) => {
+          this.__musicDest.gain.value = value;
+        } );
+      } );
+    }
 
     const reverb = audio.createConvolver();
     reverb.buffer = createIR();
