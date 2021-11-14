@@ -1,19 +1,16 @@
-import { Asphalt } from './entities/Asphalt';
 import { CameraStack } from './entities/CameraStack';
 import { CanvasRenderTarget } from './heck/CanvasRenderTarget';
 import { Dog } from './heck/Dog';
+import { FUI } from './entities/FUI';
 import { Floor } from './entities/Floor';
-import { Fluid } from './entities/Fluid';
-import { GeometryTestbed } from './entities/GeometryTestbed';
 import { IBLLUTCalc } from './entities/IBLLUTCalc';
 import { Lambda } from './heck/components/Lambda';
 import { LightShaft } from './entities/LightShaft';
-import { MengerSponge } from './entities/MengerSponge';
 import { NodeReplacer } from './utils/NodeReplacer';
 import { Plane } from './entities/Plane';
 import { PointLightNode } from './entities/PointLightNode';
-import { SSSBox } from './entities/SSSBox';
-import { Sp4ghet } from './entities/Sp4ghet';
+import { RawVector3, vecAdd } from '@0b5vr/experimental';
+import { Stuff } from './entities/Stuff';
 import { VRCameraStack } from './entities/VRCameraStack';
 import { automaton } from './globals/automaton';
 import { createVRSesh } from './globals/createVRSesh';
@@ -127,29 +124,34 @@ const cameraStack = new CameraStack( {
   ...cameraStackOptions,
   target: canvasRenderTarget,
 } );
-cameraStack.transform.lookAt( [ 0.0, 1.6, 10.0 ], [ 0.0, 1.6, 0.0 ] );
+cameraStack.transform.lookAt( [ 0.0, 1.6, 10.0 ], [ 0.0, 3.0, 0.0 ] );
 
 cameraStack.children.push( new Lambda( {
   onUpdate: ( { time } ) => {
-    const x = 10.0 * Math.cos( time );
-    const z = 10.0 * Math.sin( time );
-    cameraStack.transform.lookAt( [ x, 1.6, z ], [ 0.0, 1.6, 0.0 ] );
+    const pos = vecAdd(
+      [ 0.0, 1.6, 10.0 ],
+      [
+        0.04 * Math.sin( time * 2.4 ) - 0.02,
+        0.04 * Math.sin( time * 3.4 ) - 0.02,
+        0.04 * Math.sin( time * 2.7 ) - 0.02,
+      ],
+    ) as RawVector3;
+    const tar = vecAdd(
+      [ 0.0, 3.0, 0.0 ],
+      [
+        0.04 * Math.sin( time * 2.8 ) - 0.02,
+        0.04 * Math.sin( time * 2.5 ) - 0.02,
+        0.04 * Math.sin( time * 3.1 ) - 0.02,
+      ],
+    ) as RawVector3;
+    const roll = 0.02 * Math.sin( time * 1.1 );
+    cameraStack.transform.lookAt( pos, tar, [ 0.0, 1.0, 0.0 ], roll );
   },
 } ) );
 
 if ( process.env.DEV ) {
   cameraStack.name = 'cameraStack';
 }
-
-// const fluid = new Fluid();
-// if ( process.env.DEV && module.hot ) {
-//   const replacer = new NodeReplacer( fluid, () => new Fluid() );
-//   module.hot.accept( './entities/Fluid', () => {
-//     replacer.replace( dog.root );
-//   } );
-// }
-// fluid.transform.position = [ 0.0, 3.0, 0.0 ];
-// fluid.transform.scale = [ 3.0, 3.0, 3.0 ];
 
 const plane = new Plane();
 if ( process.env.DEV && module.hot ) {
@@ -161,55 +163,21 @@ if ( process.env.DEV && module.hot ) {
 plane.transform.position = [ 0.0, 3.0, 0.0 ];
 plane.transform.scale = [ 3.0, 3.0, 3.0 ];
 
-const sssBox = new SSSBox();
+const fui = new FUI();
 if ( process.env.DEV && module.hot ) {
-  const replacer = new NodeReplacer( sssBox, () => new SSSBox() );
-  module.hot.accept( './entities/SSSBox', () => {
+  const replacer = new NodeReplacer( fui, () => new FUI() );
+  module.hot.accept( './entities/FUI', () => {
     replacer.replace( dog.root );
   } );
 }
-sssBox.transform.position = [ 0.0, 3.0, 0.0 ];
-sssBox.transform.scale = [ 3.0, 3.0, 3.0 ];
 
-// const geometryTestbed = new GeometryTestbed();
-// if ( process.env.DEV && module.hot ) {
-//   const replacer = new NodeReplacer( geometryTestbed, () => new GeometryTestbed() );
-//   module.hot.accept( './entities/GeometryTestbed', () => {
-//     replacer.replace( dog.root );
-//   } );
-// }
-// geometryTestbed.transform.position = [ 0.0, 3.0, 0.0 ];
-// geometryTestbed.transform.scale = [ 1.0, 1.0, 1.0 ];
-
-// const sp4ghet = new Sp4ghet();
-// if ( process.env.DEV && module.hot ) {
-//   const replacer = new NodeReplacer( sp4ghet, () => new Sp4ghet() );
-//   module.hot.accept( './entities/Sp4ghet', () => {
-//     replacer.replace( dog.root );
-//   } );
-// }
-// sp4ghet.transform.position = [ 0.0, 3.0, 0.0 ];
-// sp4ghet.transform.scale = [ 3.0, 3.0, 3.0 ];
-
-// const asphalt = new Asphalt();
-// if ( process.env.DEV && module.hot ) {
-//   const replacer = new NodeReplacer( asphalt, () => new Asphalt() );
-//   module.hot.accept( './entities/Asphalt', () => {
-//     replacer.replace( dog.root );
-//   } );
-// }
-// asphalt.transform.position = [ 0.0, 3.0, 0.0 ];
-// asphalt.transform.scale = [ 3.0, 3.0, 3.0 ];
-
-// const mengerSponge = new MengerSponge();
-// if ( process.env.DEV && module.hot ) {
-//   const replacer = new NodeReplacer( mengerSponge, () => new MengerSponge() );
-//   module.hot.accept( './entities/MengerSponge', () => {
-//     replacer.replace( dog.root );
-//   } );
-// }
-// mengerSponge.transform.position = [ 0.0, 3.0, 0.0 ];
-// mengerSponge.transform.scale = [ 3.0, 3.0, 3.0 ];
+const stuff = new Stuff();
+if ( process.env.DEV && module.hot ) {
+  const replacer = new NodeReplacer( stuff, () => new Stuff() );
+  module.hot.accept( './entities/Stuff', () => {
+    replacer.replace( dog.root );
+  } );
+}
 
 dog.root.children.push(
   iblLutCalc,
@@ -217,13 +185,9 @@ dog.root.children.push(
   light1,
   light2,
   light3,
-  // fluid,
   // plane,
-  sssBox,
-  // geometryTestbed,
-  // sp4ghet,
-  // asphalt,
-  // mengerSponge,
+  fui,
+  stuff,
   cameraStack,
 );
 

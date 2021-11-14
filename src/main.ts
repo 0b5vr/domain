@@ -16,7 +16,7 @@ if ( process.env.DEV ) {
   const divCanvasContainer = getDivCanvasContainer();
 
   divCanvasContainer.appendChild( canvas );
-  ( canvas.style as any ).aspectRatio = 'auto 1920 / 1080';
+  ( canvas.style as any ).aspectRatio = 'auto 16 / 9';
   canvas.style.margin = 'auto';
   canvas.style.maxWidth = '100%';
   canvas.style.maxHeight = '100%';

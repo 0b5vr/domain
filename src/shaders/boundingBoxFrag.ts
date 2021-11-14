@@ -1,4 +1,4 @@
-import { add, assign, build, def, defInNamed, defOut, defUniformNamed, discard, exp, ifThen, insert, length, lt, main, max, mul, mulAssign, sin, sub, sw, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { add, assign, build, def, defInNamed, defOut, defUniformNamed, discard, ifThen, insert, length, lt, main, mul, sin, sub, sw, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcDepth } from './modules/calcDepth';
 
 export const boundingBoxFrag = ( tag: 'forward' | 'shadow' ): string => build( () => {
@@ -25,10 +25,6 @@ export const boundingBoxFrag = ( tag: 'forward' | 'shadow' ): string => build( (
 
     if ( tag === 'forward' ) {
       const color = def( 'vec3', vec3( 1.0 ) );
-
-      const lenV = length( sub( cameraPos, sw( vPosition, 'xyz' ) ) );
-      mulAssign( color, exp( mul( -0.4, max( sub( lenV, 3.0 ), 0.0 ) ) ) );
-
       assign( fragColor, vec4( color, 1.0 ) );
 
     } else if ( tag === 'shadow' ) {

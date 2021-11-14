@@ -283,19 +283,8 @@ export class Fluid extends SceneNode {
     mesh.depthTest = false;
     mesh.depthWrite = false;
 
-    // -- speen ------------------------------------------------------------------------------------
-    const speenAxis = vecNormalize( [ 1.0, 1.0, 1.0 ] ) as RawVector3;
-
-    const lambdaSpeen = new Lambda( {
-      onUpdate: ( { time } ) => {
-        this.transform.rotation = quatFromAxisAngle( speenAxis, 0.1 * time );
-      },
-      name: process.env.DEV && 'speen',
-    } );
-
     // -- components -------------------------------------------------------------------------------
     this.children = [
-      lambdaSpeen,
       quadPokeDensity,
       quadCurl,
       quadDivergence,
@@ -308,10 +297,5 @@ export class Fluid extends SceneNode {
       lambdaRaymarchCameraUniforms,
       mesh,
     ];
-
-    // -- bounding box -----------------------------------------------------------------------------
-    const boundingBox = new BoundingBox();
-    boundingBox.transform.scale = [ 0.5, 0.5, 0.5 ];
-    this.children.push( boundingBox );
   }
 }
