@@ -40,7 +40,7 @@ export class MusicRealtime extends Music {
 
       const bufferSource = audio.createBufferSource();
       bufferSource.buffer = buffer;
-      bufferSource.connect( audio.destination );
+      bufferSource.connect( this.__musicDest );
 
       this.__prevBufferSource?.stop( audio.currentTime );
       bufferSource.start( audio.currentTime, audio.currentTime - genTime );

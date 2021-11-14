@@ -4,10 +4,11 @@ import { MUSIC_BPM } from '../config';
 import { SamplesManager } from './SamplesManager';
 import { audio } from '../globals/music';
 import { binarySearch } from '@0b5vr/automaton';
+import { createIR } from './createIR';
 import { gl, glCat } from '../globals/canvas';
 import { injectCodeToShader } from '../utils/injectCodeToShader';
+import { musicVert } from '../shaders/musicVert';
 import { randomTextureStatic } from '../globals/randomTexture';
-import musicVert from './music.vert';
 
 const discardFrag = '#version 300 es\nvoid main(){discard;}';
 
@@ -35,6 +36,8 @@ export abstract class Music {
   protected __program: GLCatProgram;
   protected __samplesManager: SamplesManager;
   protected __automatonManager: AutomatonManager;
+
+  protected __musicDest: GainNode;
 
   private __bufferOff: GLCatBuffer;
   private __bufferTransformFeedbacks: [
@@ -87,10 +90,23 @@ export abstract class Music {
       { transformFeedbackVaryings: [ 'outL', 'outR' ] },
     );
 
+    // == audio ====================================================================================
+    this.__musicDest = audio.createGain();
+    this.__musicDest.connect( audio.destination );
+
+    const reverb = audio.createConvolver();
+    reverb.buffer = createIR();
+    this.__musicDest.connect( reverb );
+
+    const reverbGain = audio.createGain();
+    reverbGain.gain.value = 0.25;
+    reverb.connect( reverbGain );
+    reverbGain.connect( audio.destination );
+
     // == hot hot hot hot hot ======================================================================
     if ( process.env.DEV && module.hot ) {
       module.hot.accept(
-        [ './music.vert' ],
+        [ '../shaders/musicVert' ],
         () => {
           this.recompile();
         }
@@ -169,7 +185,6 @@ export abstract class Music {
       ( time - sectionBegin ) % sectionLength,
       time,
     );
-    console.log(time % beatLength, time % barLength);
 
     program.uniformTexture( 'samplerRandom', randomTextureStatic.texture );
     program.uniformTexture( 'samplerAutomaton', this.__automatonManager.texture );

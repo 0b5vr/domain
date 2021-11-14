@@ -141,15 +141,15 @@ if ( process.env.DEV ) {
   cameraStack.name = 'cameraStack';
 }
 
-const fluid = new Fluid();
-if ( process.env.DEV && module.hot ) {
-  const replacer = new NodeReplacer( fluid, () => new Fluid() );
-  module.hot.accept( './entities/Fluid', () => {
-    replacer.replace( dog.root );
-  } );
-}
-fluid.transform.position = [ 0.0, 3.0, 0.0 ];
-fluid.transform.scale = [ 3.0, 3.0, 3.0 ];
+// const fluid = new Fluid();
+// if ( process.env.DEV && module.hot ) {
+//   const replacer = new NodeReplacer( fluid, () => new Fluid() );
+//   module.hot.accept( './entities/Fluid', () => {
+//     replacer.replace( dog.root );
+//   } );
+// }
+// fluid.transform.position = [ 0.0, 3.0, 0.0 ];
+// fluid.transform.scale = [ 3.0, 3.0, 3.0 ];
 
 const plane = new Plane();
 if ( process.env.DEV && module.hot ) {
@@ -171,45 +171,45 @@ if ( process.env.DEV && module.hot ) {
 sssBox.transform.position = [ 0.0, 3.0, 0.0 ];
 sssBox.transform.scale = [ 3.0, 3.0, 3.0 ];
 
-const geometryTestbed = new GeometryTestbed();
-if ( process.env.DEV && module.hot ) {
-  const replacer = new NodeReplacer( geometryTestbed, () => new GeometryTestbed() );
-  module.hot.accept( './entities/GeometryTestbed', () => {
-    replacer.replace( dog.root );
-  } );
-}
-geometryTestbed.transform.position = [ 0.0, 3.0, 0.0 ];
-geometryTestbed.transform.scale = [ 1.0, 1.0, 1.0 ];
+// const geometryTestbed = new GeometryTestbed();
+// if ( process.env.DEV && module.hot ) {
+//   const replacer = new NodeReplacer( geometryTestbed, () => new GeometryTestbed() );
+//   module.hot.accept( './entities/GeometryTestbed', () => {
+//     replacer.replace( dog.root );
+//   } );
+// }
+// geometryTestbed.transform.position = [ 0.0, 3.0, 0.0 ];
+// geometryTestbed.transform.scale = [ 1.0, 1.0, 1.0 ];
 
-const sp4ghet = new Sp4ghet();
-if ( process.env.DEV && module.hot ) {
-  const replacer = new NodeReplacer( sp4ghet, () => new Sp4ghet() );
-  module.hot.accept( './entities/Sp4ghet', () => {
-    replacer.replace( dog.root );
-  } );
-}
-sp4ghet.transform.position = [ 0.0, 3.0, 0.0 ];
-sp4ghet.transform.scale = [ 3.0, 3.0, 3.0 ];
+// const sp4ghet = new Sp4ghet();
+// if ( process.env.DEV && module.hot ) {
+//   const replacer = new NodeReplacer( sp4ghet, () => new Sp4ghet() );
+//   module.hot.accept( './entities/Sp4ghet', () => {
+//     replacer.replace( dog.root );
+//   } );
+// }
+// sp4ghet.transform.position = [ 0.0, 3.0, 0.0 ];
+// sp4ghet.transform.scale = [ 3.0, 3.0, 3.0 ];
 
-const asphalt = new Asphalt();
-if ( process.env.DEV && module.hot ) {
-  const replacer = new NodeReplacer( asphalt, () => new Asphalt() );
-  module.hot.accept( './entities/Asphalt', () => {
-    replacer.replace( dog.root );
-  } );
-}
-asphalt.transform.position = [ 0.0, 3.0, 0.0 ];
-asphalt.transform.scale = [ 3.0, 3.0, 3.0 ];
+// const asphalt = new Asphalt();
+// if ( process.env.DEV && module.hot ) {
+//   const replacer = new NodeReplacer( asphalt, () => new Asphalt() );
+//   module.hot.accept( './entities/Asphalt', () => {
+//     replacer.replace( dog.root );
+//   } );
+// }
+// asphalt.transform.position = [ 0.0, 3.0, 0.0 ];
+// asphalt.transform.scale = [ 3.0, 3.0, 3.0 ];
 
-const mengerSponge = new MengerSponge();
-if ( process.env.DEV && module.hot ) {
-  const replacer = new NodeReplacer( mengerSponge, () => new MengerSponge() );
-  module.hot.accept( './entities/MengerSponge', () => {
-    replacer.replace( dog.root );
-  } );
-}
-mengerSponge.transform.position = [ 0.0, 3.0, 0.0 ];
-mengerSponge.transform.scale = [ 3.0, 3.0, 3.0 ];
+// const mengerSponge = new MengerSponge();
+// if ( process.env.DEV && module.hot ) {
+//   const replacer = new NodeReplacer( mengerSponge, () => new MengerSponge() );
+//   module.hot.accept( './entities/MengerSponge', () => {
+//     replacer.replace( dog.root );
+//   } );
+// }
+// mengerSponge.transform.position = [ 0.0, 3.0, 0.0 ];
+// mengerSponge.transform.scale = [ 3.0, 3.0, 3.0 ];
 
 dog.root.children.push(
   iblLutCalc,

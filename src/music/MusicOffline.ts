@@ -54,7 +54,7 @@ export class MusicOffline extends Music {
     if ( this.isPlaying && this.__currentBufferSource == null ) {
       this.__currentBufferSource = audio.createBufferSource();
       this.__currentBufferSource.buffer = this.__buffer;
-      this.__currentBufferSource.connect( audio.destination );
+      this.__currentBufferSource.connect( this.__musicDest );
 
       this.__currentBufferSource.start( audio.currentTime, this.time );
     }

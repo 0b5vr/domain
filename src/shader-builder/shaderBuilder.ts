@@ -90,9 +90,10 @@ export function num( val: string | number | boolean ): string {
   return str;
 }
 
-function __def( { type, init, location, name, modifier, local, size }: {
+function __def( { type, init, initArray, location, name, modifier, local, size }: {
   type: string,
   init?: string | number | boolean,
+  initArray?: ( string | number | boolean )[],
   location?: number,
   name?: string,
   modifier?: string,
@@ -108,6 +109,7 @@ function __def( { type, init, location, name, modifier, local, size }: {
     token,
     size != null ? `[${ size }]` : '',
     init != null ? `=${ num( init ) }` : '',
+    initArray != null ? `=${ type }[](${ initArray.map( ( v ) => num( v ) ).join( ',' ) })` : '',
     ';',
   ].join( ' ' ) );
 
@@ -138,6 +140,16 @@ export const defConst: {
 } = ( type: string, init?: string | number ) => __def( {
   type,
   init,
+  modifier: 'const',
+} ) as any;
+
+export const defConstArray: {
+  ( type: 'float', initArray: Exf[] ): Tok<'float[]'>;
+  <T extends string>( type: T, initArray: Ex<T>[] ): Tok<`${ T }[]`>;
+} = ( type: string, initArray: ( string | number | boolean )[] ) => __def( {
+  type,
+  initArray,
+  size: initArray.length,
   modifier: 'const',
 } ) as any;
 
@@ -768,8 +780,8 @@ export function discard(): void {
   insert( 'discard;' );
 }
 
-export function retFn( val?: string ): void {
-  insert( `return ${ val ?? '' };` );
+export function retFn( val?: number | string | boolean ): void {
+  insert( `return ${ num( val ?? '' ) };` );
 }
 
 export function ifThen( condition: Ex<'bool'>, truthy: () => void, falsy?: () => void ): void {
