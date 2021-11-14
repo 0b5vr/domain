@@ -5,7 +5,7 @@ import { getYugoppText } from '../utils/getYugoppText';
 export const charCanvasTexture = new CharCanvasTexture();
 
 const texts = [
-  [ 'sss_box', 'screen space scatter-brain' ],
+  [ 'sss_box', 'subsurface scatter-brain' ],
   [ 'menger_sponge', 'fractal dimension = 2.7268...' ],
   [ 'asphalt', 'high-octane flavored' ],
   [ 'sp4ghet', 'angura girl with a torus-knot' ],

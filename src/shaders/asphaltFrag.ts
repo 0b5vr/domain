@@ -7,10 +7,10 @@ import { cyclicNoise } from './modules/cyclicNoise';
 import { doAnalyticLighting } from './modules/doAnalyticLighting';
 import { forEachLights } from './modules/forEachLights';
 import { glslDefRandom } from './modules/glslDefRandom';
-import { orthBas } from './modules/orthBas';
 import { raymarch } from './modules/raymarch';
 import { sdbox } from './modules/sdbox';
 import { setupRoRd } from './modules/setupRoRd';
+import { triplanarMapping } from './modules/triplanarMapping';
 
 export const asphaltFrag = ( tag: 'forward' | 'deferred' | 'depth' ): string => build( () => {
   insert( 'precision highp float;' );
@@ -36,19 +36,23 @@ export const asphaltFrag = ( tag: 'forward' | 'deferred' | 'depth' ): string => 
   const { init } = glslDefRandom();
 
   const map = defFn( 'vec4', [ 'vec3' ], ( p ) => {
-    addAssign( p, mul( 0.04, cyclicNoise( p ) ) );
+    addAssign( p, mul( 0.1, cyclicNoise( p ) ) );
 
-    const d = def( 'float', sdbox( p, vec3( 0.45 ) ) );
-    // subAssign( d, 0.05 );
+    const d = def( 'float', sdbox( p, vec3( 0.4 ) ) );
+    subAssign( d, 0.05 );
 
     const line = def( 'float', 0.0 );
 
     if ( tag !== 'depth' ) {
-      const N = normalize( max( sub( abs( p ), 0.45 ), 0.0 ) );
-      const b = orthBas( N );
-      const uv = def( 'vec2', add( 0.5, mul( 0.5, sw( mul( b, p ), 'xy' ) ) ) );
+      const N = normalize( max( sub( abs( p ), 0.4 ), 0.0 ) );
+      const mapSurface = triplanarMapping(
+        add( 0.5, mul( p, 0.5 ) ),
+        N,
+        4.0,
+        samplerSurface
+      );
 
-      subAssign( d, sw( texture( samplerSurface, uv ), 'x' ) );
+      subAssign( d, sw( mapSurface, 'x' ) );
       // const voronoiSamplePos = mul( 50.0, add( p, 1.0 ) );
       // const voronoi = voronoi3d( voronoiSamplePos );
       // const border = sw( voronoi3dBorder( voronoiSamplePos, voronoi ), 'w' );
