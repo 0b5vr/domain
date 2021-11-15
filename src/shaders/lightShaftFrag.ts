@@ -1,4 +1,4 @@
-import { add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, discard, div, forBreak, forLoop, glFragCoord, glFrontFacing, gt, ifThen, insert, length, lt, main, mix, mul, mulAssign, normalize, num, or, retFn, smoothstep, sq, sub, sw, tern, texture, vec4 } from '../shader-builder/shaderBuilder';
+import { add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, discard, div, forBreak, forLoop, glFragCoord, gt, ifThen, insert, length, lt, main, mix, mul, mulAssign, normalize, num, or, retFn, smoothstep, sq, sub, sw, texture, vec4 } from '../shader-builder/shaderBuilder';
 import { doShadowMapping } from './modules/doShadowMapping';
 import { glslDefRandom } from './modules/glslDefRandom';
 
@@ -9,6 +9,7 @@ export const lightShaftFrag = build( () => {
   insert( 'precision highp float;' );
 
   const vFrustumZ = defInNamed( 'float', 'vFrustumZ' );
+  const vShaftRadius = defInNamed( 'float', 'vShaftRadius' );
   const vPosition = defInNamed( 'vec4', 'vPosition' );
 
   const fragColor = defOut( 'vec4' );
@@ -72,12 +73,8 @@ export const lightShaftFrag = build( () => {
     const rayOri = def( 'vec3', cameraPos );
     const v = sub( sw( vPosition, 'xyz' ), rayOri );
     const rayDir = def( 'vec3', normalize( v ) );
-    const rayLen = def( 'float', tern( glFrontFacing, 1E-2, length( v ) ) );
+    const rayLen = def( 'float', length( v ) );
     const rayPos = def( 'vec3', add( rayOri, mul( rayDir, rayLen ) ) );
-
-    // this is terrible
-    // There definitely are better ways to do this
-    const stepLen = tern( glFrontFacing, 1.0, 0.1 );
 
     const accum = def( 'float', 0.0 );
     const isect = def( 'float' );
@@ -85,7 +82,7 @@ export const lightShaftFrag = build( () => {
     forLoop( MARCH_ITER, () => {
       assign( isect, map( rayPos ) );
       addAssign( accum, mul( isect, INV_MARCH_ITER ) );
-      addAssign( rayLen, mul( stepLen, mix( 0.5, 1.0, random() ) ) );
+      addAssign( rayLen, mul( vShaftRadius, mix( 0.1, 0.2, random() ) ) );
       assign( rayPos, add( rayOri, mul( rayDir, rayLen ) ) );
 
       // kill me

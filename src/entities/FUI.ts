@@ -44,7 +44,7 @@ export class FUI extends SceneNode {
 
     const forward = new Material(
       objectVert( locations ),
-      fuiFrag,
+      fuiFrag( 'forward' ),
       {
         initOptions: { geometry, target: dummyRenderTarget },
       },
@@ -53,7 +53,18 @@ export class FUI extends SceneNode {
     forward.addUniformTextures( 'samplerRandom', randomTexture.texture );
     forward.addUniformTextures( 'samplerChar', charCanvasTexture.texture );
 
-    const materials = { forward, cubemap: forward };
+    const depth = new Material(
+      objectVert( locations ),
+      fuiFrag( 'depth' ),
+      {
+        initOptions: { geometry, target: dummyRenderTarget },
+      },
+    );
+    depth.addUniform( 'color', '4f', 1.0, 1.0, 1.0, 1.0 );
+    depth.addUniformTextures( 'samplerRandom', randomTexture.texture );
+    depth.addUniformTextures( 'samplerChar', charCanvasTexture.texture );
+
+    const materials = { forward, cubemap: forward, depth };
 
     if ( process.env.DEV ) {
       if ( module.hot ) {
@@ -63,7 +74,8 @@ export class FUI extends SceneNode {
             '../shaders/fuiFrag',
           ],
           () => {
-            forward.replaceShader( objectVert( { ...locations } ), fuiFrag );
+            forward.replaceShader( objectVert( { ...locations } ), fuiFrag( 'forward' ) );
+            depth.replaceShader( objectVert( { ...locations } ), fuiFrag( 'depth' ) );
           },
         );
       }

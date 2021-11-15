@@ -1,5 +1,5 @@
 import { MTL_PBR_EMISSIVE } from './deferredShadeFrag';
-import { abs, add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, discard, div, dot, glFragCoord, glFragDepth, gt, ifThen, insert, length, main, max, mix, mul, mulAssign, neg, normalize, retFn, sq, step, sub, subAssign, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { abs, add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, discard, div, dot, glFragCoord, glFragDepth, gt, ifThen, insert, length, main, max, mix, mul, mulAssign, neg, normalize, retFn, sin, smoothstep, sq, step, sub, subAssign, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcDepth } from './modules/calcDepth';
 import { calcL } from './modules/calcL';
 import { calcNormal } from './modules/calcNormal';
@@ -26,6 +26,7 @@ export const asphaltFrag = ( tag: 'forward' | 'deferred' | 'depth' ): string => 
   const fragNormal = defOut( 'vec4', 2 );
   const fragMisc = defOut( 'vec4', 3 );
 
+  const time = defUniformNamed( 'float', 'time' );
   const resolution = defUniformNamed( 'vec2', 'resolution' );
   const cameraNearFar = defUniformNamed( 'vec2', 'cameraNearFar' );
   const cameraPos = defUniformNamed( 'vec3', 'cameraPos' );
@@ -36,12 +37,13 @@ export const asphaltFrag = ( tag: 'forward' | 'deferred' | 'depth' ): string => 
   const { init } = glslDefRandom();
 
   const map = defFn( 'vec4', [ 'vec3' ], ( p ) => {
-    addAssign( p, mul( 0.1, cyclicNoise( p ) ) );
+    addAssign( p, mul( 0.04, cyclicNoise( p ) ) );
 
     const d = def( 'float', sdbox( p, vec3( 0.4 ) ) );
     subAssign( d, 0.05 );
 
-    const line = def( 'float', 0.0 );
+    const phase = add( dot( p, vec3( 10.0 ) ), time );
+    const line = def( 'float', smoothstep( 0.1, 0.3, sin( phase ) ) );
 
     if ( tag !== 'depth' ) {
       const N = normalize( max( sub( abs( p ), 0.4 ), 0.0 ) );
@@ -52,7 +54,7 @@ export const asphaltFrag = ( tag: 'forward' | 'deferred' | 'depth' ): string => 
         samplerSurface
       );
 
-      subAssign( d, sw( mapSurface, 'x' ) );
+      subAssign( d, mix( sw( mapSurface, 'x' ), 0.01, line ) );
       // const voronoiSamplePos = mul( 50.0, add( p, 1.0 ) );
       // const voronoi = voronoi3d( voronoiSamplePos );
       // const border = sw( voronoi3dBorder( voronoiSamplePos, voronoi ), 'w' );
@@ -97,7 +99,7 @@ export const asphaltFrag = ( tag: 'forward' | 'deferred' | 'depth' ): string => 
     }
 
     const N = def( 'vec3', calcNormal( { rp, map } ) );
-    const roughness = 0.6;
+    const roughness = mix( 0.5, 0.8, line );
     const metallic = 0.0;
 
     const baseColor = mix(
@@ -105,7 +107,6 @@ export const asphaltFrag = ( tag: 'forward' | 'deferred' | 'depth' ): string => 
       vec3( 0.8 ),
       line
     );
-    mulAssign( line, step( abs( sw( rp, 'x' ) ), 0.1 ) );
 
     if ( tag === 'deferred' ) {
       assign( fragColor, vec4( baseColor, 1.0 ) );

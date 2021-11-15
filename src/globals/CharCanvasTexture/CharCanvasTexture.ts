@@ -131,7 +131,7 @@ export class CharCanvasTexture {
   public drawChars( x: number, y: number, scale: number, str: string ): void {
     const { context } = this;
 
-    context.lineWidth = 2.0 / scale;
+    context.lineWidth = 1.0;
     context.save();
     context.translate( x, y );
     context.scale( scale, scale );

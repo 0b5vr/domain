@@ -67,13 +67,13 @@ const light1 = new PointLightNode( {
   name: process.env.DEV && 'light1',
   brtNamePrefix: process.env.DEV && 'SceneBegin/light1',
 } );
-light1.color = [ 500.0, 500.0, 500.0 ];
+light1.color = [ 100.0, 100.0, 100.0 ];
 light1.spotness = 1.0;
 light1.transform.lookAt( [ 3.0, 0.2, 3.0 ], [ 0.0, 3.0, 0.0 ] );
 
 const shaft1 = new LightShaft( {
   light: light1,
-  intensity: 0.004,
+  intensity: 0.01,
 } );
 light1.children.push( shaft1 );
 
@@ -85,13 +85,13 @@ const light2 = new PointLightNode( {
   name: process.env.DEV && 'light2',
   brtNamePrefix: process.env.DEV && 'SceneBegin/light2',
 } );
-light2.color = [ 5000.0, 5500.0, 5900.0 ];
+light2.color = [ 100.0, 150.0, 190.0 ];
 light2.spotness = 1.0;
 light2.transform.lookAt( [ 0.01, 9.0, 0.01 ], [ 0.0, 3.0, 0.0 ] );
 
 const shaft2 = new LightShaft( {
   light: light2,
-  intensity: 0.004,
+  intensity: 0.01,
 } );
 light2.children.push( shaft2 );
 

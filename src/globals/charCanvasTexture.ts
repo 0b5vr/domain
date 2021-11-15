@@ -20,9 +20,9 @@ auto( 'FUI/yugopp', ( { progress } ) => {
     const indexText = ( '0' + stuffIndex ).slice( -2 );
 
     charCanvasTexture.clear();
-    charCanvasTexture.drawChars( 50, 60, 9, getYugoppText( indexText, progress * 4.0 ) );
-    charCanvasTexture.drawChars( 280, 103, 5.5, getYugoppText( t[ 0 ], progress * 2.0 - 0.25 ) );
-    charCanvasTexture.drawChars( 280, 60, 2, getYugoppText( t[ 1 ], progress * 2.0 - 0.5 ) );
+    charCanvasTexture.drawChars( 54, 64, 8.8, getYugoppText( indexText, progress * 4.0 ) );
+    charCanvasTexture.drawChars( 290, 103, 5.5, getYugoppText( t[ 0 ], progress * 2.0 - 0.25 ) );
+    charCanvasTexture.drawChars( 290, 60, 2, getYugoppText( t[ 1 ], progress * 2.0 - 0.5 ) );
     charCanvasTexture.updateTexture();
   }
 } );

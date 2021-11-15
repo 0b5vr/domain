@@ -1,17 +1,21 @@
-import { abs, add, assign, build, def, defInNamed, defOutNamed, defUniformNamed, discard, ifThen, insert, lt, main, max, mul, mulAssign, sin, step, sub, sw, texture, vec4 } from '../shader-builder/shaderBuilder';
+import { abs, add, assign, build, def, defInNamed, defOutNamed, defUniformNamed, discard, ifThen, insert, length, lt, main, max, mul, mulAssign, sin, step, sub, sw, texture, vec4 } from '../shader-builder/shaderBuilder';
+import { calcDepth } from './modules/calcDepth';
 import { glslDefRandom } from './modules/glslDefRandom';
 
 const aspect = 16.0 / 9.0;
 
-export const fuiFrag = build( () => {
+export const fuiFrag = ( tag: 'forward' | 'depth' ): string => build( () => {
   insert( 'precision highp float;' );
 
+  const vPosition = defInNamed( 'vec4', 'vPosition' );
   const vUv = defInNamed( 'vec2', 'vUv' );
   const fragColor = defOutNamed( 'vec4', 'fragColor' );
 
   const time = defUniformNamed( 'float', 'time' );
   const samplerRandom = defUniformNamed( 'sampler2D', 'samplerRandom' );
   const samplerChar = defUniformNamed( 'sampler2D', 'samplerChar' );
+  const cameraNearFar = defUniformNamed( 'vec2', 'cameraNearFar' );
+  const cameraPos = defUniformNamed( 'vec3', 'cameraPos' );
 
   const { random, init } = glslDefRandom();
 
@@ -36,6 +40,15 @@ export const fuiFrag = build( () => {
 
     ifThen( lt( haha, random() ), () => discard() );
 
-    assign( fragColor, vec4( 1.0 ) );
+    if ( tag === 'forward' ) {
+      assign( fragColor, vec4( 1.0 ) );
+    } else if ( tag === 'depth' ) {
+      const posXYZ = sw( vPosition, 'xyz' );
+
+      const len = length( sub( cameraPos, posXYZ ) );
+      assign( fragColor, calcDepth( cameraNearFar, len ) );
+      return;
+
+    }
   } );
 } );

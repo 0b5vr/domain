@@ -5,6 +5,7 @@ export const lightShaftVert = build( () => {
   const position = defIn( 'vec3', 0 );
 
   const vFrustumZ = defOutNamed( 'float', 'vFrustumZ' );
+  const vShaftRadius = defOutNamed( 'float', 'vShaftRadius' );
   const vPosition = defOutNamed( 'vec4', 'vPosition' );
 
   const lightFov = defUniformNamed( 'float', 'lightFov' );
@@ -18,10 +19,15 @@ export const lightShaftVert = build( () => {
     assign( vFrustumZ, add( 0.5, mul( 0.5, sw( position, 'y' ) ) ) );
 
     const tanFov = def( 'float', tan( mul( lightFov, PI / 360.0 ) ) );
+    const near = sw( lightNearFar, 'x' );
+    const far = sw( lightNearFar, 'y' );
+
+    assign( vShaftRadius, mix( near, far, vFrustumZ ) );
+
     const posXYMulTanFov = def( 'vec2', mul( sw( position, 'xz' ), tanFov ) );
     const pos = mix(
-      vec3( mul( posXYMulTanFov, sw( lightNearFar, 'x' ) ), neg( sw( lightNearFar, 'x' ) ) ),
-      vec3( mul( posXYMulTanFov, sw( lightNearFar, 'y' ) ), neg( sw( lightNearFar, 'y' ) ) ),
+      vec3( mul( posXYMulTanFov, near ), neg( near ) ),
+      vec3( mul( posXYMulTanFov, far ), neg( far ) ),
       vFrustumZ,
     );
 

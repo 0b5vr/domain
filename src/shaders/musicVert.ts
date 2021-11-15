@@ -1,7 +1,8 @@
-import { GLSLExpression, GLSLFloatExpression, add, addAssign, arrayIndex, assign, build, clamp, def, defConstArray, defFn, defInNamed, defOutNamed, defUniformNamed, div, exp, floor, fract, ifThen, int, lt, main, max, mix, mod, mul, neg, num, pow, retFn, sin, sq, sub, sw, texture, unrollLoop, vec2, vec3 } from '../shader-builder/shaderBuilder';
+import { GLSLExpression, GLSLFloatExpression, add, addAssign, arrayIndex, assign, build, clamp, def, defConstArray, defFn, defInNamed, defOutNamed, defUniformNamed, div, exp, float, floor, fract, ifThen, int, lt, main, max, mix, mod, mul, neg, num, pow, retFn, sin, sq, sub, sw, texture, unrollLoop, vec2, vec3 } from '../shader-builder/shaderBuilder';
 import { TAU } from '../utils/constants';
 import { glslLofi } from './modules/glslLofi';
 import { glslSaturate } from './modules/glslSaturate';
+import { glslTri } from './modules/glslTri';
 import { pcg3df } from './modules/pcg3df';
 
 const SAMPLES = 16;
@@ -76,6 +77,24 @@ export const musicVert = build( () => {
     // const phaseY = div( timeY, sw( timeLength, 'y' ) );
     const phaseZ = div( timeZ, sw( timeLength, 'z' ) );
 
+    // sub bass
+    {
+      const pattern = defConstArray( 'float', [
+        0, 0, 1, 2, 3, 0, 1, 2,
+        0, 1, 2, 0, 1, 2, 3, 4,
+      ] );
+
+      const index = int( mod( mul( beatZ, 2 ), 16 ) );
+      const t = add(
+        mul( beatLength, 0.5, float( arrayIndex( pattern, index ) ) ),
+        mod( timeY, mul( beatLength, 0.5 ) ),
+      );
+      const phase = sub( mul( t, 50.0 ), mul( 3.0, exp( mul( -5.0, t ) ) ) );
+      const wave = glslTri( glslLofi( phase, 1.0 / 32.0 ) );
+      const amp = mul( 0.3, exp( mul( -0.5, t ) ), zcross( t, num( 9.0 ) ) );
+      addAssign( dest, mul( amp, wave ) );
+    }
+
     // breaks
     {
       const len = mul( beatLength, 0.5 );
@@ -101,7 +120,7 @@ export const musicVert = build( () => {
       const cell = glslLofi( timeZ, len );
       const dice = def( 'vec3', pcg3df( mul( 1E5, add( cell, vec3( 4.0, 5.0, 6.0 ) ) ) ) );
 
-      const decay = mix( -40.0, -20.0, sq( sw( dice, 'y' ) ) );
+      const decay = mix( -80.0, -20.0, sq( sw( dice, 'y' ) ) );
       const wave = hihat( t, decay );
       const amp = mul( 0.2, zcross( t, len ) );
       addAssign( dest, mul( amp, wave ) );
@@ -139,18 +158,19 @@ export const musicVert = build( () => {
       const t = mod( timeZ, len );
 
       unrollLoop( 7, ( i ) => {
-        const index = int( add( i, mul( floor( mod( mul( phaseZ, 4 ), 2 ) ), 7 ) ) );
+        const index = int( add( mod( i, 7 ), mul( floor( mod( mul( phaseZ, 4 ), 2 ) ), 7 ) ) );
         const rate = n2r( arrayIndex( chords, index ) );
+        const rateMul = def( 'vec3', pcg3df( mul( 1E5, add( i, vec3( 1, 2, 3 ) ) ) ) );
+        assign( rateMul, mix( vec3( 0.5 ), rateMul, 0.005 ) );
         const wave = vec2(
-          sample( num( 10.0 ), snesloop( mul( rate, 0.497, t ), 0.22, 0.53 ) ),
-          sample( num( 10.0 ), snesloop( mul( rate, 0.503, t ), 0.22, 0.53 ) ),
+          sample( num( 10.0 ), snesloop( mul( rate, sw( rateMul, 'x' ), t ), 0.22, 0.53 ) ),
+          sample( num( 10.0 ), snesloop( mul( rate, sw( rateMul, 'y' ), t ), 0.22, 0.53 ) ),
         );
-        const amp = mul( 0.1, zcross( t, len ) );
+        const amp = mul( 0.14, zcross( t, len ) );
         addAssign( dest, mul( amp, wave ) );
       } );
     }
 
-    // mulAssign( dest, 0.0 );
     // sinearp
     {
       const len = mul( beatLength, 0.5 );
@@ -164,14 +184,13 @@ export const musicVert = build( () => {
       unrollLoop( 3, ( i ) => {
         const index = mod( sub( mul( beatZ, 2 ), i ), 16 );
         const freq = n2f( arrayIndex( arps, int( index ) ) );
-        const freq2 = n2f( add( arrayIndex( arps, int( index ) ), -5 ) );
         const pan = div( vec2(
           sub( 2.0, mod( index, 2.0 ) ),
           add( 1.0, mod( index, 2.0 ) ),
         ), 2.0 );
         const wave = sin( mul( TAU, freq, 2.0, timeY ) );
-        const wave2 = sin( mul( TAU, freq2, 2.0, timeY ) );
-        const amp = mul( 0.05, exp( -i ), zcross( t, len ) );
+        const wave2 = sin( mul( TAU, freq, 1.5, timeY ) );
+        const amp = mul( 0.06, exp( -i ), zcross( t, len ) );
         addAssign( dest, mul( pan, amp, wave ) );
         addAssign( dest, mul( neg( pan ), amp, wave2 ) );
       } );
