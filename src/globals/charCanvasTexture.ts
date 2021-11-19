@@ -10,6 +10,7 @@ const texts = [
   [ 'asphalt', 'high-octane flavored' ],
   [ 'sp4ghet', 'angura girl with a torus-knot' ],
   [ 'fluid', 'the incomprehensible flow' ],
+  [ 'xorshit', 'shut up my brain' ],
 ];
 
 auto( 'FUI/yugopp', ( { progress } ) => {

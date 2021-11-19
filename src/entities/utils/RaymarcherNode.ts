@@ -27,7 +27,7 @@ export class RaymarcherNode extends SceneNode {
     super();
 
     // -- render -----------------------------------------------------------------------------------
-    const cube = genCube( { dimension: [ 0.5, 0.5, 0.5 ] } );
+    const cube = genCube( { dimension: [ 0.55, 0.55, 0.55 ] } );
 
     const geometry = new Geometry();
 

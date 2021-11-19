@@ -45,7 +45,7 @@ export const sssBoxFrag = ( tag: 'forward' | 'deferred' | 'depth' ): string => b
       freq: 1.3,
     } );
     addAssign( p, mul( 0.1, noise ) );
-    const d = def( 'float', sdbox( p, vec3( 0.33 ) ) );
+    const d = def( 'float', sdbox( p, vec3( 0.38 ) ) );
     subAssign( d, 0.07 );
 
     const voro = def( 'float', tern(

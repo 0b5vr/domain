@@ -3,6 +3,7 @@ import { BoundingBox } from './BoundingBox';
 import { Fluid } from './Fluid';
 import { Lambda } from '../heck/components/Lambda';
 import { MengerSponge } from './MengerSponge';
+import { RandomTextureCube } from './RandomTextureCube';
 import { RawVector3, quatFromAxisAngle, vecNormalize } from '@0b5vr/experimental';
 import { SSSBox } from './SSSBox';
 import { SceneNode } from '../heck/components/SceneNode';
@@ -23,6 +24,7 @@ export class Stuff extends SceneNode {
       new Asphalt(),
       new Sp4ghet(),
       new Fluid(),
+      new RandomTextureCube(),
     ].map( ( node, i ) => {
       auto( 'stuff', ( { value } ) => {
         node.active = value === i;
@@ -45,7 +47,7 @@ export class Stuff extends SceneNode {
 
     // -- bounding box -----------------------------------------------------------------------------
     const boundingBox = new BoundingBox();
-    boundingBox.transform.scale = [ 0.5, 0.5, 0.5 ];
+    boundingBox.transform.scale = [ 0.55, 0.55, 0.55 ];
     this.children.push( boundingBox );
   }
 }

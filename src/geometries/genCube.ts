@@ -5,6 +5,7 @@ import { gl, glCat } from '../globals/canvas';
 interface ResultGenCube {
   position: GLCatBuffer;
   normal: GLCatBuffer;
+  uv: GLCatBuffer;
   index: GLCatBuffer;
   count: number;
   mode: GLenum;
@@ -16,21 +17,28 @@ export function genCube( options?: {
 } ): ResultGenCube {
   const dimension = options?.dimension ?? [ 1, 1, 1 ];
 
-  const pos: number[] = [];
-  const nor: number[] = [];
-  const ind: number[] = [];
+  const arrayPosition: number[] = [];
+  const arrayNormal: number[] = [];
+  const arrayUv: number[] = [];
+  const arrayIndex: number[] = [];
 
-  const p = [
+  const chunkPosition = [
     [ -1, -1,  1 ],
     [  1, -1,  1 ],
     [ -1,  1,  1 ],
     [  1,  1,  1 ],
   ];
-  const n = [
+  const chunkNormal = [
     [ 0, 0, 1 ],
     [ 0, 0, 1 ],
     [ 0, 0, 1 ],
     [ 0, 0, 1 ],
+  ];
+  const chunkUv = [
+    [ 0, 0 ],
+    [ 1, 0 ],
+    [ 0, 1 ],
+    [ 1, 1 ],
   ];
 
   for ( let i = 0; i < 6; i ++ ) {
@@ -60,25 +68,30 @@ export function genCube( options?: {
       ];
     };
 
-    pos.push( ...p.map( rotate ).map( scale ).flat() );
-    nor.push( ...n.map( rotate ).flat() );
-    ind.push( ...[ 0, 1, 3, 0, 3, 2 ].map( ( v ) => v + 4 * i ) );
+    arrayPosition.push( ...chunkPosition.map( rotate ).map( scale ).flat() );
+    arrayNormal.push( ...chunkNormal.map( rotate ).flat() );
+    arrayUv.push( ...chunkUv.flat() );
+    arrayIndex.push( ...[ 0, 1, 3, 0, 3, 2 ].map( ( v ) => v + 4 * i ) );
   }
 
   const position = glCat.createBuffer();
-  position.setVertexbuffer( new Float32Array( pos ) );
+  position.setVertexbuffer( new Float32Array( arrayPosition ) );
 
   const normal = glCat.createBuffer();
-  normal.setVertexbuffer( new Float32Array( nor ) );
+  normal.setVertexbuffer( new Float32Array( arrayNormal ) );
+
+  const uv = glCat.createBuffer();
+  uv.setVertexbuffer( new Float32Array( arrayUv ) );
 
   const index = glCat.createBuffer();
-  index.setIndexbuffer( new Uint16Array( ind ) );
+  index.setIndexbuffer( new Uint16Array( arrayIndex ) );
 
   return {
     position,
     normal,
+    uv,
     index,
-    count: ind.length,
+    count: arrayIndex.length,
     mode: gl.TRIANGLES,
     indexType: gl.UNSIGNED_SHORT,
   };

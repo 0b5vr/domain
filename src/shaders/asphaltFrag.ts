@@ -39,14 +39,14 @@ export const asphaltFrag = ( tag: 'forward' | 'deferred' | 'depth' ): string => 
   const map = defFn( 'vec4', [ 'vec3' ], ( p ) => {
     addAssign( p, mul( 0.04, cyclicNoise( p ) ) );
 
-    const d = def( 'float', sdbox( p, vec3( 0.4 ) ) );
+    const d = def( 'float', sdbox( p, vec3( 0.45 ) ) );
     subAssign( d, 0.05 );
 
     const phase = add( dot( p, vec3( 10.0 ) ), time );
     const line = def( 'float', smoothstep( 0.1, 0.3, sin( phase ) ) );
 
     if ( tag !== 'depth' ) {
-      const N = normalize( max( sub( abs( p ), 0.4 ), 0.0 ) );
+      const N = normalize( max( sub( abs( p ), 0.45 ), 0.0 ) );
       const mapSurface = triplanarMapping(
         add( 0.5, mul( p, 0.5 ) ),
         N,
