@@ -118,6 +118,7 @@ const cameraStackOptions = {
   scenes: [ dog.root ],
   textureIBLLUT: iblLutCalc.texture,
   floor,
+  withPost: true,
 };
 
 const cameraStack = new CameraStack( {

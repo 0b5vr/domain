@@ -1,5 +1,4 @@
 import { AO_RESOLUTION_RATIO } from '../config';
-import { Bloom } from './Bloom';
 import { BufferRenderTarget } from '../heck/BufferRenderTarget';
 import { ComponentOptions } from '../heck/components/Component';
 import { Floor } from './Floor';
@@ -9,15 +8,15 @@ import { Lambda } from '../heck/components/Lambda';
 import { LightShaft, LightShaftTag } from './LightShaft';
 import { Material } from '../heck/Material';
 import { PerspectiveCamera } from '../heck/components/PerspectiveCamera';
-import { Post } from './Post';
+import { PostStack } from './PostStack';
 import { Quad } from '../heck/components/Quad';
 import { RenderTarget } from '../heck/RenderTarget';
 import { SceneNode } from '../heck/components/SceneNode';
-import { Swap, mat4Inverse, mat4Multiply } from '@0b5vr/experimental';
 import { createLightUniformsLambda } from './utils/createLightUniformsLambda';
 import { deferredShadeFrag } from '../shaders/deferredShadeFrag';
 import { dummyRenderTarget } from '../globals/dummyRenderTarget';
 import { gl } from '../globals/canvas';
+import { mat4Inverse, mat4Multiply } from '@0b5vr/experimental';
 import { quadGeometry } from '../globals/quadGeometry';
 import { quadVert } from '../shaders/quadVert';
 import { randomTexture } from '../globals/randomTexture';
@@ -26,43 +25,35 @@ import { ssaoFrag } from '../shaders/ssaoFrag';
 export interface CameraStackOptions extends ComponentOptions {
   scenes: SceneNode[];
   target: RenderTarget;
-  floor: Floor;
   textureIBLLUT: GLCatTexture;
+  floor?: Floor;
   // textureEnv: GLCatTexture;
+  withPost?: boolean;
 }
 
 export class CameraStack extends SceneNode {
   public deferredCamera: PerspectiveCamera;
   public forwardCamera: PerspectiveCamera;
+  public textureIBLLUT: GLCatTexture;
 
   public constructor( options: CameraStackOptions ) {
     super( options );
 
-    const { target, scenes, textureIBLLUT, floor } = options;
+    const { target, scenes, textureIBLLUT, floor, withPost } = options;
+    this.textureIBLLUT = textureIBLLUT;
 
-    // -- swap -------------------------------------------------------------------------------------
-    const swapOptions = {
+    const cameraTarget = withPost ? new BufferRenderTarget( {
       width: target.width,
       height: target.height,
-    };
-
-    const postSwap = new Swap(
-      new BufferRenderTarget( {
-        ...swapOptions,
-        name: process.env.DEV && `${ this.name }/postSwap0`,
-      } ),
-      new BufferRenderTarget( {
-        ...swapOptions,
-        name: process.env.DEV && `${ this.name }/postSwap1`,
-      } ),
-    );
+      name: process.env.DEV && `${ this.name }/cameraTarget`,
+    } ) : target;
 
     // -- deferred g rendering ---------------------------------------------------------------------
     const deferredTarget = new BufferRenderTarget( {
       width: target.width,
       height: target.height,
       numBuffers: 4,
-      name: process.env.DEV && 'DeferredCamera/cameraTarget',
+      name: process.env.DEV && `${ this.name }/deferredTarget`,
       filter: gl.NEAREST,
     } );
 
@@ -79,7 +70,7 @@ export class CameraStack extends SceneNode {
     const aoTarget = new BufferRenderTarget( {
       width: AO_RESOLUTION_RATIO * target.width,
       height: AO_RESOLUTION_RATIO * target.height,
-      name: process.env.DEV && 'DeferredCamera/aoTarget',
+      name: process.env.DEV && `${ this.name }/aoTarget`,
     } );
 
     const aoMaterial = new Material(
@@ -173,7 +164,7 @@ export class CameraStack extends SceneNode {
 
     const shadingQuad = new Quad( {
       material: shadingMaterial,
-      target: postSwap.i,
+      target: cameraTarget,
       name: process.env.DEV && 'shadingQuad',
       clear: [],
     } );
@@ -197,7 +188,7 @@ export class CameraStack extends SceneNode {
 
     const forwardCamera = this.forwardCamera = new PerspectiveCamera( {
       scenes: scenes,
-      renderTarget: postSwap.i,
+      renderTarget: cameraTarget,
       near: 0.1,
       far: 20.0,
       clear: false,
@@ -206,24 +197,17 @@ export class CameraStack extends SceneNode {
     } );
 
     // -- floor camera -----------------------------------------------------------------------------
-    const floorCamera = new FloorCamera( this, forwardCamera, floor );
+    const floorCamera = floor && new FloorCamera( this, floor );
 
     // -- post -------------------------------------------------------------------------------------
-    postSwap.swap();
-    const bloom = new Bloom( {
-      input: postSwap.o,
-      target: postSwap.i,
-    } );
-
-    postSwap.swap();
-    const post = new Post( {
-      input: postSwap.o,
-      target: target,
+    const postStack = withPost && new PostStack( {
+      input: cameraTarget as BufferRenderTarget,
+      target,
     } );
 
     // -- components -------------------------------------------------------------------------------
     this.children = [
-      floorCamera,
+      ...( floorCamera ? [ floorCamera ] : [] ),
       deferredCamera,
       lambdaAoSetCameraUniforms,
       aoQuad,
@@ -232,8 +216,7 @@ export class CameraStack extends SceneNode {
       shadingQuad,
       lambdaUpdateLightShaftDeferredRenderTarget,
       forwardCamera,
-      bloom,
-      post,
+      ...( postStack ? [ postStack ] : [] ),
     ];
   }
 }

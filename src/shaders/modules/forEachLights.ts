@@ -1,4 +1,6 @@
-import { GLSLExpression, arrayIndex, defUniformArrayNamed, defUniformNamed, forBreak, forLoop, gte, ifThen } from '../../shader-builder/shaderBuilder';
+import { GLSLExpression, arrayIndex, cache, defUniformArrayNamed, defUniformNamed, forBreak, forLoop, gte, ifThen } from '../../shader-builder/shaderBuilder';
+
+const symbol = Symbol();
 
 export const forEachLights: (
   fn: ( params: {
@@ -10,12 +12,21 @@ export const forEachLights: (
     lightPV: GLSLExpression<'mat4'>,
   } ) => void,
 ) => void = ( fn ) => {
-  const lightCount = defUniformNamed( 'int', 'lightCount' );
-  const arrLightPos = defUniformArrayNamed( 'vec3', 'lightPos', 8 );
-  const arrLightColor = defUniformArrayNamed( 'vec3', 'lightColor', 8 );
-  const arrLightNearFar = defUniformArrayNamed( 'vec2', 'lightNearFar', 8 );
-  const arrLightParams = defUniformArrayNamed( 'vec4', 'lightParams', 8 );
-  const arrLightPV = defUniformArrayNamed( 'mat4', 'lightPV', 8 );
+  const [
+    lightCount,
+    arrLightPos,
+    arrLightColor,
+    arrLightNearFar,
+    arrLightParams,
+    arrLightPV,
+  ] = cache( symbol, () => [
+    defUniformNamed( 'int', 'lightCount' ),
+    defUniformArrayNamed( 'vec3', 'lightPos', 8 ),
+    defUniformArrayNamed( 'vec3', 'lightColor', 8 ),
+    defUniformArrayNamed( 'vec2', 'lightNearFar', 8 ),
+    defUniformArrayNamed( 'vec4', 'lightParams', 8 ),
+    defUniformArrayNamed( 'mat4', 'lightPV', 8 ),
+  ] );
 
   forLoop( 8, ( iLight ) => {
     ifThen( gte( iLight, lightCount ), () => { forBreak(); } );

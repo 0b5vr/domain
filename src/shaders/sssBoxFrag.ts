@@ -1,19 +1,17 @@
-import { DIELECTRIC_SPECULAR, INV_PI, ONE_SUB_DIELECTRIC_SPECULAR } from '../utils/constants';
-import { MTL_PRESHADED_PUNCTUALS } from './deferredShadeFrag';
+import { DIELECTRIC_SPECULAR, INV_PI } from '../utils/constants';
+import { MTL_PBR_EMISSIVE3_ROUGHNESS } from './deferredShadeFrag';
 import { add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, discard, div, dot, glFragCoord, glFragDepth, gt, ifThen, insert, length, main, max, mix, mul, neg, normalize, retFn, sq, sub, subAssign, sw, tern, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcDepth } from './modules/calcDepth';
 import { calcL } from './modules/calcL';
 import { calcNormal } from './modules/calcNormal';
 import { calcSS } from './modules/calcSS';
 import { cyclicNoise } from './modules/cyclicNoise';
-import { dGGX } from './modules/dGGX';
 import { forEachLights } from './modules/forEachLights';
 import { fresnelSchlick } from './modules/fresnelSchlick';
 import { glslDefRandom } from './modules/glslDefRandom';
 import { raymarch } from './modules/raymarch';
 import { sdbox } from './modules/sdbox';
 import { setupRoRd } from './modules/setupRoRd';
-import { vGGX } from './modules/vGGX';
 import { voronoi3d } from './modules/voronoi3d';
 
 export const sssBoxFrag = ( tag: 'forward' | 'deferred' | 'depth' ): string => build( () => {
@@ -93,9 +91,8 @@ export const sssBoxFrag = ( tag: 'forward' | 'deferred' | 'depth' ): string => b
     const V = def( 'vec3', neg( rd ) );
     const N = def( 'vec3', calcNormal( { rp, map } ) );
     const roughness = 0.1;
-    const metallic = 0.0;
-    const baseColor = def( 'vec3', mul( 0.5, vec3( 0.9, 0.7, 0.4 ) ) );
-    const subsurfaceColor = mul( 0.5, vec3( 0.7, 0.04, 0.04 ) );
+    const baseColor = def( 'vec3', mul( 0.7, vec3( 0.9, 0.7, 0.4 ) ) );
+    const subsurfaceColor = mul( 0.3, vec3( 0.7, 0.04, 0.04 ) );
 
     assign( baseColor, mix(
       baseColor,
@@ -107,68 +104,46 @@ export const sssBoxFrag = ( tag: 'forward' | 'deferred' | 'depth' ): string => b
     assign( shouldCalcVoronoi, false );
 
     if ( tag === 'forward' || tag === 'deferred' ) {
-      const col = def( 'vec3', vec3( 0.0 ) );
+      const ssAccum = def( 'vec3', vec3( 0.0 ) );
 
-      const albedo = def( 'vec3', mix(
-        mul( baseColor, ONE_SUB_DIELECTRIC_SPECULAR ),
-        vec3( 0.0 ),
-        metallic,
-      ) );
-      assign( albedo, mix(
-        albedo,
-        vec3( 0.0 ),
-        mul( 0.1, sw( isect, 'y' ) )
-      ) );
-      const f0 = mix( DIELECTRIC_SPECULAR, baseColor, metallic );
+      const f0 = DIELECTRIC_SPECULAR;
       const f90 = vec3( 1.0 );
 
       forEachLights( ( { lightPos, lightColor } ) => {
-        const [ L, lenL ] = calcL(
+        const [ L ] = calcL(
           mul( modelMatrixT3, lightPos ),
           rp,
         );
 
-        const H = def( 'vec3', normalize( add( L, V ) ) );
-
-        const dotNL = def( 'float', max( dot( N, L ), 0.0 ) );
-        const dotNV = def( 'float', max( dot( N, V ), 0.0 ) );
-        const dotNH = def( 'float', max( dot( N, H ), 0.0 ) );
-        const dotVH = def( 'float', max( dot( V, H ), 0.0 ) );
-
-        const roughnessSq = mul( roughness, roughness );
-
-        const lightCol = lightColor;
+        const [ _L, lenL ] = calcL(
+          lightPos,
+          sw( mul( modelMatrix, vec4( rp, 1.0 ) ), 'xyz' ),
+        );
         const lightDecay = div( 1.0, sq( lenL ) );
-        const irradiance = def( 'vec3', mul( lightCol, dotNL, lightDecay ) );
 
+        const H = def( 'vec3', normalize( add( L, V ) ) );
+        const dotVH = def( 'float', max( dot( V, H ), 0.0 ) );
         const FSpec = fresnelSchlick( dotVH, f0, f90 );
-        const Vis = vGGX( dotNL, dotNV, roughnessSq );
-        const D = dGGX( dotNH, roughnessSq );
 
-        const ss = def( 'vec3', mul(
-          lightCol,
+        addAssign( ssAccum, mul(
+          lightColor,
           lightDecay,
           subsurfaceColor,
           calcSS( { rp, V, L, N, map, intensity: 2.0 } ),
           INV_PI,
-        ) );
-
-        const diffuse = mul( albedo, INV_PI );
-        const specular = vec3( mul( Vis, D ) );
-
-        addAssign( col, mix(
-          add( ss, mul( irradiance, diffuse ) ),
-          mul( irradiance, specular ),
-          FSpec,
+          sub( 1.0, FSpec ),
         ) );
       } );
 
-      assign( fragColor, vec4( col, 1.0 ) );
+      assign( fragColor, vec4( baseColor, 1.0 ) );
 
       if ( tag === 'deferred' ) {
         assign( fragPosition, vec4( sw( modelPos, 'xyz' ), depth ) );
-        assign( fragNormal, vec4( normalize( mul( normalMatrix, N ) ), MTL_PRESHADED_PUNCTUALS ) );
-        assign( fragMisc, vec4( vec3( 0.0 ), roughness ) );
+        assign( fragNormal, vec4(
+          normalize( mul( normalMatrix, N ) ),
+          MTL_PBR_EMISSIVE3_ROUGHNESS,
+        ) );
+        assign( fragMisc, vec4( ssAccum, roughness ) );
       }
 
     } else if ( tag === 'depth' ) {

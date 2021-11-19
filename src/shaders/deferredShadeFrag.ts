@@ -13,7 +13,7 @@ export const MTL_UNLIT = 1;
  */
 export const MTL_PBR_EMISSIVE = 2;
 
-export const MTL_PRESHADED_PUNCTUALS = 3;
+export const MTL_PBR_EMISSIVE3_ROUGHNESS = 3;
 
 const EPSILON = 1E-3;
 
@@ -139,8 +139,9 @@ export const deferredShadeFrag = build( () => {
         assign( outColor, shadePBR( sw( tex3, 'x' ), sw( tex3, 'y' ) ) );
         addAssign( outColor, mul( sw( tex3, 'z' ), dotNV, color ) );
       } ],
-      [ eq( mtlId, MTL_PRESHADED_PUNCTUALS ), () => {
-        assign( outColor, mul( color, ao ) );
+      [ eq( mtlId, MTL_PBR_EMISSIVE3_ROUGHNESS ), () => {
+        assign( outColor, shadePBR( sw( tex3, 'w' ), 0.0 ) );
+        addAssign( outColor, sw( tex3, 'xyz' ) );
       } ],
     );
 

@@ -75,7 +75,7 @@ export const floorFrag = ( tag: 'forward' | 'depth' ): string => build( () => {
     const roughness = mix( 0.1, 0.2, noise );
     const metallic = 0.1;
 
-    const lod = add( 1.0, mul( 4.0, noise ) ); // physically cringe rendering
+    const lod = mul( 5.0, noise ); // physically cringe rendering
     const tex = def( 'vec4', textureLod( samplerMirror, screenUv, lod ) );
 
     const V = normalize( sub( cameraPos, posXYZ ) );
