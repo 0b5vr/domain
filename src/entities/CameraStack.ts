@@ -1,4 +1,4 @@
-import { AO_RESOLUTION_RATIO } from '../config';
+import { AO_RESOLUTION_RATIO, FAR, NEAR } from '../config';
 import { BufferRenderTarget } from '../heck/BufferRenderTarget';
 import { ComponentOptions } from '../heck/components/Component';
 import { Floor } from './Floor';
@@ -60,8 +60,8 @@ export class CameraStack extends SceneNode {
     const deferredCamera = this.deferredCamera = new PerspectiveCamera( {
       scenes: scenes,
       renderTarget: deferredTarget,
-      near: 0.1,
-      far: 20.0,
+      near: NEAR,
+      far: FAR,
       name: process.env.DEV && 'deferredCamera',
       materialTag: 'deferred',
     } );
@@ -189,8 +189,8 @@ export class CameraStack extends SceneNode {
     const forwardCamera = this.forwardCamera = new PerspectiveCamera( {
       scenes: scenes,
       renderTarget: cameraTarget,
-      near: 0.1,
-      far: 20.0,
+      near: NEAR,
+      far: FAR,
       clear: false,
       name: process.env.DEV && 'forwardCamera',
       materialTag: 'forward',

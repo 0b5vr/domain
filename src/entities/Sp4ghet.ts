@@ -1,4 +1,5 @@
 import { RaymarcherNode } from './utils/RaymarcherNode';
+import { objectVert } from '../shaders/objectVert';
 import { sp4ghetFrag } from '../shaders/sp4ghetFrag';
 
 export class Sp4ghet extends RaymarcherNode {
@@ -13,11 +14,10 @@ export class Sp4ghet extends RaymarcherNode {
           ],
           () => {
             const { cubemap, deferred, depth } = this.materials;
-            const vert = this.vert;
 
-            cubemap.replaceShader( vert, sp4ghetFrag( 'forward' ) );
-            deferred.replaceShader( vert, sp4ghetFrag( 'deferred' ) );
-            depth.replaceShader( vert, sp4ghetFrag( 'depth' ) );
+            cubemap.replaceShader( objectVert, sp4ghetFrag( 'forward' ) );
+            deferred.replaceShader( objectVert, sp4ghetFrag( 'deferred' ) );
+            depth.replaceShader( objectVert, sp4ghetFrag( 'depth' ) );
           },
         );
       }

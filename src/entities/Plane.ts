@@ -33,14 +33,8 @@ export class Plane extends SceneNode {
     geometry.mode = gl.TRIANGLE_STRIP;
 
     // -- material ---------------------------------------------------------------------------------
-    const locations = {
-      locationPosition: 0,
-      locationNormal: 1,
-      locationUv: 2,
-    };
-
     const forward = new Material(
-      objectVert( locations ),
+      objectVert,
       uvFrag,
       {
         initOptions: { geometry, target: dummyRenderTarget },

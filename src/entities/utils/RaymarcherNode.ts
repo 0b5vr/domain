@@ -1,9 +1,5 @@
-import { BoundingBox } from '../BoundingBox';
-import { Geometry } from '../../heck/Geometry';
-import { Lambda } from '../../heck/components/Lambda';
 import { Material } from '../../heck/Material';
 import { Mesh } from '../../heck/components/Mesh';
-import { RawVector3, quatFromAxisAngle, vecNormalize } from '@0b5vr/experimental';
 import { SceneNode } from '../../heck/components/SceneNode';
 import { createLightUniformsLambda } from './createLightUniformsLambda';
 import { createRaymarchCameraUniformsLambda } from './createRaymarchCameraUniformsLambda';
@@ -19,31 +15,16 @@ export class RaymarcherNode extends SceneNode {
     depth: Material,
   };
 
-  public vert: string;
-
   public constructor(
     builder: ( tag: 'forward' | 'deferred' | 'depth' ) => string,
   ) {
     super();
 
     // -- render -----------------------------------------------------------------------------------
-    const cube = genCube( { dimension: [ 0.55, 0.55, 0.55 ] } );
-
-    const geometry = new Geometry();
-
-    geometry.vao.bindVertexbuffer( cube.position, 0, 3 );
-    geometry.vao.bindIndexbuffer( cube.index );
-
-    geometry.count = cube.count;
-    geometry.mode = cube.mode;
-    geometry.indexType = cube.indexType;
-
-    const vert = this.vert = objectVert( {
-      locationPosition: 0,
-    } );
+    const { geometry } = genCube( { dimension: [ 0.55, 0.55, 0.55 ] } );
 
     const cubemap = new Material(
-      vert,
+      objectVert,
       builder( 'forward' ),
       {
         initOptions: { geometry, target: dummyRenderTargetFourDrawBuffers },
@@ -52,7 +33,7 @@ export class RaymarcherNode extends SceneNode {
     cubemap.addUniformTextures( 'samplerRandom', randomTexture.texture );
 
     const deferred = new Material(
-      vert,
+      objectVert,
       builder( 'deferred' ),
       {
         initOptions: { geometry, target: dummyRenderTargetFourDrawBuffers },
@@ -61,7 +42,7 @@ export class RaymarcherNode extends SceneNode {
     deferred.addUniformTextures( 'samplerRandom', randomTexture.texture );
 
     const depth = new Material(
-      vert,
+      objectVert,
       builder( 'depth' ),
       {
         initOptions: { geometry, target: dummyRenderTarget },

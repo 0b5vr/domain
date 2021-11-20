@@ -1,15 +1,21 @@
 import { Geometry } from '../heck/Geometry';
 import { Material } from '../heck/Material';
 import { Mesh } from '../heck/components/Mesh';
-import { SceneNode } from '../heck/components/SceneNode';
+import { SceneNode, SceneNodeOptions } from '../heck/components/SceneNode';
 import { boundingBoxFrag } from '../shaders/boundingBoxFrag';
 import { dummyRenderTarget } from '../globals/dummyRenderTarget';
 import { gl, glCat } from '../globals/canvas';
 import { objectVert } from '../shaders/objectVert';
 
+export interface BoundingBoxOptions extends SceneNodeOptions {
+  dashRatio?: number;
+}
+
 export class BoundingBox extends SceneNode {
-  public constructor() {
-    super();
+  public constructor( options?: BoundingBoxOptions ) {
+    super( options );
+
+    const dashRatio = options?.dashRatio ?? 0.5;
 
     // -- create buffers ---------------------------------------------------------------------------
     const arrayPos = [
@@ -54,12 +60,8 @@ export class BoundingBox extends SceneNode {
     geometry.indexType = gl.UNSIGNED_SHORT;
 
     // -- create materials -------------------------------------------------------------------------
-    const locations = {
-      locationPosition: 0,
-    };
-
     const forward = new Material(
-      objectVert( { ...locations } ),
+      objectVert,
       boundingBoxFrag( 'forward' ),
       {
         initOptions: { geometry, target: dummyRenderTarget },
@@ -67,7 +69,7 @@ export class BoundingBox extends SceneNode {
     );
 
     const depth = new Material(
-      objectVert( { ...locations } ),
+      objectVert,
       boundingBoxFrag( 'shadow' ),
       {
         initOptions: { geometry, target: dummyRenderTarget },
@@ -75,6 +77,9 @@ export class BoundingBox extends SceneNode {
     );
 
     const materials = { forward, cubemap: forward, depth };
+
+    forward.addUniform( 'dashRatio', '1f', dashRatio );
+    depth.addUniform( 'dashRatio', '1f', dashRatio );
 
     if ( process.env.DEV ) {
       if ( module.hot ) {
@@ -84,8 +89,8 @@ export class BoundingBox extends SceneNode {
             '../shaders/boundingBoxFrag',
           ],
           () => {
-            forward.replaceShader( objectVert( { ...locations } ), boundingBoxFrag( 'forward' ) );
-            depth.replaceShader( objectVert( { ...locations } ), boundingBoxFrag( 'shadow' ) );
+            forward.replaceShader( objectVert, boundingBoxFrag( 'forward' ) );
+            depth.replaceShader( objectVert, boundingBoxFrag( 'shadow' ) );
           },
         );
       }

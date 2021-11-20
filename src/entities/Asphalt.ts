@@ -4,6 +4,7 @@ import { ShaderRenderTarget } from './utils/ShaderRenderTarget';
 import { asphaltFrag } from '../shaders/asphaltFrag';
 import { asphaltSurfaceFrag } from '../shaders/asphaltSurfaceFrag';
 import { gl } from '../globals/canvas';
+import { objectVert } from '../shaders/objectVert';
 import { quadVert } from '../shaders/quadVert';
 
 export class Asphalt extends RaymarcherNode {
@@ -45,11 +46,10 @@ export class Asphalt extends RaymarcherNode {
           ],
           () => {
             const { cubemap, deferred, depth } = this.materials;
-            const vert = this.vert;
 
-            cubemap.replaceShader( vert, asphaltFrag( 'forward' ) );
-            deferred.replaceShader( vert, asphaltFrag( 'deferred' ) );
-            depth.replaceShader( vert, asphaltFrag( 'depth' ) );
+            cubemap.replaceShader( objectVert, asphaltFrag( 'forward' ) );
+            deferred.replaceShader( objectVert, asphaltFrag( 'deferred' ) );
+            depth.replaceShader( objectVert, asphaltFrag( 'depth' ) );
           },
         );
       }

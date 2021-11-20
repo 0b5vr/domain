@@ -1,4 +1,4 @@
-import { add, assign, build, def, defInNamed, defOut, defUniformNamed, discard, ifThen, insert, length, lt, main, mul, sin, sub, sw, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { add, assign, build, def, defInNamed, defOut, defUniformNamed, discard, fract, ifThen, insert, length, lt, main, mul, sub, sw, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcDepth } from './modules/calcDepth';
 
 export const boundingBoxFrag = ( tag: 'forward' | 'shadow' ): string => build( () => {
@@ -9,6 +9,7 @@ export const boundingBoxFrag = ( tag: 'forward' | 'shadow' ): string => build( (
 
   const fragColor = defOut( 'vec4' );
 
+  const dashRatio = defUniformNamed( 'float', 'dashRatio' );
   const time = defUniformNamed( 'float', 'time' );
   const cameraNearFar = defUniformNamed( 'vec2', 'cameraNearFar' );
   const cameraPos = defUniformNamed( 'vec3', 'cameraPos' );
@@ -19,9 +20,9 @@ export const boundingBoxFrag = ( tag: 'forward' | 'shadow' ): string => build( (
       sw( vPositionWithoutModel, 'y' ),
       sw( vPositionWithoutModel, 'z' ),
     );
-    const pattern = sin( add( mul( phase, 40.0 ), mul( 10.0, time ) ) );
+    const pattern = fract( add( mul( phase, 10.0 ), mul( 2.5, time ) ) );
 
-    ifThen( lt( pattern, 0.0 ), () => discard() );
+    ifThen( lt( pattern, dashRatio ), () => discard() );
 
     if ( tag === 'forward' ) {
       const color = def( 'vec3', vec3( 1.0 ) );

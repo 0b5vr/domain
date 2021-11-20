@@ -11,6 +11,7 @@ const texts = [
   [ 'sp4ghet', 'angura girl with a torus-knot' ],
   [ 'fluid', 'the incomprehensible flow' ],
   [ 'xorshit', 'shut up my brain' ],
+  [ 'webpack', 'still suffering in the minifier hell' ],
 ];
 
 auto( 'FUI/yugopp', ( { progress } ) => {

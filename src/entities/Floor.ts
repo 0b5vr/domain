@@ -6,6 +6,7 @@ import { Mesh } from '../heck/components/Mesh';
 import { SceneNode } from '../heck/components/SceneNode';
 import { TRIANGLE_STRIP_QUAD_3D, TRIANGLE_STRIP_QUAD_NORMAL, TRIANGLE_STRIP_QUAD_UV } from '@0b5vr/experimental';
 import { createLightUniformsLambda } from './utils/createLightUniformsLambda';
+import { depthFrag } from '../shaders/depthFrag';
 import { dummyRenderTarget } from '../globals/dummyRenderTarget';
 import { floorFrag } from '../shaders/floorFrag';
 import { gl, glCat } from '../globals/canvas';
@@ -45,23 +46,17 @@ export class Floor extends SceneNode {
     geometry.mode = gl.TRIANGLE_STRIP;
 
     // -- create materials -------------------------------------------------------------------------
-    const locations = {
-      locationPosition: 0,
-      locationNormal: 1,
-      locationUv: 2,
-    };
-
     const forward = this.forward = new Material(
-      objectVert( { ...locations } ),
-      floorFrag( 'forward' ),
+      objectVert,
+      floorFrag,
       {
         initOptions: { geometry, target: dummyRenderTarget },
       },
     );
 
     const depth = new Material(
-      objectVert( { ...locations } ),
-      floorFrag( 'depth' ),
+      objectVert,
+      depthFrag,
       {
         initOptions: { geometry, target: dummyRenderTarget },
       },
@@ -79,8 +74,7 @@ export class Floor extends SceneNode {
             '../shaders/floorFrag',
           ],
           () => {
-            forward.replaceShader( objectVert( { ...locations } ), floorFrag( 'forward' ) );
-            depth.replaceShader( objectVert( { ...locations } ), floorFrag( 'depth' ) );
+            forward.replaceShader( objectVert, floorFrag );
           },
         );
       }

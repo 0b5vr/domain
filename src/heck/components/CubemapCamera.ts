@@ -1,6 +1,7 @@
 import { Camera } from './Camera';
 import { ComponentOptions, ComponentUpdateEvent } from './Component';
 import { CubemapRenderTarget } from '../CubemapRenderTarget';
+import { FAR, NEAR } from '../../config';
 import { MaterialTag } from '../Material';
 import { RawQuaternion, mat4Compose, mat4Perspective } from '@0b5vr/experimental';
 import { SceneNode } from './SceneNode';
@@ -35,8 +36,8 @@ export class CubemapCamera extends Camera {
   public constructor( options: CubemapCameraOptions ) {
     const projectionMatrix = mat4Perspective(
       90.0,
-      options.near ?? 0.1,
-      options.far ?? 20.0,
+      options.near ?? NEAR,
+      options.far ?? FAR,
     );
 
     super( {
@@ -48,8 +49,8 @@ export class CubemapCamera extends Camera {
       materialTag: options.materialTag,
     } );
 
-    this.near = options.near ?? 0.1;
-    this.far = options.far ?? 20.0;
+    this.near = options.near ?? NEAR;
+    this.far = options.far ?? FAR;
   }
 
   protected __updateImpl( event: ComponentUpdateEvent ): void {

@@ -1,7 +1,7 @@
-import { Geometry } from '../heck/Geometry';
 import { Material } from '../heck/Material';
 import { Mesh } from '../heck/components/Mesh';
 import { SceneNode } from '../heck/components/SceneNode';
+import { depthFrag } from '../shaders/depthFrag';
 import { dummyRenderTarget } from '../globals/dummyRenderTarget';
 import { genCube } from '../geometries/genCube';
 import { objectVert } from '../shaders/objectVert';
@@ -13,22 +13,20 @@ export class RandomTextureCube extends SceneNode {
     super();
 
     // -- geometry ---------------------------------------------------------------------------------
-    const cube = genCube( { dimension: [ 0.5, 0.5, 0.5 ] } );
-
-    const geometry = new Geometry();
-
-    geometry.vao.bindVertexbuffer( cube.position, 0, 3 );
-    geometry.vao.bindVertexbuffer( cube.uv, 2, 2 );
-    geometry.vao.bindIndexbuffer( cube.index );
-
-    geometry.count = cube.count;
-    geometry.mode = cube.mode;
-    geometry.indexType = cube.indexType;
+    const { geometry } = genCube( { dimension: [ 0.5, 0.5, 0.5 ] } );
 
     // -- materials --------------------------------------------------------------------------------
     const forward = new Material(
-      objectVert( { locationPosition: 0, locationUv: 2 } ),
+      objectVert,
       textureFrag,
+      {
+        initOptions: { geometry, target: dummyRenderTarget },
+      }
+    );
+
+    const depth = new Material(
+      objectVert,
+      depthFrag,
       {
         initOptions: { geometry, target: dummyRenderTarget },
       }
@@ -36,7 +34,7 @@ export class RandomTextureCube extends SceneNode {
 
     forward.addUniformTextures( 'sampler0', randomTexture.texture );
 
-    const materials = { forward };
+    const materials = { forward, depth };
 
     if ( process.env.DEV ) {
       if ( module.hot ) {
@@ -46,7 +44,7 @@ export class RandomTextureCube extends SceneNode {
           ],
           () => {
             forward.replaceShader(
-              objectVert( { locationPosition: 0, locationUv: 2 } ),
+              objectVert,
               textureFrag,
             );
           },

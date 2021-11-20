@@ -11,8 +11,11 @@ export const MTL_UNLIT = 1;
 /**
  * vec4( roughness, metallic, emissive, reserved )
  */
-export const MTL_PBR_EMISSIVE = 2;
+export const MTL_PBR_ROUGHNESS_METALLIC = 2;
 
+/**
+ * vec4( emissiveRGB, roughness )
+ */
 export const MTL_PBR_EMISSIVE3_ROUGHNESS = 3;
 
 const EPSILON = 1E-3;
@@ -135,7 +138,7 @@ export const deferredShadeFrag = build( () => {
       [ eq( mtlId, MTL_UNLIT ), () => {
         assign( outColor, color );
       } ],
-      [ eq( mtlId, MTL_PBR_EMISSIVE ), () => {
+      [ eq( mtlId, MTL_PBR_ROUGHNESS_METALLIC ), () => {
         assign( outColor, shadePBR( sw( tex3, 'x' ), sw( tex3, 'y' ) ) );
         addAssign( outColor, mul( sw( tex3, 'z' ), dotNV, color ) );
       } ],

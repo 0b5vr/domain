@@ -1,5 +1,6 @@
 import { RaymarcherNode } from './utils/RaymarcherNode';
 import { mengerSpongeFrag } from '../shaders/mengerSpongeFrag';
+import { objectVert } from '../shaders/objectVert';
 
 export class MengerSponge extends RaymarcherNode {
   public constructor() {
@@ -13,11 +14,10 @@ export class MengerSponge extends RaymarcherNode {
           ],
           () => {
             const { cubemap, deferred, depth } = this.materials;
-            const vert = this.vert;
 
-            cubemap.replaceShader( vert, mengerSpongeFrag( 'forward' ) );
-            deferred.replaceShader( vert, mengerSpongeFrag( 'deferred' ) );
-            depth.replaceShader( vert, mengerSpongeFrag( 'depth' ) );
+            cubemap.replaceShader( objectVert, mengerSpongeFrag( 'forward' ) );
+            deferred.replaceShader( objectVert, mengerSpongeFrag( 'deferred' ) );
+            depth.replaceShader( objectVert, mengerSpongeFrag( 'depth' ) );
           },
         );
       }

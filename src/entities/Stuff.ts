@@ -8,6 +8,7 @@ import { RawVector3, quatFromAxisAngle, vecNormalize } from '@0b5vr/experimental
 import { SSSBox } from './SSSBox';
 import { SceneNode } from '../heck/components/SceneNode';
 import { Sp4ghet } from './Sp4ghet';
+import { WebpackCube } from './WebpackCube';
 import { auto } from '../globals/automaton';
 
 export class Stuff extends SceneNode {
@@ -25,7 +26,14 @@ export class Stuff extends SceneNode {
       new Sp4ghet(),
       new Fluid(),
       new RandomTextureCube(),
+      new WebpackCube(),
     ].map( ( node, i ) => {
+      if ( process.env.DEV ) {
+        const current = auto( 'stuff' );
+        node.active = current === i;
+        node.visible = current === i;
+      }
+
       auto( 'stuff', ( { value } ) => {
         node.active = value === i;
         node.visible = value === i;

@@ -1,27 +1,23 @@
 import { assign, build, def, defIn, defOutNamed, defUniformNamed, div, divAssign, glPosition, main, mul, normalize, sw, vec4 } from '../shader-builder/shaderBuilder';
 
-export const objectVert = ( { locationPosition, locationNormal, locationUv }: {
-  locationPosition?: number,
-  locationNormal?: number,
-  locationUv?: number,
-} = {} ): string => build( () => {
-  const position = defIn( 'vec3', locationPosition ?? 0 );
-  const normal = locationNormal != null ? defIn( 'vec3', locationNormal ) : null;
-  const uv = locationUv != null ? defIn( 'vec2', locationUv ) : null;
+export const objectVert = build( () => {
+  const position = defIn( 'vec3', 0 );
+  const normal = defIn( 'vec3', 1 );
+  const uv = defIn( 'vec2', 2 );
 
   const vPositionWithoutModel = defOutNamed( 'vec4', 'vPositionWithoutModel' );
   const vProjPosition = defOutNamed( 'vec4', 'vProjPosition' );
   const vViewPosition = defOutNamed( 'vec4', 'vViewPosition' );
   const vPosition = defOutNamed( 'vec4', 'vPosition' );
-  const vNormal = normal != null ? defOutNamed( 'vec3', 'vNormal' ) : null;
-  const vUv = uv != null ? defOutNamed( 'vec2', 'vUv' ) : null;
+  const vNormal = defOutNamed( 'vec3', 'vNormal' );
+  const vUv = defOutNamed( 'vec2', 'vUv' );
   const vDepth = defOutNamed( 'float', 'vDepth' );
 
   const resolution = defUniformNamed( 'vec2', 'resolution' );
   const projectionMatrix = defUniformNamed( 'mat4', 'projectionMatrix' );
   const viewMatrix = defUniformNamed( 'mat4', 'viewMatrix' );
   const modelMatrix = defUniformNamed( 'mat4', 'modelMatrix' );
-  const normalMatrix = normal != null ? defUniformNamed( 'mat3', 'normalMatrix' ) : null;
+  const normalMatrix = defUniformNamed( 'mat3', 'normalMatrix' );
 
   main( () => {
     assign( vPositionWithoutModel, vec4( position, 1.0 ) );
@@ -37,15 +33,11 @@ export const objectVert = ( { locationPosition, locationNormal, locationUv }: {
     divAssign( sw( outPos, 'x' ), aspect );
     assign( glPosition, outPos );
 
-    if ( normal != null ) {
-      assign(
-        vNormal!,
-        normalize( mul( normalMatrix!, normal ) ),
-      );
-    }
+    assign(
+      vNormal!,
+      normalize( mul( normalMatrix!, normal ) ),
+    );
 
-    if ( uv != null ) {
-      assign( vUv!, uv );
-    }
+    assign( vUv!, uv );
   } );
 } );

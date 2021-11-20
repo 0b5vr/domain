@@ -1,4 +1,4 @@
-import { MTL_PBR_EMISSIVE } from './deferredShadeFrag';
+import { MTL_PBR_ROUGHNESS_METALLIC } from './deferredShadeFrag';
 import { abs, add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, discard, div, dot, glFragCoord, glFragDepth, gt, ifThen, insert, length, main, max, mod, mul, neg, normalize, retFn, sin, sq, step, sub, sw, texture, unrollLoop, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcDepth } from './modules/calcDepth';
 import { calcL } from './modules/calcL';
@@ -83,7 +83,7 @@ export const mengerSpongeFrag = ( tag: 'forward' | 'deferred' | 'depth' ): strin
     if ( tag === 'deferred' ) {
       assign( fragColor, vec4( baseColor, 1.0 ) );
       assign( fragPosition, vec4( sw( modelPos, 'xyz' ), depth ) );
-      assign( fragNormal, vec4( normalize( mul( normalMatrix, N ) ), MTL_PBR_EMISSIVE ) );
+      assign( fragNormal, vec4( normalize( mul( normalMatrix, N ) ), MTL_PBR_ROUGHNESS_METALLIC ) );
       assign( fragMisc, vec4( roughness, metallic, 0.0, 0.0 ) );
 
     } else if ( tag === 'forward' ) {

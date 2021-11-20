@@ -1,5 +1,4 @@
-import { add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformArrayNamed, defUniformNamed, div, dot, glFragCoord, insert, length, main, max, mix, mul, mulAssign, normalize, pow, retFn, smoothstep, sq, sub, sw, texture, textureLod, unrollLoop, vec2, vec3, vec4 } from '../shader-builder/shaderBuilder';
-import { calcDepth } from './modules/calcDepth';
+import { add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformArrayNamed, defUniformNamed, div, dot, glFragCoord, insert, main, max, mix, mul, mulAssign, normalize, pow, retFn, smoothstep, sq, sub, sw, texture, textureLod, unrollLoop, vec2, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcL } from './modules/calcL';
 import { cyclicNoise } from './modules/cyclicNoise';
 import { defDoSomethingUsingSamplerArray } from './modules/defDoSomethingUsingSamplerArray';
@@ -8,7 +7,7 @@ import { doShadowMapping } from './modules/doShadowMapping';
 import { forEachLights } from './modules/forEachLights';
 import { simplex4d } from './modules/simplex4d';
 
-export const floorFrag = ( tag: 'forward' | 'depth' ): string => build( () => {
+export const floorFrag = build( () => {
   insert( 'precision highp float;' );
 
   const vPosition = defInNamed( 'vec4', 'vPosition' );
@@ -18,7 +17,6 @@ export const floorFrag = ( tag: 'forward' | 'depth' ): string => build( () => {
   const fragColor = defOut( 'vec4' );
 
   const resolution = defUniformNamed( 'vec2', 'resolution' );
-  const cameraNearFar = defUniformNamed( 'vec2', 'cameraNearFar' );
   const cameraPos = defUniformNamed( 'vec3', 'cameraPos' );
   const samplerMirror = defUniformNamed( 'sampler2D', 'samplerMirror' );
   const samplerShadow = defUniformArrayNamed( 'sampler2D', 'samplerShadow', 8 );
@@ -33,12 +31,6 @@ export const floorFrag = ( tag: 'forward' | 'depth' ): string => build( () => {
 
   main( () => {
     const posXYZ = sw( vPosition, 'xyz' );
-
-    if ( tag === 'depth' ) {
-      const len = length( sub( cameraPos, posXYZ ) );
-      assign( fragColor, calcDepth( cameraNearFar, len ) );
-      return;
-    }
 
     const screenUv = def( 'vec2', div( sw( glFragCoord, 'xy' ), resolution ) );
     assign( sw( screenUv, 'y' ), sub( 1.0, sw( screenUv, 'y' ) ) );

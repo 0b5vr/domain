@@ -1,5 +1,5 @@
-import { MTL_PBR_EMISSIVE } from './deferredShadeFrag';
-import { abs, add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, discard, div, dot, glFragCoord, glFragDepth, gt, ifThen, insert, length, main, max, mix, mul, mulAssign, neg, normalize, retFn, sin, smoothstep, sq, step, sub, subAssign, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { MTL_PBR_ROUGHNESS_METALLIC } from './deferredShadeFrag';
+import { abs, add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, discard, div, dot, glFragCoord, glFragDepth, gt, ifThen, insert, length, main, max, mix, mul, neg, normalize, retFn, sin, smoothstep, sq, sub, subAssign, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcDepth } from './modules/calcDepth';
 import { calcL } from './modules/calcL';
 import { calcNormal } from './modules/calcNormal';
@@ -111,7 +111,7 @@ export const asphaltFrag = ( tag: 'forward' | 'deferred' | 'depth' ): string => 
     if ( tag === 'deferred' ) {
       assign( fragColor, vec4( baseColor, 1.0 ) );
       assign( fragPosition, vec4( sw( modelPos, 'xyz' ), depth ) );
-      assign( fragNormal, vec4( normalize( mul( normalMatrix, N ) ), MTL_PBR_EMISSIVE ) );
+      assign( fragNormal, vec4( normalize( mul( normalMatrix, N ) ), MTL_PBR_ROUGHNESS_METALLIC ) );
       assign( fragMisc, vec4( roughness, metallic, 0.0, 0.0 ) );
 
     } else if ( tag === 'forward' ) {

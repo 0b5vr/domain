@@ -1,12 +1,9 @@
-import { BoundingBox } from './BoundingBox';
 import { BufferRenderTarget } from '../heck/BufferRenderTarget';
-import { Geometry } from '../heck/Geometry';
-import { Lambda } from '../heck/components/Lambda';
 import { Material } from '../heck/Material';
 import { Mesh } from '../heck/components/Mesh';
 import { Quad } from '../heck/components/Quad';
-import { RawVector3, Swap, quatFromAxisAngle, vecNormalize } from '@0b5vr/experimental';
 import { SceneNode } from '../heck/components/SceneNode';
+import { Swap } from '@0b5vr/experimental';
 import { colorFrag } from '../shaders/colorFrag';
 import { createLightUniformsLambda } from './utils/createLightUniformsLambda';
 import { createRaymarchCameraUniformsLambda } from './utils/createRaymarchCameraUniformsLambda';
@@ -243,23 +240,10 @@ export class Fluid extends SceneNode {
     swapDensity.swap();
 
     // -- render -----------------------------------------------------------------------------------
-    const cube = genCube( { dimension: [ 0.5, 0.5, 0.5 ] } );
-
-    const geometry = new Geometry();
-
-    geometry.vao.bindVertexbuffer( cube.position, 0, 3 );
-    geometry.vao.bindIndexbuffer( cube.index );
-
-    geometry.count = cube.count;
-    geometry.mode = cube.mode;
-    geometry.indexType = cube.indexType;
-
-    const locations = {
-      locationPosition: 0,
-    };
+    const { geometry } = genCube( { dimension: [ 0.5, 0.5, 0.5 ] } );
 
     const forward = new Material(
-      objectVert( { ...locations } ),
+      objectVert,
       fluidRenderFrag( GRID_RESO_SQRT, GRID_RESO ),
       {
         initOptions: { geometry, target: dummyRenderTarget },

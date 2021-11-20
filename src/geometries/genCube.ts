@@ -1,4 +1,5 @@
 import { GLCatBuffer } from '@fms-cat/glcat-ts';
+import { Geometry } from '../heck/Geometry';
 import { HALF_PI, PI } from '../utils/constants';
 import { gl, glCat } from '../globals/canvas';
 
@@ -7,9 +8,7 @@ interface ResultGenCube {
   normal: GLCatBuffer;
   uv: GLCatBuffer;
   index: GLCatBuffer;
-  count: number;
-  mode: GLenum;
-  indexType: GLenum;
+  geometry: Geometry;
 }
 
 export function genCube( options?: {
@@ -74,6 +73,7 @@ export function genCube( options?: {
     arrayIndex.push( ...[ 0, 1, 3, 0, 3, 2 ].map( ( v ) => v + 4 * i ) );
   }
 
+  // -- buffers ------------------------------------------------------------------------------------
   const position = glCat.createBuffer();
   position.setVertexbuffer( new Float32Array( arrayPosition ) );
 
@@ -86,13 +86,25 @@ export function genCube( options?: {
   const index = glCat.createBuffer();
   index.setIndexbuffer( new Uint16Array( arrayIndex ) );
 
+  // -- geometry -----------------------------------------------------------------------------------
+  const geometry = new Geometry();
+
+  geometry.vao.bindVertexbuffer( position, 0, 3 );
+  geometry.vao.bindVertexbuffer( normal, 1, 3 );
+  geometry.vao.bindVertexbuffer( uv, 2, 2 );
+  geometry.vao.bindIndexbuffer( index );
+
+  geometry.count = arrayIndex.length;
+  geometry.mode = gl.TRIANGLES;
+  geometry.indexType = gl.UNSIGNED_SHORT;
+
+
+
   return {
     position,
     normal,
     uv,
     index,
-    count: arrayIndex.length,
-    mode: gl.TRIANGLES,
-    indexType: gl.UNSIGNED_SHORT,
+    geometry,
   };
 }

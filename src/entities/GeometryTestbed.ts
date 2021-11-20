@@ -2,11 +2,11 @@ import { Geometry } from '../heck/Geometry';
 import { Material } from '../heck/Material';
 import { Mesh } from '../heck/components/Mesh';
 import { SceneNode } from '../heck/components/SceneNode';
+import { deferredUvFrag } from '../shaders/deferredUvFrag';
 import { dummyRenderTarget } from '../globals/dummyRenderTarget';
 import { genCylinder } from '../geometries/genCylinder';
 import { gl } from '../globals/canvas';
 import { objectVert } from '../shaders/objectVert';
-import { simpleDeferredFrag } from '../shaders/simpleDeferredFrag';
 
 export class GeometryTestbed extends SceneNode {
   public constructor() {
@@ -27,15 +27,9 @@ export class GeometryTestbed extends SceneNode {
     geometry.indexType = geomSource.indexType;
 
     // -- materials --------------------------------------------------------------------------------
-    const locations = {
-      locationPosition: 0,
-      locationNormal: 1,
-      locationUv: 2,
-    };
-
     const deferred = new Material(
-      objectVert( { ...locations } ),
-      simpleDeferredFrag( 'deferred' ),
+      objectVert,
+      deferredUvFrag,
       {
         initOptions: { geometry: geometry, target: dummyRenderTarget },
         blend: [ gl.ONE, gl.ONE ],
@@ -43,8 +37,8 @@ export class GeometryTestbed extends SceneNode {
     );
 
     const depth = new Material(
-      objectVert( { ...locations } ),
-      simpleDeferredFrag( 'depth' ),
+      objectVert,
+      deferredUvFrag,
       {
         initOptions: { geometry: geometry, target: dummyRenderTarget },
         blend: [ gl.ONE, gl.ONE ],
@@ -56,17 +50,17 @@ export class GeometryTestbed extends SceneNode {
         module.hot.accept(
           [
             '../shaders/objectVert',
-            '../shaders/simpleDeferredFrag',
+            '../shaders/deferredUvFrag',
           ],
           () => {
             deferred.replaceShader(
-              objectVert( { ...locations } ),
-              simpleDeferredFrag( 'deferred' ),
+              objectVert,
+              deferredUvFrag,
             );
 
             depth.replaceShader(
-              objectVert( { ...locations } ),
-              simpleDeferredFrag( 'depth' ),
+              objectVert,
+              deferredUvFrag,
             );
           },
         );

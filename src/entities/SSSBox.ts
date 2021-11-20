@@ -1,5 +1,5 @@
-
 import { RaymarcherNode } from './utils/RaymarcherNode';
+import { objectVert } from '../shaders/objectVert';
 import { sssBoxFrag } from '../shaders/sssBoxFrag';
 
 export class SSSBox extends RaymarcherNode {
@@ -14,11 +14,10 @@ export class SSSBox extends RaymarcherNode {
           ],
           () => {
             const { cubemap, deferred, depth } = this.materials;
-            const vert = this.vert;
 
-            cubemap.replaceShader( vert, sssBoxFrag( 'forward' ) );
-            deferred.replaceShader( vert, sssBoxFrag( 'deferred' ) );
-            depth.replaceShader( vert, sssBoxFrag( 'depth' ) );
+            cubemap.replaceShader( objectVert, sssBoxFrag( 'forward' ) );
+            deferred.replaceShader( objectVert, sssBoxFrag( 'deferred' ) );
+            depth.replaceShader( objectVert, sssBoxFrag( 'depth' ) );
           },
         );
       }

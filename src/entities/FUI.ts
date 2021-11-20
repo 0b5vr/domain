@@ -36,14 +36,8 @@ export class FUI extends SceneNode {
     geometry.mode = gl.TRIANGLE_STRIP;
 
     // -- material ---------------------------------------------------------------------------------
-    const locations = {
-      locationPosition: 0,
-      locationNormal: 1,
-      locationUv: 2,
-    };
-
     const forward = new Material(
-      objectVert( locations ),
+      objectVert,
       fuiFrag( 'forward' ),
       {
         initOptions: { geometry, target: dummyRenderTarget },
@@ -54,7 +48,7 @@ export class FUI extends SceneNode {
     forward.addUniformTextures( 'samplerChar', charCanvasTexture.texture );
 
     const depth = new Material(
-      objectVert( locations ),
+      objectVert,
       fuiFrag( 'depth' ),
       {
         initOptions: { geometry, target: dummyRenderTarget },
@@ -74,8 +68,8 @@ export class FUI extends SceneNode {
             '../shaders/fuiFrag',
           ],
           () => {
-            forward.replaceShader( objectVert( { ...locations } ), fuiFrag( 'forward' ) );
-            depth.replaceShader( objectVert( { ...locations } ), fuiFrag( 'depth' ) );
+            forward.replaceShader( objectVert, fuiFrag( 'forward' ) );
+            depth.replaceShader( objectVert, fuiFrag( 'depth' ) );
           },
         );
       }
