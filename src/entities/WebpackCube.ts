@@ -26,7 +26,7 @@ export class WebpackCube extends SceneNode {
         initOptions: { geometry: geometryCore, target: dummyRenderTargetFourDrawBuffers },
       },
     );
-    deferredCore.addUniform( 'color', '4f', 0.1, 0.3, 0.9, 1.0 );
+    deferredCore.addUniform( 'color', '4f', 0.005, 0.109, 0.311, 1.0 );
     deferredCore.addUniform( 'mtlKind', '1f', MTL_PBR_ROUGHNESS_METALLIC );
     deferredCore.addUniform( 'mtlParams', '4f', 0.8, 0.0, 0.0, 0.0 );
 
@@ -55,7 +55,7 @@ export class WebpackCube extends SceneNode {
         blend: [ gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA ],
       },
     );
-    forwardShell.addUniform( 'baseColor', '3f', 0.3, 0.8, 0.9 );
+    forwardShell.addUniform( 'baseColor', '3f', 0.272, 0.680, 0.949 );
     forwardShell.addUniform( 'roughness', '1f', 0.5 );
     forwardShell.addUniform( 'metallic', '1f', 0.0 );
     forwardShell.addUniform( 'opacity', '1f', 0.1 );
