@@ -4,13 +4,17 @@ import { HALF_SQRT_TWO } from '../utils/constants';
 import { Material } from '../heck/Material';
 import { Mesh } from '../heck/components/Mesh';
 import { SceneNode } from '../heck/components/SceneNode';
+import { ShaderRenderTarget } from './utils/ShaderRenderTarget';
 import { TRIANGLE_STRIP_QUAD_3D, TRIANGLE_STRIP_QUAD_NORMAL, TRIANGLE_STRIP_QUAD_UV } from '@0b5vr/experimental';
 import { createLightUniformsLambda } from './utils/createLightUniformsLambda';
 import { depthFrag } from '../shaders/depthFrag';
 import { dummyRenderTarget } from '../globals/dummyRenderTarget';
 import { floorFrag } from '../shaders/floorFrag';
+import { floorRoughnessFrag } from '../shaders/floorRoughnessFrag';
 import { gl, glCat } from '../globals/canvas';
 import { objectVert } from '../shaders/objectVert';
+import { quadGeometry } from '../globals/quadGeometry';
+import { quadVert } from '../shaders/quadVert';
 
 export class Floor extends SceneNode {
   public forward: Material;
@@ -45,6 +49,34 @@ export class Floor extends SceneNode {
     geometry.count = 4;
     geometry.mode = gl.TRIANGLE_STRIP;
 
+    // -- generate roughness map -------------------------------------------------------------------
+    const targetRoughness = new ShaderRenderTarget( {
+      width: 2048,
+      height: 2048,
+      filter: gl.LINEAR,
+      material: new Material(
+        quadVert,
+        floorRoughnessFrag,
+        { initOptions: { geometry: quadGeometry, target: dummyRenderTarget } },
+      ),
+      name: process.env.DEV && 'Floor/roughness',
+    } );
+
+    if ( process.env.DEV ) {
+      if ( module.hot ) {
+        module.hot.accept(
+          [
+            '../shaders/floorRoughnessFrag',
+          ],
+          () => {
+            targetRoughness.material.replaceShader( quadVert, floorRoughnessFrag ).then( () => {
+              targetRoughness.quad.drawImmediate();
+            } );
+          },
+        );
+      }
+    }
+
     // -- create materials -------------------------------------------------------------------------
     const forward = this.forward = new Material(
       objectVert,
@@ -53,6 +85,7 @@ export class Floor extends SceneNode {
         initOptions: { geometry, target: dummyRenderTarget },
       },
     );
+    forward.addUniformTextures( 'samplerRoughness', targetRoughness.texture );
 
     const depth = new Material(
       objectVert,

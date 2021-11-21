@@ -1,11 +1,9 @@
-import { add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformArrayNamed, defUniformNamed, div, dot, glFragCoord, insert, main, max, mix, mul, mulAssign, normalize, pow, retFn, smoothstep, sq, sub, sw, texture, textureLod, unrollLoop, vec2, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformArrayNamed, defUniformNamed, div, dot, glFragCoord, insert, main, max, mix, mul, normalize, pow, retFn, sq, sub, sw, texture, textureLod, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcL } from './modules/calcL';
-import { cyclicNoise } from './modules/cyclicNoise';
 import { defDoSomethingUsingSamplerArray } from './modules/defDoSomethingUsingSamplerArray';
 import { doAnalyticLighting } from './modules/doAnalyticLighting';
 import { doShadowMapping } from './modules/doShadowMapping';
 import { forEachLights } from './modules/forEachLights';
-import { simplex4d } from './modules/simplex4d';
 
 export const floorFrag = build( () => {
   insert( 'precision highp float;' );
@@ -18,6 +16,7 @@ export const floorFrag = build( () => {
 
   const resolution = defUniformNamed( 'vec2', 'resolution' );
   const cameraPos = defUniformNamed( 'vec3', 'cameraPos' );
+  const samplerRoughness = defUniformNamed( 'sampler2D', 'samplerRoughness' );
   const samplerMirror = defUniformNamed( 'sampler2D', 'samplerMirror' );
   const samplerShadow = defUniformArrayNamed( 'sampler2D', 'samplerShadow', 8 );
 
@@ -35,33 +34,7 @@ export const floorFrag = build( () => {
     const screenUv = def( 'vec2', div( sw( glFragCoord, 'xy' ), resolution ) );
     assign( sw( screenUv, 'y' ), sub( 1.0, sw( screenUv, 'y' ) ) );
 
-    const noiseDisplacer = cyclicNoise( vec3( mul( vUv, vec2( 10.0, 10.0 ) ), 1.0 ), {
-      pump: 1.4,
-      freq: 2.0,
-      warp: 0.1,
-    } );
-    const noiseA = def( 'float', (
-      sw( cyclicNoise( vec3( mul( noiseDisplacer, 20.0 ) ), {
-        pump: 2.0,
-        freq: 2.0,
-        warp: 0.5,
-      } ), 'x' )
-    ) );
-
-    const simplex = simplex4d( vec4( mul( 50.0, vUv ), 1.0, 1.0 ) );
-    const scratch = simplex4d( vec4( mul( 20.0, simplex ) ) );
-    mulAssign( noiseA, smoothstep( -0.7, 0.0, scratch ) );
-    assign( noiseA, smoothstep( -0.2, 1.0, noiseA ) );
-
-    const noiseB = def( 'float', 0.0 );
-    const noiseBFreq = def( 'float', 50.0 );
-    unrollLoop( 4, () => {
-      const n = simplex4d( vec4( mul( noiseBFreq, vUv ), 1.0, 1.0 ) );
-      addAssign( noiseB, mul( n, 0.25 ) );
-      mulAssign( noiseBFreq, 2.0 );
-    } );
-
-    const noise = mix( noiseA, noiseB, 0.5 );
+    const noise = def( 'float', sw( texture( samplerRoughness, vUv ), 'x' ) );
 
     const baseColor = def( 'vec3', vec3( 0.02 ) );
     const roughness = mix( 0.1, 0.2, noise );

@@ -3,8 +3,10 @@ import { RaymarcherNode } from './utils/RaymarcherNode';
 import { ShaderRenderTarget } from './utils/ShaderRenderTarget';
 import { asphaltFrag } from '../shaders/asphaltFrag';
 import { asphaltSurfaceFrag } from '../shaders/asphaltSurfaceFrag';
+import { dummyRenderTarget } from '../globals/dummyRenderTarget';
 import { gl } from '../globals/canvas';
 import { objectVert } from '../shaders/objectVert';
+import { quadGeometry } from '../globals/quadGeometry';
 import { quadVert } from '../shaders/quadVert';
 
 export class Asphalt extends RaymarcherNode {
@@ -15,7 +17,11 @@ export class Asphalt extends RaymarcherNode {
       width: 1024,
       height: 1024,
       filter: gl.LINEAR,
-      material: new Material( quadVert, asphaltSurfaceFrag ),
+      material: new Material(
+        quadVert,
+        asphaltSurfaceFrag,
+        { initOptions: { geometry: quadGeometry, target: dummyRenderTarget } },
+      ),
       name: process.env.DEV && 'Asphalt/voronoi',
     } );
 
