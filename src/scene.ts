@@ -1,6 +1,7 @@
 import { CameraStack } from './entities/CameraStack';
 import { CanvasRenderTarget } from './heck/CanvasRenderTarget';
 import { Dog } from './heck/Dog';
+import { FAR, NEAR } from './config';
 import { FUI } from './entities/FUI';
 import { Floor } from './entities/Floor';
 import { IBLLUTCalc } from './entities/IBLLUTCalc';
@@ -12,6 +13,7 @@ import { PointLightNode } from './entities/PointLightNode';
 import { RawVector3, vecAdd } from '@0b5vr/experimental';
 import { Stuff } from './entities/Stuff';
 import { VRCameraStack } from './entities/VRCameraStack';
+import { Walls } from './entities/Walls';
 import { automaton } from './globals/automaton';
 import { createVRSesh } from './globals/createVRSesh';
 import { music } from './globals/music';
@@ -62,13 +64,13 @@ const iblLutCalc = new IBLLUTCalc();
 const light1 = new PointLightNode( {
   scenes: [ dog.root ],
   shadowMapFov: 50.0,
-  shadowMapNear: 0.1,
-  shadowMapFar: 20.0,
+  shadowMapNear: NEAR,
+  shadowMapFar: FAR,
   name: process.env.DEV && 'light1',
   brtNamePrefix: process.env.DEV && 'SceneBegin/light1',
 } );
 light1.color = [ 100.0, 100.0, 100.0 ];
-light1.spotness = 1.0;
+light1.spotness = 0.9;
 light1.transform.lookAt( [ 3.0, 0.2, 3.0 ], [ 0.0, 3.0, 0.0 ] );
 
 const shaft1 = new LightShaft( {
@@ -80,13 +82,13 @@ light1.children.push( shaft1 );
 const light2 = new PointLightNode( {
   scenes: [ dog.root ],
   shadowMapFov: 50.0,
-  shadowMapNear: 1.0,
-  shadowMapFar: 20.0,
+  shadowMapNear: NEAR,
+  shadowMapFar: FAR,
   name: process.env.DEV && 'light2',
   brtNamePrefix: process.env.DEV && 'SceneBegin/light2',
 } );
 light2.color = [ 100.0, 150.0, 190.0 ];
-light2.spotness = 1.0;
+light2.spotness = 0.9;
 light2.transform.lookAt( [ 0.01, 9.0, 0.01 ], [ 0.0, 3.0, 0.0 ] );
 
 const shaft2 = new LightShaft( {
@@ -98,18 +100,26 @@ light2.children.push( shaft2 );
 const light3 = new PointLightNode( {
   scenes: [ dog.root ],
   shadowMapFov: 50.0,
-  shadowMapNear: 1.0,
-  shadowMapFar: 20.0,
+  shadowMapNear: NEAR,
+  shadowMapFar: FAR,
   name: process.env.DEV && 'light3',
   brtNamePrefix: process.env.DEV && 'SceneBegin/light3',
 } );
 light3.color = [ 300.0, 30.0, 70.0 ];
-light3.transform.lookAt( [ -8.0, 2.0, -4.0 ], [ 0.0, 2.0, 0.0 ] );
+light3.transform.lookAt( [ -5.9, 2.0, -4.0 ], [ 0.0, 2.0, 0.0 ] );
 
 const floor = new Floor();
 if ( process.env.DEV && module.hot ) {
   const replacer = new NodeReplacer( floor, () => new Floor() );
   module.hot.accept( './entities/Floor', () => {
+    replacer.replace( dog.root );
+  } );
+}
+
+const walls = new Walls();
+if ( process.env.DEV && module.hot ) {
+  const replacer = new NodeReplacer( walls, () => new Walls() );
+  module.hot.accept( './entities/Walls', () => {
     replacer.replace( dog.root );
   } );
 }
@@ -130,7 +140,7 @@ cameraStack.transform.lookAt( [ 0.0, 1.6, 10.0 ], [ 0.0, 3.0, 0.0 ] );
 cameraStack.children.push( new Lambda( {
   onUpdate: ( { time } ) => {
     const pos = vecAdd(
-      [ 0.0, 1.6, 10.0 ],
+      [ Math.sin( time ) * 7.0, 1.6, 10.0 ],
       [
         0.04 * Math.sin( time * 2.4 ) - 0.02,
         0.04 * Math.sin( time * 3.4 ) - 0.02,
@@ -188,6 +198,7 @@ dog.root.children.push(
   light3,
   // plane,
   fui,
+  walls,
   stuff,
   cameraStack,
 );

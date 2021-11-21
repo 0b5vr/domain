@@ -1,6 +1,7 @@
-import { assign, build, defInNamed, defOut, defUniformNamed, div, insert, main, sw, vec4 } from '../shader-builder/shaderBuilder';
+import { MTL_PBR_ROUGHNESS_METALLIC } from './deferredShadeFrag';
+import { assign, build, defInNamed, defOut, div, insert, main, sw, vec4 } from '../shader-builder/shaderBuilder';
 
-export const deferredColorFrag = build( () => {
+export const wallFrag = build( () => {
   insert( 'precision highp float;' );
 
   const vPosition = defInNamed( 'vec4', 'vPosition' );
@@ -12,17 +13,13 @@ export const deferredColorFrag = build( () => {
   const fragNormal = defOut( 'vec4', 2 );
   const fragMisc = defOut( 'vec4', 3 );
 
-  const color = defUniformNamed( 'vec4', 'color' );
-  const mtlKind = defUniformNamed( 'float', 'mtlKind' );
-  const mtlParams = defUniformNamed( 'vec4', 'mtlParams' );
-
   main( () => {
     const depth = div( sw( vProjPosition, 'z' ), sw( vProjPosition, 'w' ) );
 
-    assign( fragColor, color );
+    assign( fragColor, vec4( 0.1, 0.1, 0.1, 1.0 ) );
     assign( fragPosition, vec4( sw( vPosition, 'xyz' ), depth ) );
-    assign( fragNormal, vec4( vNormal, mtlKind ) );
-    assign( fragMisc, mtlParams );
+    assign( fragNormal, vec4( vNormal, MTL_PBR_ROUGHNESS_METALLIC ) );
+    assign( fragMisc, vec4( 1.0, 0.0, 0.0, 0.0 ) );
     return;
   } );
 } );

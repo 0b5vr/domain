@@ -11,7 +11,6 @@ export const objectVert = build( () => {
   const vPosition = defOutNamed( 'vec4', 'vPosition' );
   const vNormal = defOutNamed( 'vec3', 'vNormal' );
   const vUv = defOutNamed( 'vec2', 'vUv' );
-  const vDepth = defOutNamed( 'float', 'vDepth' );
 
   const resolution = defUniformNamed( 'vec2', 'resolution' );
   const projectionMatrix = defUniformNamed( 'mat4', 'projectionMatrix' );
@@ -26,8 +25,6 @@ export const objectVert = build( () => {
     assign( vViewPosition, mul( viewMatrix, vPosition ) );
     assign( vProjPosition, mul( projectionMatrix, vViewPosition ) );
     const outPos = def( 'vec4', vProjPosition );
-
-    assign( vDepth, div( sw( vProjPosition, 'z' ), sw( vProjPosition, 'w' ) ) );
 
     const aspect = div( sw( resolution, 'x' ), sw( resolution, 'y' ) );
     divAssign( sw( outPos, 'x' ), aspect );

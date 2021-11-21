@@ -42,6 +42,7 @@ export const fuiFrag = ( tag: 'forward' | 'depth' ): string => build( () => {
 
     if ( tag === 'forward' ) {
       assign( fragColor, vec4( 1.0 ) );
+
     } else if ( tag === 'depth' ) {
       const posXYZ = sw( vPosition, 'xyz' );
 
