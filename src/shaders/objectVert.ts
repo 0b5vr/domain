@@ -9,6 +9,7 @@ export const objectVert = build( () => {
   const vProjPosition = defOutNamed( 'vec4', 'vProjPosition' );
   const vViewPosition = defOutNamed( 'vec4', 'vViewPosition' );
   const vPosition = defOutNamed( 'vec4', 'vPosition' );
+  const vNormalWithoutModel = defOutNamed( 'vec3', 'vNormalWithoutModel' );
   const vNormal = defOutNamed( 'vec3', 'vNormal' );
   const vUv = defOutNamed( 'vec2', 'vUv' );
 
@@ -20,6 +21,7 @@ export const objectVert = build( () => {
 
   main( () => {
     assign( vPositionWithoutModel, vec4( position, 1.0 ) );
+    assign( vNormalWithoutModel, normalize( normal ) );
 
     assign( vPosition, mul( modelMatrix, vPositionWithoutModel ) );
     assign( vViewPosition, mul( viewMatrix, vPosition ) );

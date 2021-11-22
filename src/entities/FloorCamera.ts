@@ -83,11 +83,6 @@ export class FloorCamera extends SceneNode {
       name: process.env.DEV && `${ this.name }/mipmapMirrorTarget`,
     } );
 
-    const mipmapNode = new SceneNode( {
-      name: process.env.DEV && 'mipmapNode',
-    } );
-    this.children.push( mipmapNode );
-
     let srcRange = [ -1.0, -1.0, 1.0, 1.0 ];
 
     this.mipmapMirrorTarget.mipmapTargets?.map( ( target, i ) => {
@@ -112,7 +107,7 @@ export class FloorCamera extends SceneNode {
         2.0 * ONE_SUB_ONE_POINT_FIVE_POW_I[ i + 1 ] - 1.0,
       ];
 
-      mipmapNode.children.push( new Quad( {
+      this.children.push( new Quad( {
         target: swapMirrorDownsampleTarget.i,
         material,
         range,
@@ -129,7 +124,7 @@ export class FloorCamera extends SceneNode {
         RESOLUTION[ 1 ] * ONE_SUB_ONE_POINT_FIVE_POW_I[ i + 1 ],
       ];
 
-      mipmapNode.children.push( new Blit( {
+      this.children.push( new Blit( {
         src: swapMirrorDownsampleTarget.o,
         dst: target,
         srcRect,

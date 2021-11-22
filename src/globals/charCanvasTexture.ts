@@ -12,6 +12,7 @@ const texts = [
   [ 'fluid', 'the incomprehensible flow' ],
   [ 'xorshit', 'shut up my brain' ],
   [ 'webpack', 'still suffering in the minifier hell' ],
+  [ 'infodesk', 'need some help? same' ],
 ];
 
 auto( 'FUI/yugopp', ( { progress } ) => {

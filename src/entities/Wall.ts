@@ -33,9 +33,9 @@ geometry.count = 4;
 geometry.mode = gl.TRIANGLE_STRIP;
 
 // -- generate texture -----------------------------------------------------------------------------
-const targetTexture = new ShaderRenderTarget( {
-  width: 2048,
-  height: 2048,
+export const wallTexture = new ShaderRenderTarget( {
+  width: 4096,
+  height: 4096,
   filter: gl.LINEAR,
   material: new Material(
     quadVert,
@@ -52,8 +52,8 @@ if ( process.env.DEV ) {
         '../shaders/wallTextureFrag',
       ],
       () => {
-        targetTexture.material.replaceShader( quadVert, wallTextureFrag ).then( () => {
-          targetTexture.quad.drawImmediate();
+        wallTexture.material.replaceShader( quadVert, wallTextureFrag ).then( () => {
+          wallTexture.quad.drawImmediate();
         } );
       },
     );
@@ -68,7 +68,7 @@ const deferred = new Material(
     initOptions: { geometry, target: dummyRenderTargetFourDrawBuffers },
   },
 );
-deferred.addUniformTextures( 'samplerTexture', targetTexture.texture );
+deferred.addUniformTextures( 'samplerTexture', wallTexture.texture );
 
 const depth = new Material(
   objectVert,

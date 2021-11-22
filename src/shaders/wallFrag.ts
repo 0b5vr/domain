@@ -67,7 +67,7 @@ export const wallFrag = ( tag: 'deferred' | 'depth' ): string => build( () => {
 
     const N = def( 'vec3', calcNormal( { rp, map, delta: 1E-3 } ) );
 
-    const roughness = sw( isect, 'y' );
+    const roughness = def( 'float', add( sw( isect, 'y' ), mul( 0.3, sw( isect, 'z' ) ) ) );
     const baseColor = def( 'vec3', vec3( mix( 0.4, 0.3, roughness ) ) );
     addAssign( baseColor, mul( vec3( 0.0, -0.01, -0.02 ), sw( isect, 'z' ) ) );
 

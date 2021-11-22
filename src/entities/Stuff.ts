@@ -1,6 +1,7 @@
 import { Asphalt } from './Asphalt';
 import { BoundingBox } from './BoundingBox';
 import { Fluid } from './Fluid';
+import { Info } from './Info';
 import { Lambda } from '../heck/components/Lambda';
 import { MengerSponge } from './MengerSponge';
 import { RandomTextureCube } from './RandomTextureCube';
@@ -27,6 +28,7 @@ export class Stuff extends SceneNode {
       new Fluid(),
       new RandomTextureCube(),
       new WebpackCube(),
+      new Info(),
     ].map( ( node, i ) => {
       if ( process.env.DEV ) {
         const current = auto( 'stuff' );

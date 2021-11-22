@@ -19,7 +19,7 @@ export const wallTextureFrag = build( () => {
       addAssign( cloud, div( n, freq ) );
     } );
 
-    const crackUv = def( 'vec2', mul( vec2( 10.0, 10.0 ), vUv ) );
+    const crackUv = def( 'vec2', mul( 10.0, vUv ) );
     const crackP = def( 'vec3', cyclicNoise( vec3( crackUv, 0.0 ), { pump: 1.1 } ) );
     const crack = sw( cyclicNoise( mul( 0.1, crackP ), { pump: 1.1 } ), 'x' );
     const holepre = simplex4d( vec4( mix( vec3( mul( vUv, 80.0 ), 0.0 ), crackP, 0.3 ), 0.0 ) );
@@ -35,7 +35,6 @@ export const wallTextureFrag = build( () => {
       0.3,
       mul( 0.03, cloud ),
       mul( 0.2, crack ),
-      mul( 0.2, hole ),
     ) );
     const height = def( 'float', sub(
       mul( 0.1, cloud ),
