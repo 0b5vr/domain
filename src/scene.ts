@@ -105,7 +105,7 @@ const light3 = new PointLightNode( {
   name: process.env.DEV && 'light3',
   brtNamePrefix: process.env.DEV && 'SceneBegin/light3',
 } );
-light3.color = [ 300.0, 30.0, 70.0 ];
+light3.color = [ 12.0, 10.0, 8.0 ];
 light3.transform.lookAt( [ -5.9, 2.0, -4.0 ], [ 0.0, 2.0, 0.0 ] );
 
 const floor = new Floor();
@@ -140,7 +140,7 @@ cameraStack.transform.lookAt( [ 0.0, 1.6, 10.0 ], [ 0.0, 3.0, 0.0 ] );
 cameraStack.children.push( new Lambda( {
   onUpdate: ( { time } ) => {
     const pos = vecAdd(
-      [ Math.sin( time ) * 7.0, 1.6, 10.0 ],
+      [ 0.0, 1.6, 10.0 ],
       [
         0.04 * Math.sin( time * 2.4 ) - 0.02,
         0.04 * Math.sin( time * 3.4 ) - 0.02,
@@ -148,7 +148,7 @@ cameraStack.children.push( new Lambda( {
       ],
     ) as RawVector3;
     const tar = vecAdd(
-      [ 0.0, 3.0, 0.0 ],
+      [ 0.0, 1.6, 0.0 ],
       [
         0.04 * Math.sin( time * 2.8 ) - 0.02,
         0.04 * Math.sin( time * 2.5 ) - 0.02,

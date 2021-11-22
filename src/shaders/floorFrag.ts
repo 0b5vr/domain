@@ -36,11 +36,11 @@ export const floorFrag = build( () => {
 
     const noise = def( 'float', sw( texture( samplerRoughness, vUv ), 'x' ) );
 
-    const baseColor = def( 'vec3', vec3( 0.02 ) );
+    const baseColor = def( 'vec3', vec3( 0.2 ) );
     const roughness = mix( 0.1, 0.2, noise );
     const metallic = 0.1;
 
-    const lod = mul( 5.0, noise ); // physically cringe rendering
+    const lod = mix( 1.0, 5.0, noise ); // physically cringe rendering
     const tex = def( 'vec4', textureLod( samplerMirror, screenUv, lod ) );
 
     const V = normalize( sub( cameraPos, posXYZ ) );

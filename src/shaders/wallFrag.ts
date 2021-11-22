@@ -1,5 +1,5 @@
 import { MTL_PBR_ROUGHNESS_METALLIC } from './deferredShadeFrag';
-import { add, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, discard, div, glFragCoord, glFragDepth, gt, ifThen, insert, length, main, mix, mul, retFn, sub, sw, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, discard, div, glFragCoord, glFragDepth, gt, ifThen, insert, length, main, mix, mul, normalize, retFn, sub, subAssign, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcDepth } from './modules/calcDepth';
 import { calcNormal } from './modules/calcNormal';
 import { raymarch } from './modules/raymarch';
@@ -8,9 +8,7 @@ import { setupRoRd } from './modules/setupRoRd';
 export const wallFrag = ( tag: 'deferred' | 'depth' ): string => build( () => {
   insert( 'precision highp float;' );
 
-  const vPosition = defInNamed( 'vec4', 'vPosition' );
   const vPositionWithoutModel = defInNamed( 'vec4', 'vPositionWithoutModel' );
-  const vNormal = defInNamed( 'vec3', 'vNormal' );
 
   const fragColor = defOut( 'vec4' );
   const fragPosition = defOut( 'vec4', 1 );
@@ -23,13 +21,16 @@ export const wallFrag = ( tag: 'deferred' | 'depth' ): string => build( () => {
   const modelMatrix = defUniformNamed( 'mat4', 'modelMatrix' );
   const inversePVM = defUniformNamed( 'mat4', 'inversePVM' );
   const pvm = defUniformNamed( 'mat4', 'pvm' );
+  const normalMatrix = defUniformNamed( 'mat3', 'normalMatrix' );
   const samplerTexture = defUniformNamed( 'sampler2D', 'samplerTexture' );
 
   const map = defFn( 'vec4', [ 'vec3' ], ( p ) => {
-    const uv = def( 'vec2', sw( p, 'xy' ) );
+    const uv = def( 'vec2', add( 0.5, mul( 0.5, sw( p, 'xy' ) ) ) );
     const d = def( 'float', sw( p, 'z' ) );
+    const tex = texture( samplerTexture, uv );
+    subAssign( d, mul( 0.001, sw( tex, 'x' ) ) );
 
-    retFn( vec4( d, 0, 0, 0 ) );
+    retFn( vec4( d, sw( tex, 'yzw' ) ) );
   } );
 
   main( () => {
@@ -60,19 +61,20 @@ export const wallFrag = ( tag: 'deferred' | 'depth' ): string => build( () => {
     if ( tag === 'depth' ) {
       const len = length( sub( cameraPos, sw( modelPos, 'xyz' ) ) );
       assign( fragColor, calcDepth( cameraNearFar, len ) );
+      return;
 
     }
 
-    const N = def( 'vec3', calcNormal( { rp, map } ) );
-    const roughness = 0.5;
-    const metallic = 0.0;
+    const N = def( 'vec3', calcNormal( { rp, map, delta: 1E-3 } ) );
 
-    const baseColor = vec3( 0.1 );
+    const roughness = sw( isect, 'y' );
+    const baseColor = def( 'vec3', vec3( mix( 0.4, 0.3, roughness ) ) );
+    addAssign( baseColor, mul( vec3( 0.0, -0.01, -0.02 ), sw( isect, 'z' ) ) );
 
     assign( fragColor, vec4( baseColor, 1.0 ) );
-    assign( fragPosition, vec4( sw( vPosition, 'xyz' ), depth ) );
-    assign( fragNormal, vec4( vNormal, MTL_PBR_ROUGHNESS_METALLIC ) );
-    assign( fragMisc, vec4( 1.0, 0.0, 0.0, 0.0 ) );
+    assign( fragPosition, vec4( sw( modelPos, 'xyz' ), depth ) );
+    assign( fragNormal, vec4( normalize( mul( normalMatrix, N ) ), MTL_PBR_ROUGHNESS_METALLIC ) );
+    assign( fragMisc, vec4( roughness, 0.0, 0.0, 0.0 ) );
     return;
   } );
 } );
