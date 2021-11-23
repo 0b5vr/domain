@@ -1,5 +1,6 @@
 import { CameraStack } from './entities/CameraStack';
 import { CanvasRenderTarget } from './heck/CanvasRenderTarget';
+import { CubemapNode } from './entities/CubemapNode';
 import { Dog } from './heck/Dog';
 import { FAR, NEAR } from './config';
 import { FUI } from './entities/FUI';
@@ -147,10 +148,21 @@ if ( process.env.DEV && module.hot ) {
   } );
 }
 
+const cubemapNode = new CubemapNode( {
+  scenes: [ dog.root ],
+  textureIBLLUT: iblLutCalc.texture,
+} );
+
+if ( process.env.DEV ) {
+  cubemapNode.name = 'cubemapNode';
+}
+
 const cameraStackOptions = {
   scenes: [ dog.root ],
   textureIBLLUT: iblLutCalc.texture,
   floor,
+  cubemapNode,
+  withAO: true,
   withPost: true,
 };
 
@@ -194,8 +206,8 @@ if ( process.env.DEV && module.hot ) {
     replacer.replace( dog.root );
   } );
 }
-plane.transform.position = [ 0.0, 3.0, 0.0 ];
-plane.transform.scale = [ 3.0, 3.0, 3.0 ];
+plane.transform.position = [ 0.0, 3.0, 5.0 ];
+plane.transform.scale = [ 1.0, 1.0, 1.0 ];
 
 const fui = new FUI();
 if ( process.env.DEV && module.hot ) {
@@ -219,6 +231,7 @@ dog.root.children.push(
   light1,
   light2,
   light3,
+  cubemapNode,
   // plane,
   fui,
   walls,

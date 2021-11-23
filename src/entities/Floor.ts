@@ -1,6 +1,7 @@
 import { BufferRenderTarget } from '../heck/BufferRenderTarget';
 import { Geometry } from '../heck/Geometry';
 import { HALF_SQRT_TWO } from '../utils/constants';
+import { Lambda } from '../heck/components/Lambda';
 import { Material } from '../heck/Material';
 import { Mesh } from '../heck/components/Mesh';
 import { SceneNode } from '../heck/components/SceneNode';
@@ -14,6 +15,7 @@ import { floorRoughnessFrag } from '../shaders/floorRoughnessFrag';
 import { gl, glCat } from '../globals/canvas';
 import { objectVert } from '../shaders/objectVert';
 import { quadVert } from '../shaders/quadVert';
+import { zeroTexture } from '../globals/zeroTexture';
 
 // -- generate roughness map -------------------------------------------------------------------
 export const floorRoughnessTextureTarget = new ShaderRenderTarget(
@@ -116,6 +118,14 @@ export class Floor extends SceneNode {
       name: process.env.DEV && 'mesh',
     } );
     meshNode.children.push( mesh );
+
+    // -- reset floor ------------------------------------------------------------------------------
+    this.children.push( new Lambda( {
+      onUpdate: () => {
+        this.forward.addUniformTextures( 'samplerMirror', zeroTexture );
+      },
+      name: process.env.DEV && 'lambdaResetFloor',
+    } ) );
   }
 
   public setMipmapMirrorTarget( mipmapMirrorTarget: BufferRenderTarget ): void {

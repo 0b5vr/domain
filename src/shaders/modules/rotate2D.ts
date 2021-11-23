@@ -1,9 +1,9 @@
-import { GLSLExpression, cache, cos, def, defFn, mat2, neg, retFn, sin } from '../../shader-builder/shaderBuilder';
+import { GLSLExpression, GLSLFloatExpression, cache, cos, def, defFn, mat2, neg, num, retFn, sin } from '../../shader-builder/shaderBuilder';
 
 const symbol = Symbol();
 
 export function rotate2D(
-  v: GLSLExpression<'float'>,
+  v: GLSLFloatExpression,
 ): GLSLExpression<'mat2'> {
   const f = cache( symbol, () => defFn( 'mat2', [ 'float' ], ( t ) => {
     const c = def( 'float', cos( t ) );
@@ -11,5 +11,5 @@ export function rotate2D(
     retFn( mat2( c, neg( s ), s, c ) );
   } ) );
 
-  return f( v );
+  return f( num( v ) );
 }

@@ -1,6 +1,7 @@
 import { AO_RESOLUTION_RATIO, FAR, NEAR } from '../config';
 import { BufferRenderTarget } from '../heck/BufferRenderTarget';
-import { ComponentOptions } from '../heck/components/Component';
+import { Component, ComponentOptions } from '../heck/components/Component';
+import { CubemapNode } from './CubemapNode';
 import { Floor } from './Floor';
 import { FloorCamera } from './FloorCamera';
 import { GLCatTexture } from '@fms-cat/glcat-ts';
@@ -27,19 +28,29 @@ export interface CameraStackOptions extends ComponentOptions {
   target: RenderTarget;
   textureIBLLUT: GLCatTexture;
   floor?: Floor;
+  cubemapNode?: CubemapNode;
+  near?: number;
+  far?: number;
   // textureEnv: GLCatTexture;
   withPost?: boolean;
+  withAO?: boolean;
 }
 
 export class CameraStack extends SceneNode {
   public deferredCamera: PerspectiveCamera;
   public forwardCamera: PerspectiveCamera;
+  public cubemapNode?: CubemapNode;
   public textureIBLLUT: GLCatTexture;
 
   public constructor( options: CameraStackOptions ) {
     super( options );
 
-    const { target, scenes, textureIBLLUT, floor, withPost } = options;
+    const near = options.near ?? NEAR;
+    const far = options.far ?? FAR;
+    const withAO = options.withAO ?? false;
+
+    const { target, scenes, textureIBLLUT, floor, cubemapNode, withPost } = options;
+    this.cubemapNode = cubemapNode;
     this.textureIBLLUT = textureIBLLUT;
 
     const cameraTarget = withPost ? new BufferRenderTarget( {
@@ -60,57 +71,67 @@ export class CameraStack extends SceneNode {
     const deferredCamera = this.deferredCamera = new PerspectiveCamera( {
       scenes: scenes,
       renderTarget: deferredTarget,
-      near: NEAR,
-      far: FAR,
+      near,
+      far,
       name: process.env.DEV && 'deferredCamera',
       materialTag: 'deferred',
     } );
 
     // -- ambient occlusion ------------------------------------------------------------------------
-    const aoTarget = new BufferRenderTarget( {
-      width: AO_RESOLUTION_RATIO * target.width,
-      height: AO_RESOLUTION_RATIO * target.height,
-      name: process.env.DEV && `${ this.name }/aoTarget`,
-    } );
+    let aoComponents: Component[] = [];
+    let aoTarget: BufferRenderTarget | undefined;
 
-    const aoMaterial = new Material(
-      quadVert,
-      ssaoFrag,
-      { initOptions: { geometry: quadGeometry, target: dummyRenderTarget } },
-    );
+    if ( withAO ) {
+      aoTarget = new BufferRenderTarget( {
+        width: AO_RESOLUTION_RATIO * target.width,
+        height: AO_RESOLUTION_RATIO * target.height,
+        name: process.env.DEV && `${ this.name }/aoTarget`,
+      } );
 
-    const lambdaAoSetCameraUniforms = new Lambda( {
-      onUpdate: () => {
-        const cameraView = mat4Inverse( this.transform.matrix );
-
-        shadingMaterial.addUniformMatrixVector(
-          'cameraPV',
-          'Matrix4fv',
-          mat4Multiply( deferredCamera.projectionMatrix, cameraView ),
-        );
-      },
-      name: process.env.DEV && 'aoSetCameraUniforms',
-    } );
-
-    for ( let i = 1; i < 3; i ++ ) { // it doesn't need 0 and 3
-      aoMaterial.addUniformTextures(
-        'sampler' + i,
-        deferredTarget.getTexture( gl.COLOR_ATTACHMENT0 + i )!,
+      const aoMaterial = new Material(
+        quadVert,
+        ssaoFrag,
+        { initOptions: { geometry: quadGeometry, target: dummyRenderTarget } },
       );
+
+      const lambdaAoSetCameraUniforms = new Lambda( {
+        onUpdate: () => {
+          const cameraView = mat4Inverse( this.transform.matrix );
+
+          shadingMaterial.addUniformMatrixVector(
+            'cameraPV',
+            'Matrix4fv',
+            mat4Multiply( deferredCamera.projectionMatrix, cameraView ),
+          );
+        },
+        name: process.env.DEV && 'aoSetCameraUniforms',
+      } );
+
+      for ( let i = 1; i < 3; i ++ ) { // it doesn't need 0 and 3
+        aoMaterial.addUniformTextures(
+          'sampler' + i,
+          deferredTarget.getTexture( gl.COLOR_ATTACHMENT0 + i )!,
+        );
+      }
+
+      aoMaterial.addUniformTextures( 'samplerRandom', randomTexture.texture );
+
+      const aoQuad = new Quad( {
+        material: aoMaterial,
+        target: aoTarget,
+        name: process.env.DEV && 'aoQuad',
+      } );
+
+      aoComponents = [
+        lambdaAoSetCameraUniforms,
+        aoQuad,
+      ];
     }
-
-    aoMaterial.addUniformTextures( 'samplerRandom', randomTexture.texture );
-
-    const aoQuad = new Quad( {
-      material: aoMaterial,
-      target: aoTarget,
-      name: process.env.DEV && 'aoQuad',
-    } );
 
     // -- deferred ---------------------------------------------------------------------------------
     const shadingMaterial = new Material(
       quadVert,
-      deferredShadeFrag,
+      deferredShadeFrag( { withAO } ),
       {
         initOptions: { geometry: quadGeometry, target: dummyRenderTarget },
       },
@@ -157,8 +178,16 @@ export class CameraStack extends SceneNode {
       );
     }
 
-    shadingMaterial.addUniformTextures( 'samplerAo', aoTarget.texture );
+    aoTarget && shadingMaterial.addUniformTextures( 'samplerAo', aoTarget.texture );
     shadingMaterial.addUniformTextures( 'samplerIBLLUT', textureIBLLUT );
+    cubemapNode && shadingMaterial.addUniformTextures(
+      'samplerEnvDry',
+      cubemapNode.targetCompiled.texture
+    );
+    cubemapNode && shadingMaterial.addUniformTextures(
+      'samplerEnvWet',
+      cubemapNode.targetMerged.texture
+    );
     // shadingMaterial.addUniformTextures( 'samplerEnv', textureEnv );
     shadingMaterial.addUniformTextures( 'samplerRandom', randomTexture.texture );
 
@@ -172,7 +201,7 @@ export class CameraStack extends SceneNode {
     if ( process.env.DEV ) {
       if ( module.hot ) {
         module.hot.accept( '../shaders/deferredShadeFrag', () => {
-          shadingMaterial.replaceShader( quadVert, deferredShadeFrag );
+          shadingMaterial.replaceShader( quadVert, deferredShadeFrag( { withAO } ) );
         } );
       }
     }
@@ -189,34 +218,33 @@ export class CameraStack extends SceneNode {
     const forwardCamera = this.forwardCamera = new PerspectiveCamera( {
       scenes: scenes,
       renderTarget: cameraTarget,
-      near: NEAR,
-      far: FAR,
+      near,
+      far,
       clear: false,
       name: process.env.DEV && 'forwardCamera',
       materialTag: 'forward',
     } );
 
     // -- floor camera -----------------------------------------------------------------------------
-    const floorCamera = floor && new FloorCamera( this, floor );
+    const floorComponents = floor ? [ new FloorCamera( this, floor ) ] : [];
 
     // -- post -------------------------------------------------------------------------------------
-    const postStack = withPost && new PostStack( {
+    const postStack = withPost ? [ new PostStack( {
       input: cameraTarget as BufferRenderTarget,
       target,
-    } );
+    } ) ] : [];
 
     // -- components -------------------------------------------------------------------------------
     this.children = [
-      ...( floorCamera ? [ floorCamera ] : [] ),
+      ...floorComponents,
       deferredCamera,
-      lambdaAoSetCameraUniforms,
-      aoQuad,
+      ...aoComponents,
       lambdaDeferredCameraUniforms,
       lambdaLightUniforms,
       shadingQuad,
       lambdaUpdateLightShaftDeferredRenderTarget,
       forwardCamera,
-      ...( postStack ? [ postStack ] : [] ),
+      ...postStack,
     ];
   }
 }

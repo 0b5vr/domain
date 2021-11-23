@@ -56,7 +56,7 @@ export class WebpackCube extends SceneNode {
       },
     );
     forwardShell.addUniform( 'baseColor', '3f', 0.272, 0.680, 0.949 );
-    forwardShell.addUniform( 'roughness', '1f', 0.5 );
+    forwardShell.addUniform( 'roughness', '1f', 0.1 );
     forwardShell.addUniform( 'metallic', '1f', 0.0 );
     forwardShell.addUniform( 'opacity', '1f', 0.1 );
 
