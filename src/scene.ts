@@ -26,14 +26,36 @@ export const dog = new Dog();
 const canvasRenderTarget = new CanvasRenderTarget();
 
 // Mr. Update Everything
-dog.root.children.push( new Lambda( {
-  onUpdate: () => {
-    randomTexture.update();
-    music.update();
-    automaton.update( music.time );
-  },
-  name: process.env.DEV && 'update-everything',
-} ) );
+if ( process.env.DEV ) {
+  dog.root.children.push( new Lambda( {
+    onUpdate: () => {
+      randomTexture.update();
+    },
+    name: 'randomTexture',
+  } ) );
+
+  dog.root.children.push( new Lambda( {
+    onUpdate: () => {
+      music.update();
+    },
+    name: 'music',
+  } ) );
+
+  dog.root.children.push( new Lambda( {
+    onUpdate: () => {
+      automaton.update( music.time );
+    },
+    name: 'automaton',
+  } ) );
+} else {
+  dog.root.children.push( new Lambda( {
+    onUpdate: () => {
+      randomTexture.update();
+      music.update();
+      automaton.update( music.time );
+    },
+  } ) );
+}
 
 if ( process.env.DEV ) {
   promiseGui.then( ( gui ) => {
@@ -64,7 +86,7 @@ const iblLutCalc = new IBLLUTCalc();
 
 const light1 = new PointLightNode( {
   scenes: [ dog.root ],
-  shadowMapFov: 50.0,
+  shadowMapFov: 60.0,
   shadowMapNear: NEAR,
   shadowMapFar: FAR,
   name: process.env.DEV && 'light1',
@@ -76,7 +98,7 @@ light1.transform.lookAt( [ 3.0, 0.2, 3.0 ], [ 0.0, 3.0, 0.0 ] );
 
 const shaft1 = new LightShaft( {
   light: light1,
-  intensity: 0.01,
+  intensity: 0.02,
 } );
 light1.children.push( shaft1 );
 
@@ -94,7 +116,7 @@ light2.transform.lookAt( [ 0.01, 9.0, 0.01 ], [ 0.0, 3.0, 0.0 ] );
 
 const shaft2 = new LightShaft( {
   light: light2,
-  intensity: 0.01,
+  intensity: 0.02,
 } );
 light2.children.push( shaft2 );
 

@@ -11,14 +11,14 @@ export function doShadowMapping(
   dotNL: GLSLExpression<'float'>,
   lightP: GLSLExpression<'vec3'>,
   lightNearFar: GLSLExpression<'vec2'>,
-  spotness: GLSLExpression<'float'>,
+  lightParams: GLSLExpression<'vec4'>,
 ): GLSLExpression<'float'> {
   const f = cache(
     symbol,
     () => defFn(
       'float',
-      [ 'vec4', 'float', 'float', 'vec3', 'vec2', 'float' ],
-      ( tex, lenL, dotNL, lightP, lightNearFar, spotness ) => {
+      [ 'vec4', 'float', 'float', 'vec3', 'vec2', 'vec4' ],
+      ( tex, lenL, dotNL, lightP, lightNearFar, lightParams ) => {
         const depth = def( 'float', glslLinearstep(
           sw( lightNearFar, 'x' ),
           sw( lightNearFar, 'y' ),
@@ -45,9 +45,14 @@ export function doShadowMapping(
         ) );
 
         // spot
+        const spotness = sw( lightParams, 'x' );
+        const spotSharpness = sw( lightParams, 'y' );
         mulAssign( shadow, mix(
           1.0,
-          mul( smoothstep( 1.0, 0.5, length( lightPXY ) ), step( sw( lightP, 'z' ), 1.0 ) ),
+          mul(
+            smoothstep( 1.0, spotSharpness, length( lightPXY ) ),
+            step( sw( lightP, 'z' ), 1.0 ),
+          ),
           spotness,
         ) );
 
@@ -56,5 +61,5 @@ export function doShadowMapping(
     )
   );
 
-  return f( tex, lenL, dotNL, lightP, lightNearFar, spotness );
+  return f( tex, lenL, dotNL, lightP, lightNearFar, lightParams );
 }

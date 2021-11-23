@@ -13,8 +13,32 @@ import { floorFrag } from '../shaders/floorFrag';
 import { floorRoughnessFrag } from '../shaders/floorRoughnessFrag';
 import { gl, glCat } from '../globals/canvas';
 import { objectVert } from '../shaders/objectVert';
-import { quadGeometry } from '../globals/quadGeometry';
 import { quadVert } from '../shaders/quadVert';
+
+// -- generate roughness map -------------------------------------------------------------------
+export const floorRoughnessTextureTarget = new ShaderRenderTarget(
+  2048,
+  floorRoughnessFrag,
+  process.env.DEV && 'Floor/roughness',
+);
+
+if ( process.env.DEV ) {
+  if ( module.hot ) {
+    module.hot.accept(
+      [
+        '../shaders/floorRoughnessFrag',
+      ],
+      () => {
+        floorRoughnessTextureTarget.material.replaceShader(
+          quadVert,
+          floorRoughnessFrag,
+        ).then( () => {
+          floorRoughnessTextureTarget.quad.drawImmediate();
+        } );
+      },
+    );
+  }
+}
 
 export class Floor extends SceneNode {
   public forward: Material;
@@ -49,34 +73,6 @@ export class Floor extends SceneNode {
     geometry.count = 4;
     geometry.mode = gl.TRIANGLE_STRIP;
 
-    // -- generate roughness map -------------------------------------------------------------------
-    const targetRoughness = new ShaderRenderTarget( {
-      width: 2048,
-      height: 2048,
-      filter: gl.LINEAR,
-      material: new Material(
-        quadVert,
-        floorRoughnessFrag,
-        { initOptions: { geometry: quadGeometry, target: dummyRenderTarget } },
-      ),
-      name: process.env.DEV && 'Floor/roughness',
-    } );
-
-    if ( process.env.DEV ) {
-      if ( module.hot ) {
-        module.hot.accept(
-          [
-            '../shaders/floorRoughnessFrag',
-          ],
-          () => {
-            targetRoughness.material.replaceShader( quadVert, floorRoughnessFrag ).then( () => {
-              targetRoughness.quad.drawImmediate();
-            } );
-          },
-        );
-      }
-    }
-
     // -- create materials -------------------------------------------------------------------------
     const forward = this.forward = new Material(
       objectVert,
@@ -85,7 +81,7 @@ export class Floor extends SceneNode {
         initOptions: { geometry, target: dummyRenderTarget },
       },
     );
-    forward.addUniformTextures( 'samplerRoughness', targetRoughness.texture );
+    forward.addUniformTextures( 'samplerRoughness', floorRoughnessTextureTarget.texture );
 
     const depth = new Material(
       objectVert,

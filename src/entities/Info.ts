@@ -6,7 +6,7 @@ import { dummyRenderTarget, dummyRenderTargetFourDrawBuffers } from '../globals/
 import { genCube } from '../geometries/genCube';
 import { infoFrag } from '../shaders/infoFrag';
 import { objectVert } from '../shaders/objectVert';
-import { wallTexture } from './Wall';
+import { wallTextureTarget } from './Wall';
 
 export class Info extends SceneNode {
   public constructor() {
@@ -22,7 +22,7 @@ export class Info extends SceneNode {
         initOptions: { geometry: geometryCore, target: dummyRenderTargetFourDrawBuffers },
       },
     );
-    deferred.addUniformTextures( 'samplerTexture', wallTexture.texture );
+    deferred.addUniformTextures( 'samplerTexture', wallTextureTarget.texture );
 
     const depth = new Material(
       objectVert,

@@ -43,7 +43,7 @@ export function createLightUniformsLambda( materials: Material[] ): Lambda {
       material.addUniformVector(
         'lightParams',
         '4fv',
-        activeLights.map( ( light ) => [ light.spotness, 0.0, 0.0, 0.0 ] ).flat(),
+        activeLights.map( ( light ) => [ light.spotness, light.spotSharpness, 0.0, 0.0 ] ).flat(),
       );
 
       material.addUniformMatrixVector(

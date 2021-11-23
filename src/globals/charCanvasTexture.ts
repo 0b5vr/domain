@@ -13,6 +13,7 @@ const texts = [
   [ 'xorshit', 'shut up my brain' ],
   [ 'webpack', 'still suffering in the minifier hell' ],
   [ 'infodesk', 'need some help? same' ],
+  [ 'warning', 'gl_invalid_operation' ],
 ];
 
 auto( 'FUI/yugopp', ( { progress } ) => {

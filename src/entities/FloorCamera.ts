@@ -38,6 +38,7 @@ export class FloorCamera extends SceneNode {
       scenes: primaryCamera.deferredCamera.scenes!,
       target: this.mirrorTarget,
       textureIBLLUT: primaryCamera.textureIBLLUT,
+      name: process.env.DEV && 'floorCameraStack',
     } );
 
     this.children.push( new Lambda( {

@@ -77,7 +77,7 @@ export const floorFrag = build( () => {
         dotNL,
         lightP,
         lightNearFar,
-        sw( lightParams, 'x' ),
+        lightParams,
       );
       const irradiance = def( 'vec3', mul( lightCol, dotNL, lightDecay, shadow ) );
 

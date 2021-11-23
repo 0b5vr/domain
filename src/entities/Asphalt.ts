@@ -1,47 +1,37 @@
-import { Material } from '../heck/Material';
 import { RaymarcherNode } from './utils/RaymarcherNode';
 import { ShaderRenderTarget } from './utils/ShaderRenderTarget';
 import { asphaltFrag } from '../shaders/asphaltFrag';
 import { asphaltSurfaceFrag } from '../shaders/asphaltSurfaceFrag';
-import { dummyRenderTarget } from '../globals/dummyRenderTarget';
-import { gl } from '../globals/canvas';
 import { objectVert } from '../shaders/objectVert';
-import { quadGeometry } from '../globals/quadGeometry';
 import { quadVert } from '../shaders/quadVert';
+
+export const asphaltTextureTarget = new ShaderRenderTarget(
+  1024,
+  asphaltSurfaceFrag,
+  process.env.DEV && 'Asphalt/voronoi',
+);
+
+if ( process.env.DEV ) {
+  if ( module.hot ) {
+    module.hot.accept(
+      [
+        '../shaders/asphaltSurfaceFrag',
+      ],
+      () => {
+        asphaltTextureTarget.material.replaceShader( quadVert, asphaltSurfaceFrag ).then( () => {
+          asphaltTextureTarget.quad.drawImmediate();
+        } );
+      },
+    );
+  }
+}
 
 export class Asphalt extends RaymarcherNode {
   public constructor() {
     super( asphaltFrag );
 
-    const targetVoronoi = new ShaderRenderTarget( {
-      width: 1024,
-      height: 1024,
-      filter: gl.LINEAR,
-      material: new Material(
-        quadVert,
-        asphaltSurfaceFrag,
-        { initOptions: { geometry: quadGeometry, target: dummyRenderTarget } },
-      ),
-      name: process.env.DEV && 'Asphalt/voronoi',
-    } );
-
-    if ( process.env.DEV ) {
-      if ( module.hot ) {
-        module.hot.accept(
-          [
-            '../shaders/asphaltSurfaceFrag',
-          ],
-          () => {
-            targetVoronoi.material.replaceShader( quadVert, asphaltSurfaceFrag ).then( () => {
-              targetVoronoi.quad.drawImmediate();
-            } );
-          },
-        );
-      }
-    }
-
     this.forEachMaterials( ( material ) => {
-      material.addUniformTextures( 'samplerSurface', targetVoronoi.texture );
+      material.addUniformTextures( 'samplerSurface', asphaltTextureTarget.texture );
     } );
 
     if ( process.env.DEV ) {

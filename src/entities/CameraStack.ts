@@ -117,7 +117,7 @@ export class CameraStack extends SceneNode {
     );
 
     const lambdaDeferredCameraUniforms = new Lambda( {
-      onUpdate: () => {
+      onUpdate: ( { globalTransform } ) => {
         const cameraView = mat4Inverse( this.transform.matrix );
 
         shadingMaterial.addUniformMatrixVector(
@@ -142,7 +142,7 @@ export class CameraStack extends SceneNode {
         shadingMaterial.addUniform(
           'cameraPos',
           '3f',
-          ...this.transform.position,
+          ...globalTransform.position,
         );
       },
       name: process.env.DEV && 'lambdaCameraUniforms',

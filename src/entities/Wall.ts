@@ -8,7 +8,6 @@ import { createRaymarchCameraUniformsLambda } from './utils/createRaymarchCamera
 import { dummyRenderTarget, dummyRenderTargetFourDrawBuffers } from '../globals/dummyRenderTarget';
 import { gl, glCat } from '../globals/canvas';
 import { objectVert } from '../shaders/objectVert';
-import { quadGeometry } from '../globals/quadGeometry';
 import { quadVert } from '../shaders/quadVert';
 import { wallFrag } from '../shaders/wallFrag';
 import { wallTextureFrag } from '../shaders/wallTextureFrag';
@@ -33,17 +32,11 @@ geometry.count = 4;
 geometry.mode = gl.TRIANGLE_STRIP;
 
 // -- generate texture -----------------------------------------------------------------------------
-export const wallTexture = new ShaderRenderTarget( {
-  width: 4096,
-  height: 4096,
-  filter: gl.LINEAR,
-  material: new Material(
-    quadVert,
-    wallTextureFrag,
-    { initOptions: { geometry: quadGeometry, target: dummyRenderTarget } },
-  ),
-  name: process.env.DEV && 'Wall/roughness',
-} );
+export const wallTextureTarget = new ShaderRenderTarget(
+  4096,
+  wallTextureFrag,
+  process.env.DEV && 'Wall/roughness',
+);
 
 if ( process.env.DEV ) {
   if ( module.hot ) {
@@ -52,8 +45,8 @@ if ( process.env.DEV ) {
         '../shaders/wallTextureFrag',
       ],
       () => {
-        wallTexture.material.replaceShader( quadVert, wallTextureFrag ).then( () => {
-          wallTexture.quad.drawImmediate();
+        wallTextureTarget.material.replaceShader( quadVert, wallTextureFrag ).then( () => {
+          wallTextureTarget.quad.drawImmediate();
         } );
       },
     );
@@ -68,7 +61,7 @@ const deferred = new Material(
     initOptions: { geometry, target: dummyRenderTargetFourDrawBuffers },
   },
 );
-deferred.addUniformTextures( 'samplerTexture', wallTexture.texture );
+deferred.addUniformTextures( 'samplerTexture', wallTextureTarget.texture );
 
 const depth = new Material(
   objectVert,

@@ -82,7 +82,7 @@ export class LightShaft extends SceneNode {
         forward.addUniform( 'lightNearFar', '2f', light.shadowMapNear, light.shadowMapFar );
         forward.addUniform( 'lightPos', '3f', ...light.globalTransformCache.position );
         forward.addUniform( 'lightColor', '3f', ...light.color );
-        forward.addUniform( 'lightParams', '4f', light.spotness, 0.0, 0.0, 0.0 );
+        forward.addUniform( 'lightParams', '4f', light.spotness, light.spotSharpness, 0.0, 0.0 );
 
         forward.addUniformMatrixVector(
           'lightPV',

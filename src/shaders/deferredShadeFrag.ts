@@ -57,9 +57,7 @@ export const deferredShadeFrag = build( () => {
     const depth = sw( tex1, 'w' );
     const mtlId = sw( tex2, 'w' );
 
-    const rawV = sub( cameraPos, position );
-    // const lenV = def( 'float', length( rawV ) );
-    const V = def( 'vec3', normalize( rawV ) );
+    const V = def( 'vec3', normalize( sub( cameraPos, position ) ) );
 
     const dotNV = clamp( dot( normal, V ), EPSILON, 1.0 );
 
@@ -100,7 +98,7 @@ export const deferredShadeFrag = build( () => {
             dotNL,
             lightP,
             lightNearFar,
-            sw( lightParams, 'x' ),
+            lightParams,
           ),
         );
 
@@ -147,9 +145,6 @@ export const deferredShadeFrag = build( () => {
         addAssign( outColor, sw( tex3, 'xyz' ) );
       } ],
     );
-
-    // fog
-    // mulAssign( outColor, exp( mul( -0.4, max( sub( lenV, 3.0 ), 0.0 ) ) ) );
 
     assign( fragColor, vec4( clamp( outColor, 0.0, 1E3 ), 1.0 ) );
 

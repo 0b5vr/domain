@@ -22,6 +22,7 @@ export interface PointLightNodeOptions extends SceneNodeOptions {
 
 export class PointLightNode extends SceneNode {
   public spotness: number = 0.0;
+  public spotSharpness: number = 0.5;
   public color: [ number, number, number ] = [ 1.0, 1.0, 1.0 ];
   public camera: PerspectiveCamera;
   public shadowMap: BufferRenderTarget;

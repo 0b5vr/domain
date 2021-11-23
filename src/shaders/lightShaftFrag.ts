@@ -20,6 +20,7 @@ export const lightShaftFrag = build( () => {
   const cameraPos = defUniformNamed( 'vec3', 'cameraPos' );
   const lightPos = defUniformNamed( 'vec3', 'lightPos' );
   const lightColor = defUniformNamed( 'vec3', 'lightColor' );
+  const lightParams = defUniformNamed( 'vec4', 'lightParams' );
   const lightPV = defUniformNamed( 'mat4', 'lightPV' );
   const projectionMatrix = defUniformNamed( 'mat4', 'projectionMatrix' );
   const viewMatrix = defUniformNamed( 'mat4', 'viewMatrix' );
@@ -48,7 +49,7 @@ export const lightShaftFrag = build( () => {
       num( 1.0 ),
       lightP,
       lightNearFar,
-      num( 1.0 ),
+      vec4( 1.0, sw( lightParams, 'yzw' ) ),
     );
 
     const invSqLenL = div( 1.0, sq( lenL ) );
