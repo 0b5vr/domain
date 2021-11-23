@@ -29,6 +29,7 @@ const canvasRenderTarget = new CanvasRenderTarget();
 dog.root.children.push( new Lambda( {
   onUpdate: () => {
     randomTexture.update();
+    music.update();
     automaton.update( music.time );
   },
   name: process.env.DEV && 'update-everything',

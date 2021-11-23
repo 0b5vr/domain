@@ -24,7 +24,6 @@ export class Dog {
 
   public update(): void {
     if ( this.active ) {
-      music.update();
       this.root.update( {
         frameCount: this.__frameCount ++,
         time: music.time,

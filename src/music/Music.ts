@@ -6,9 +6,9 @@ import { audio } from '../globals/music';
 import { binarySearch } from '@0b5vr/automaton';
 import { createIR } from './createIR';
 import { gl, glCat } from '../globals/canvas';
+import { gui, promiseGui } from '../globals/gui';
 import { injectCodeToShader } from '../utils/injectCodeToShader';
 import { musicVert } from '../shaders/musicVert';
-import { promiseGui } from '../globals/gui';
 import { randomTextureStatic } from '../globals/randomTexture';
 
 const discardFrag = '#version 300 es\nvoid main(){discard;}';
@@ -164,6 +164,13 @@ export abstract class Music {
   protected abstract __updateImpl(): void;
 
   protected __render( time: number, callback: ( channel: number ) => void ): void {
+    if ( process.env.DEV ) {
+      const ha = gui;
+      if ( ha?.value( 'audio/volume' ) === 0.0 ) {
+        return;
+      }
+    }
+
     this.__automatonManager.update( time );
 
     const program = this.__program;
@@ -212,8 +219,6 @@ export abstract class Music {
         gl.disable( gl.RASTERIZER_DISCARD );
       } );
     } );
-
-    gl.finish(); // fenceよくわからん
 
     [ 0, 1 ].map( ( i ) => {
       glCat.bindVertexBuffer(
