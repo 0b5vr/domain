@@ -3,7 +3,6 @@ import { Geometry } from './Geometry';
 import { RenderTarget } from './RenderTarget';
 import { SHADERPOOL } from './ShaderPool';
 import { gl, glCat } from '../globals/canvas';
-import { injectCodeToShader } from '../utils/injectCodeToShader';
 
 export type MaterialTag =
   | 'deferred'
@@ -20,8 +19,6 @@ export interface MaterialInitOptions {
 
 export class Material {
   protected __linkOptions: GLCatProgramLinkOptions;
-
-  protected __defines: string[];
 
   protected __uniforms: {
     [ name: string ]: {
@@ -57,25 +54,17 @@ export class Material {
     return this.__vert;
   }
 
-  public get vertWithDefines(): string {
-    return this.__withDefines( this.vert );
-  }
-
   private __frag: string;
 
   public get frag(): string {
     return this.__frag;
   }
 
-  public get fragWithDefines(): string {
-    return this.__withDefines( this.frag );
-  }
-
   public get program(): GLCatProgram {
     return SHADERPOOL.getProgram(
       this,
-      this.vertWithDefines,
-      this.fragWithDefines,
+      this.vert,
+      this.frag,
     );
   }
 
@@ -84,8 +73,7 @@ export class Material {
   public constructor(
     vert: string,
     frag: string,
-    { defines, blend, linkOptions, initOptions }: {
-      defines?: string[],
+    { blend, linkOptions, initOptions }: {
       blend?: [ GLenum, GLenum ],
       linkOptions?: GLCatProgramLinkOptions,
       initOptions?: MaterialInitOptions,
@@ -94,7 +82,6 @@ export class Material {
     this.__vert = vert;
     this.__frag = frag;
     this.__linkOptions = linkOptions ?? {};
-    this.__defines = defines ?? [];
     this.blend = blend ?? [ gl.ONE, gl.ZERO ];
 
     if ( initOptions ) {
@@ -164,22 +151,18 @@ export class Material {
       linkOptions?: GLCatProgramLinkOptions,
     },
   ): Promise<void> {
-    if ( options?.defines ) {
-      this.__defines = [ ...options.defines ];
-    }
-
     const program = await SHADERPOOL.getProgramAsync(
       this,
-      this.__withDefines( vert ),
-      this.__withDefines( frag ),
+      this.__vert,
+      this.__frag,
       options?.linkOptions,
     ).catch( ( e ) => {
       console.error( e );
     } );
 
     if ( program ) {
-      const prevVert = this.vertWithDefines;
-      const prevFrag = this.fragWithDefines;
+      const prevVert = this.vert;
+      const prevFrag = this.frag;
 
       this.__vert = vert;
       this.__frag = frag;
@@ -199,17 +182,5 @@ export class Material {
     glCat.useProgram( this.program, () => {
       geometry.drawElementsOrArrays();
     } );
-  }
-
-  protected __withDefines( code: string ): string {
-    let inject = '';
-
-    this.__defines.map( ( value ) => {
-      if ( value != null ) {
-        inject += `#define ${value}\n`;
-      }
-    } );
-
-    return injectCodeToShader( code, inject );
   }
 }

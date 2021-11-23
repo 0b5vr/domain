@@ -142,7 +142,6 @@ export class Fluid extends SceneNode {
       quadVert,
       colorFrag,
       {
-        defines: [ `GRID_RESO ${ GRID_RESO }`, `GRID_RESO_SQRT ${ GRID_RESO_SQRT }` ],
         initOptions: { geometry: quadGeometry, target: dummyRenderTarget },
       },
     );
@@ -183,7 +182,6 @@ export class Fluid extends SceneNode {
       quadVert,
       fluidResolvePressureFrag( GRID_RESO_SQRT, GRID_RESO ),
       {
-        defines: [ `GRID_RESO ${ GRID_RESO }`, `GRID_RESO_SQRT ${ GRID_RESO_SQRT }` ],
         initOptions: { geometry: quadGeometry, target: dummyRenderTarget },
       },
     );
