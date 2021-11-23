@@ -55,12 +55,12 @@ export const warningCubeFrag = ( tag: 'forward' | 'deferred' | 'depth' ): string
       );
 
       const phase = dot( p, vec3( 10.0 ) );
-      const nx = sw( mapSurface, 'x' );
-      const ny = mul( 0.2, sw( mapSurface, 'y' ) );
-      assign( line, smoothstep( 0.1, 0.3, add( sin( phase ), ny ) ) );
+      const height = sw( mapSurface, 'x' );
+      const fbm = mul( 0.2, sw( mapSurface, 'y' ) );
+      assign( line, smoothstep( 0.1, 0.3, add( sin( phase ), fbm ) ) );
       assign( dirt, sw( mapSurface, 'z' ) );
 
-      subAssign( d, mul( nx, 0.002 ) );
+      subAssign( d, mul( height, 0.002 ) );
     }
 
     retFn( vec4( d, line, dirt, 0 ) );
