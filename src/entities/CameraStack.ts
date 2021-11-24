@@ -28,6 +28,7 @@ export interface CameraStackOptions extends ComponentOptions {
   floor?: Floor;
   near?: number;
   far?: number;
+  fov?: number;
   // textureEnv: GLCatTexture;
   withPost?: boolean;
   withAO?: boolean;
@@ -44,7 +45,7 @@ export class CameraStack extends SceneNode {
     const far = options.far ?? FAR;
     const withAO = options.withAO ?? false;
 
-    const { target, scenes, floor, withPost } = options;
+    const { target, scenes, floor, withPost, fov } = options;
 
     const cameraTarget = withPost ? new BufferRenderTarget( {
       width: target.width,
@@ -66,6 +67,7 @@ export class CameraStack extends SceneNode {
       renderTarget: deferredTarget,
       near,
       far,
+      fov,
       name: process.env.DEV && 'deferredCamera',
       materialTag: 'deferred',
     } );
@@ -207,6 +209,7 @@ export class CameraStack extends SceneNode {
       renderTarget: cameraTarget,
       near,
       far,
+      fov,
       clear: false,
       name: process.env.DEV && 'forwardCamera',
       materialTag: 'forward',

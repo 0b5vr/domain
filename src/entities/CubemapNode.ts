@@ -58,6 +58,7 @@ export class CubemapNode extends SceneNode {
         scenes,
         target,
         near: 2.9,
+        fov: 90.0,
         name: process.env.DEV && `cubemapCameraStack${ i }`,
       } );
 

@@ -225,7 +225,6 @@ if ( process.env.DEV && module.hot ) {
 
 dog.root.children.push(
   iblLutCalc,
-  cubemapNode,
   fui,
   stuff,
   walls,
@@ -233,6 +232,7 @@ dog.root.children.push(
   light1,
   light2,
   light3,
+  cubemapNode,
   // plane,
   cameraStack,
 );

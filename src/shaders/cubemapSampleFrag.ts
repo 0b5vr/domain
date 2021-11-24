@@ -1,5 +1,5 @@
 import { PI } from '../utils/constants';
-import { addAssign, assign, build, def, defInNamed, defOutNamed, defUniformNamed, dot, floor, forLoop, fract, gte, ifThen, insert, log2, main, max, mix, mul, mulAssign, neg, num, pow, reflect, sq, sub, sw, texture, vec2, vec4 } from '../shader-builder/shaderBuilder';
+import { addAssign, assign, build, def, defInNamed, defOutNamed, defUniformNamed, dot, floor, forLoop, fract, gte, ifThen, insert, log2, main, max, mix, mod, mul, mulAssign, neg, num, pow, reflect, sq, sub, sw, texture, vec2, vec4 } from '../shader-builder/shaderBuilder';
 import { cubemapUV } from './modules/cubemapUV';
 import { cubemapUVInv } from './modules/cubemapUVInv';
 import { glslDefRandom } from './modules/glslDefRandom';
@@ -16,12 +16,12 @@ export const cubemapSampleFrag = build( () => {
   const samplerPrev = defUniformNamed( 'sampler2D', 'samplerPrev' );
   const samplerCubemap = defUniformNamed( 'sampler2D', 'samplerCubemap' );
 
-  const time = defUniformNamed( 'float', 'time' );
+  const frameCount = defUniformNamed( 'float', 'frameCount' );
 
   const { init, random } = glslDefRandom();
 
   main( () => {
-    init( vec4( mul( vUv, 100.0 ), fract( time ), 0.0 ) );
+    init( vec4( mul( vUv, 100.0 ), mod( frameCount, 100.0 ), 0.0 ) );
 
     const isDiffuse = def( 'bool', false );
     const lv = def( 'float', floor( neg( log2( sub( 1.0, sw( vUv, 'y' ) ) ) ) ) );

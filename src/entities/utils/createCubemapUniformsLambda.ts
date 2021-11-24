@@ -36,5 +36,6 @@ export function createCubemapUniformsLambda( materials: Material[] ): Lambda {
 
   return new Lambda( {
     onUpdate: lambda,
+    onDraw: lambda,
   } );
 }
