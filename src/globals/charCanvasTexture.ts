@@ -15,6 +15,7 @@ const texts = [
   [ 'infodesk', 'need some help? same' ],
   [ 'warning', 'gl_invalid_operation' ],
   [ 'parking_space', 'beware of floating cubes' ],
+  [ 'octree', 'does not shaped like a tree' ],
 ];
 
 auto( 'FUI/yugopp', ( { progress } ) => {

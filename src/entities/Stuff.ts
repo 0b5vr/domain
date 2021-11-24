@@ -4,6 +4,7 @@ import { Fluid } from './Fluid';
 import { Info } from './Info';
 import { Lambda } from '../heck/components/Lambda';
 import { MengerSponge } from './MengerSponge';
+import { Octree } from './Octree';
 import { ParkingSpace } from './ParkingSpace';
 import { RandomTextureCube } from './RandomTextureCube';
 import { RawVector3, quatFromAxisAngle, vecNormalize } from '@0b5vr/experimental';
@@ -33,6 +34,7 @@ export class Stuff extends SceneNode {
       new Info(),
       new WarningCube(),
       new ParkingSpace(),
+      new Octree(),
     ].map( ( node, i ) => {
       if ( process.env.DEV ) {
         const current = auto( 'stuff' );
