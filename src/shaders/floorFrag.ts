@@ -1,4 +1,5 @@
 import { add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformArrayNamed, defUniformNamed, div, dot, glFragCoord, insert, main, max, mix, mul, normalize, pow, retFn, sq, sub, sw, texture, textureLod, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { calcAlbedoF0 } from './modules/calcAlbedoF0';
 import { calcL } from './modules/calcL';
 import { defDoSomethingUsingSamplerArray } from './modules/defDoSomethingUsingSamplerArray';
 import { doAnalyticLighting } from './modules/doAnalyticLighting';
@@ -53,6 +54,8 @@ export const floorFrag = build( () => {
     );
     const col = def( 'vec3', mul( sw( tex, 'xyz' ), FReflect ) );
 
+    const { albedo, f0 } = calcAlbedoF0( baseColor, metallic );
+
     forEachLights( ( {
       iLight,
       lightPos,
@@ -84,7 +87,7 @@ export const floorFrag = build( () => {
       // lighting
       const lightShaded = def( 'vec3', mul(
         irradiance,
-        doAnalyticLighting( L, V, vNormal, baseColor, roughness, metallic ),
+        doAnalyticLighting( L, V, vNormal, roughness, albedo, f0 ),
       ) );
 
       addAssign( col, lightShaded );

@@ -13,6 +13,8 @@ import { quadGeometry } from '../globals/quadGeometry';
 import { quadVert } from '../shaders/quadVert';
 import { vdc } from '../utils/vdc';
 
+export const IBLLUTCalcTag = Symbol();
+
 export class IBLLUTCalc extends SceneNode {
   public swap: Swap<BufferRenderTarget>;
 
@@ -22,6 +24,8 @@ export class IBLLUTCalc extends SceneNode {
 
   public constructor() {
     super();
+
+    this.tags.push( IBLLUTCalcTag );
 
     // -- swap -------------------------------------------------------------------------------------
     this.swap = new Swap(

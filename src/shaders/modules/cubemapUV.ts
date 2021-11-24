@@ -4,8 +4,9 @@ const symbol = Symbol();
 
 export function cubemapUV(
   v: GLSLExpression<'vec3'>,
+  scale: GLSLExpression<'float'>,
 ): GLSLExpression<'vec2'> {
-  const f = cache( symbol, () => defFn( 'vec2', [ 'vec3' ], ( v ) => {
+  const f = cache( symbol, () => defFn( 'vec2', [ 'vec3', 'float' ], ( v, scale ) => {
     const va = def( 'vec3', abs( v ) );
     const face = def( 'vec3', mul(
       sign( v ),
@@ -20,7 +21,7 @@ export function cubemapUV(
         mix(
           vec2( 0.5, 0.5 ),
           vec2( 1.0, 1.0 ),
-          div( vec2( sw( v, 'zy' ) ), sw( v, 'x' ) )
+          div( vec2( mul( scale, sw( v, 'zy' ) ) ), sw( v, 'x' ) )
         ),
       ],
       [ // nx
@@ -28,7 +29,7 @@ export function cubemapUV(
         mix(
           vec2( 0.5, 1.5 ),
           vec2( 1.0, 1.0 ),
-          div( vec2( sw( v, 'zy' ) ), sw( v, 'x' ) )
+          div( vec2( mul( scale, sw( v, 'zy' ) ) ), sw( v, 'x' ) )
         ),
       ],
       [ // py
@@ -36,7 +37,7 @@ export function cubemapUV(
         mix(
           vec2( 1.5, 0.5 ),
           vec2( 1.0, 0.0 ),
-          div( vec2( sw( v, 'xz' ) ), sw( v, 'y' ) )
+          div( vec2( mul( scale, sw( v, 'xz' ) ) ), sw( v, 'y' ) )
         ),
       ],
       [ // ny
@@ -44,7 +45,7 @@ export function cubemapUV(
         mix(
           vec2( 1.5, 1.5 ),
           vec2( 2.0, 1.0 ),
-          div( vec2( sw( v, 'xz' ) ), sw( v, 'y' ) )
+          div( vec2( mul( scale, sw( v, 'xz' ) ) ), sw( v, 'y' ) )
         ),
       ],
       [ // pz
@@ -52,7 +53,7 @@ export function cubemapUV(
         mix(
           vec2( 2.5, 0.5 ),
           vec2( 2.0, 1.0 ),
-          div( vec2( sw( v, 'xy' ) ), sw( v, 'z' ) )
+          div( vec2( mul( scale, sw( v, 'xy' ) ) ), sw( v, 'z' ) )
         ),
       ],
       [ // nz
@@ -60,7 +61,7 @@ export function cubemapUV(
         mix(
           vec2( 2.5, 1.5 ),
           vec2( 2.0, 1.0 ),
-          div( vec2( sw( v, 'xy' ) ), sw( v, 'z' ) )
+          div( vec2( mul( scale, sw( v, 'xy' ) ) ), sw( v, 'z' ) )
         ),
       ],
     );
@@ -68,5 +69,5 @@ export function cubemapUV(
     retFn( div( uv, vec2( 3.0, 2.0 ) ) );
   } ) );
 
-  return f( v );
+  return f( v, scale );
 }

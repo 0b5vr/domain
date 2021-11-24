@@ -3,6 +3,7 @@ import { MTL_PBR_ROUGHNESS_METALLIC } from '../shaders/deferredShadeFrag';
 import { Material } from '../heck/Material';
 import { Mesh } from '../heck/components/Mesh';
 import { SceneNode } from '../heck/components/SceneNode';
+import { createCubemapUniformsLambda } from './utils/createCubemapUniformsLambda';
 import { createLightUniformsLambda } from './utils/createLightUniformsLambda';
 import { deferredColorFrag } from '../shaders/deferredColorFrag';
 import { depthFrag } from '../shaders/depthFrag';
@@ -56,9 +57,9 @@ export class WebpackCube extends SceneNode {
       },
     );
     forwardShell.addUniform( 'baseColor', '3f', 0.272, 0.680, 0.949 );
-    forwardShell.addUniform( 'roughness', '1f', 0.1 );
+    forwardShell.addUniform( 'roughness', '1f', 0.2 );
     forwardShell.addUniform( 'metallic', '1f', 0.0 );
-    forwardShell.addUniform( 'opacity', '1f', 0.1 );
+    forwardShell.addUniform( 'opacity', '1f', 0.2 );
 
     const meshShellFront = new Mesh( {
       geometry: geometryShellFront,
@@ -74,6 +75,9 @@ export class WebpackCube extends SceneNode {
 
     const lightUniformsLambda = createLightUniformsLambda( [ forwardShell ] );
 
+    // -- receive cubemap stuff --------------------------------------------------------------------
+    const lambdaCubemap = createCubemapUniformsLambda( [ forwardShell ] );
+
     // -- strokes ----------------------------------------------------------------------------------
     const strokeCore = new BoundingBox( { dashRatio: 0.0 } );
     strokeCore.transform.scale = [ 0.255, 0.255, 0.255 ];
@@ -84,6 +88,7 @@ export class WebpackCube extends SceneNode {
     // -- components -------------------------------------------------------------------------------
     this.children = [
       lightUniformsLambda,
+      lambdaCubemap,
       meshCore,
       meshShellBack,
       meshShellFront,
@@ -93,6 +98,7 @@ export class WebpackCube extends SceneNode {
 
     if ( process.env.DEV ) {
       lightUniformsLambda.name = 'lightUniformsLambda';
+      lambdaCubemap.name = 'lambdaCubemap';
       meshCore.name = 'meshCore';
       meshShellBack.name = 'meshShellBack';
       meshShellFront.name = 'meshShellFront';

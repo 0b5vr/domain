@@ -1,10 +1,8 @@
 import { AO_RESOLUTION_RATIO, FAR, NEAR } from '../config';
 import { BufferRenderTarget } from '../heck/BufferRenderTarget';
 import { Component, ComponentOptions } from '../heck/components/Component';
-import { CubemapNode } from './CubemapNode';
 import { Floor } from './Floor';
 import { FloorCamera } from './FloorCamera';
-import { GLCatTexture } from '@fms-cat/glcat-ts';
 import { Lambda } from '../heck/components/Lambda';
 import { LightShaft, LightShaftTag } from './LightShaft';
 import { Material } from '../heck/Material';
@@ -13,6 +11,7 @@ import { PostStack } from './PostStack';
 import { Quad } from '../heck/components/Quad';
 import { RenderTarget } from '../heck/RenderTarget';
 import { SceneNode } from '../heck/components/SceneNode';
+import { createCubemapUniformsLambda } from './utils/createCubemapUniformsLambda';
 import { createLightUniformsLambda } from './utils/createLightUniformsLambda';
 import { deferredShadeFrag } from '../shaders/deferredShadeFrag';
 import { dummyRenderTarget } from '../globals/dummyRenderTarget';
@@ -26,9 +25,7 @@ import { ssaoFrag } from '../shaders/ssaoFrag';
 export interface CameraStackOptions extends ComponentOptions {
   scenes: SceneNode[];
   target: RenderTarget;
-  textureIBLLUT: GLCatTexture;
   floor?: Floor;
-  cubemapNode?: CubemapNode;
   near?: number;
   far?: number;
   // textureEnv: GLCatTexture;
@@ -39,8 +36,6 @@ export interface CameraStackOptions extends ComponentOptions {
 export class CameraStack extends SceneNode {
   public deferredCamera: PerspectiveCamera;
   public forwardCamera: PerspectiveCamera;
-  public cubemapNode?: CubemapNode;
-  public textureIBLLUT: GLCatTexture;
 
   public constructor( options: CameraStackOptions ) {
     super( options );
@@ -49,9 +44,7 @@ export class CameraStack extends SceneNode {
     const far = options.far ?? FAR;
     const withAO = options.withAO ?? false;
 
-    const { target, scenes, textureIBLLUT, floor, cubemapNode, withPost } = options;
-    this.cubemapNode = cubemapNode;
-    this.textureIBLLUT = textureIBLLUT;
+    const { target, scenes, floor, withPost } = options;
 
     const cameraTarget = withPost ? new BufferRenderTarget( {
       width: target.width,
@@ -179,15 +172,9 @@ export class CameraStack extends SceneNode {
     }
 
     aoTarget && shadingMaterial.addUniformTextures( 'samplerAo', aoTarget.texture );
-    shadingMaterial.addUniformTextures( 'samplerIBLLUT', textureIBLLUT );
-    cubemapNode && shadingMaterial.addUniformTextures(
-      'samplerEnvDry',
-      cubemapNode.targetCompiled.texture
-    );
-    cubemapNode && shadingMaterial.addUniformTextures(
-      'samplerEnvWet',
-      cubemapNode.targetMerged.texture
-    );
+
+    const lambdaCubemap = createCubemapUniformsLambda( [ shadingMaterial ] );
+
     // shadingMaterial.addUniformTextures( 'samplerEnv', textureEnv );
     shadingMaterial.addUniformTextures( 'samplerRandom', randomTexture.texture );
 
@@ -241,6 +228,7 @@ export class CameraStack extends SceneNode {
       ...aoComponents,
       lambdaDeferredCameraUniforms,
       lambdaLightUniforms,
+      lambdaCubemap,
       shadingQuad,
       lambdaUpdateLightShaftDeferredRenderTarget,
       forwardCamera,

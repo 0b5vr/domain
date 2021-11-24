@@ -1,5 +1,5 @@
-import { DIELECTRIC_SPECULAR, INV_PI, ONE_SUB_DIELECTRIC_SPECULAR } from '../../utils/constants';
 import { GLSLExpression, GLSLFloatExpression, add, cache, def, defFn, dot, max, mix, mul, normalize, num, retFn, vec3 } from '../../shader-builder/shaderBuilder';
+import { INV_PI } from '../../utils/constants';
 import { dGGX } from './dGGX';
 import { fresnelSchlick } from './fresnelSchlick';
 import { vGGX } from './vGGX';
@@ -10,20 +10,16 @@ export function doAnalyticLighting(
   L: GLSLExpression<'vec3'>,
   V: GLSLExpression<'vec3'>,
   N: GLSLExpression<'vec3'>,
-  baseColor: GLSLExpression<'vec3'>,
   roughness: GLSLFloatExpression,
-  metallic: GLSLFloatExpression,
+  albedo: GLSLExpression<'vec3'>,
+  f0: GLSLExpression<'vec3'>,
 ): GLSLExpression<'vec3'> {
   const f = cache(
     symbol,
     () => defFn(
       'vec3',
-      [ 'vec3', 'vec3', 'vec3', 'vec3', 'float', 'float' ],
-      ( L, V, N, baseColor, roughness, metallic ) => {
-        const albedo = mix( mul( baseColor, ONE_SUB_DIELECTRIC_SPECULAR ), vec3( 0.0 ), metallic );
-        const f0 = mix( DIELECTRIC_SPECULAR, baseColor, metallic );
-        const f90 = vec3( 1.0 );
-
+      [ 'vec3', 'vec3', 'vec3', 'float', 'vec3', 'vec3' ],
+      ( L, V, N, roughness, albedo, f0 ) => {
         const H = def( 'vec3', normalize( add( L, V ) ) );
 
         const dotNL = def( 'float', max( dot( N, L ), 1E-3 ) );
@@ -36,7 +32,7 @@ export function doAnalyticLighting(
         const Vis = vGGX( dotNL, dotNV, roughnessSq );
         const D = dGGX( dotNH, roughnessSq );
 
-        const FSpec = fresnelSchlick( dotVH, f0, f90 );
+        const FSpec = fresnelSchlick( dotVH, f0, vec3( 1.0 ) );
         const diffuse = mul( albedo, INV_PI );
         const specular = vec3( mul( Vis, D ) );
 
@@ -51,5 +47,5 @@ export function doAnalyticLighting(
     )
   );
 
-  return f( L, V, N, baseColor, num( roughness ), num( metallic ) );
+  return f( L, V, N, num( roughness ), albedo, f0 );
 }

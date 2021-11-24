@@ -14,6 +14,8 @@ import { dummyRenderTarget } from '../globals/dummyRenderTarget';
 import { quadGeometry } from '../globals/quadGeometry';
 import { quadVert } from '../shaders/quadVert';
 
+export const CubemapNodeTag = Symbol();
+
 const INV_SQRT2 = 1.0 / Math.sqrt( 2.0 );
 
 const CUBEMAP_ROTATIONS: RawQuaternion[] = [ // 🔥
@@ -37,9 +39,11 @@ export class CubemapNode extends SceneNode {
   public constructor( options: CubemapNodeOptions ) {
     super( options );
 
+    this.tags.push( CubemapNodeTag );
+
     this.transform.position = [ 0.0, 3.0, 0.0 ];
 
-    const { scenes, textureIBLLUT } = options;
+    const { scenes } = options;
 
     // -- cubemap ----------------------------------------------------------------------------------
     const targets = [ ...Array( 6 ) ].map( ( _, i ) => new BufferRenderTarget( {
@@ -53,8 +57,7 @@ export class CubemapNode extends SceneNode {
       const cameraStack = new CameraStack( {
         scenes,
         target,
-        textureIBLLUT,
-        near: 1.0,
+        near: 2.9,
         name: process.env.DEV && `cubemapCameraStack${ i }`,
       } );
 

@@ -1,5 +1,6 @@
 import { MTL_PBR_ROUGHNESS_METALLIC } from './deferredShadeFrag';
 import { abs, add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, discard, div, dot, glFragCoord, glFragDepth, gt, ifThen, insert, length, main, max, mix, mul, neg, normalize, retFn, sin, smoothstep, sq, sub, subAssign, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { calcAlbedoF0 } from './modules/calcAlbedoF0';
 import { calcDepth } from './modules/calcDepth';
 import { calcL } from './modules/calcL';
 import { calcNormal } from './modules/calcNormal';
@@ -137,9 +138,11 @@ export const warningCubeFrag = ( tag: 'forward' | 'deferred' | 'depth' ): string
         const lightDecay = div( 1.0, sq( lenL ) );
         const irradiance = def( 'vec3', mul( lightCol, dotNL, lightDecay ) );
 
+        const { albedo, f0 } = calcAlbedoF0( baseColor, metallic );
+
         addAssign( col, mul(
           irradiance,
-          doAnalyticLighting( L, V, N, baseColor, roughness, metallic ),
+          doAnalyticLighting( L, V, N, roughness, albedo, f0 ),
         ) );
       } );
 

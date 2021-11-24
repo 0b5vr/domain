@@ -159,9 +159,7 @@ if ( process.env.DEV ) {
 
 const cameraStackOptions = {
   scenes: [ dog.root ],
-  textureIBLLUT: iblLutCalc.texture,
   floor,
-  cubemapNode,
   withAO: true,
   withPost: true,
 };
@@ -227,15 +225,15 @@ if ( process.env.DEV && module.hot ) {
 
 dog.root.children.push(
   iblLutCalc,
+  cubemapNode,
+  fui,
+  stuff,
+  walls,
   floor,
   light1,
   light2,
   light3,
-  cubemapNode,
   // plane,
-  fui,
-  walls,
-  stuff,
   cameraStack,
 );
 

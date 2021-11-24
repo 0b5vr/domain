@@ -1,5 +1,5 @@
 import { PI } from '../utils/constants';
-import { addAssign, assign, build, def, defInNamed, defOutNamed, defUniformNamed, dot, floor, forLoop, fract, gte, ifThen, insert, log2, main, max, mix, mul, mulAssign, neg, pow, reflect, sq, sub, sw, texture, vec2, vec4 } from '../shader-builder/shaderBuilder';
+import { addAssign, assign, build, def, defInNamed, defOutNamed, defUniformNamed, dot, floor, forLoop, fract, gte, ifThen, insert, log2, main, max, mix, mul, mulAssign, neg, num, pow, reflect, sq, sub, sw, texture, vec2, vec4 } from '../shader-builder/shaderBuilder';
 import { cubemapUV } from './modules/cubemapUV';
 import { cubemapUVInv } from './modules/cubemapUVInv';
 import { glslDefRandom } from './modules/glslDefRandom';
@@ -55,7 +55,7 @@ export const cubemapSampleFrag = build( () => {
 
       addAssign( accum, mul(
         dotNL,
-        texture( samplerCubemap, cubemapUV( L ) ),
+        texture( samplerCubemap, cubemapUV( L, num( 255.0 / 256.0 ) ) ),
       ) );
     } );
 

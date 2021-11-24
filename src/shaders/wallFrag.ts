@@ -1,4 +1,4 @@
-import { MTL_PBR_ROUGHNESS_METALLIC } from './deferredShadeFrag';
+import { MTL_PBR_EMISSIVE3_ROUGHNESS } from './deferredShadeFrag';
 import { add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, discard, div, glFragCoord, glFragDepth, gt, ifThen, insert, length, main, mix, mul, normalize, retFn, sub, subAssign, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcDepth } from './modules/calcDepth';
 import { calcNormal } from './modules/calcNormal';
@@ -78,10 +78,14 @@ export const wallFrag = ( tag: 'deferred' | 'depth' ): string => build( () => {
     addAssign( baseColor, mul( vec3( 0.0, -0.01, -0.02 ), sw( isect, 'z' ) ) );
     assign( baseColor, mix( baseColor, vec3( 0.2 ), dirt ) );
 
+    const emissive = def( 'vec3', vec3( 0.0 ) );
+    // const phase = mul( 20.0, sw( rp, 'y' ) );
+    // addAssign( emissive, step( 0.99, sin( phase ) ) );
+
     assign( fragColor, vec4( baseColor, 1.0 ) );
     assign( fragPosition, vec4( sw( modelPos, 'xyz' ), depth ) );
-    assign( fragNormal, vec4( normalize( mul( normalMatrix, N ) ), MTL_PBR_ROUGHNESS_METALLIC ) );
-    assign( fragMisc, vec4( roughness, 0.0, 0.0, 0.0 ) );
+    assign( fragNormal, vec4( normalize( mul( normalMatrix, N ) ), MTL_PBR_EMISSIVE3_ROUGHNESS ) );
+    assign( fragMisc, vec4( emissive, roughness ) );
     return;
   } );
 } );

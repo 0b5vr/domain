@@ -1,8 +1,9 @@
 import { DIELECTRIC_SPECULAR, ONE_SUB_DIELECTRIC_SPECULAR } from '../utils/constants';
-import { GLSLExpression, GLSLFloatExpression, add, addAssign, assign, build, clamp, def, defFn, defInNamed, defOut, defUniformArrayNamed, defUniformNamed, div, dot, eq, floor, fract, glFragDepth, gt, gte, ifChain, ifThen, insert, length, main, max, min, mix, mul, mulAssign, neg, normalize, num, pow, reflect, retFn, smoothstep, sq, sub, sw, texture, vec2, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { GLSLExpression, GLSLFloatExpression, add, addAssign, assign, build, clamp, def, defFn, defInNamed, defOut, defUniformArrayNamed, defUniformNamed, div, dot, eq, glFragDepth, gt, ifChain, ifThen, insert, length, main, max, mix, mul, mulAssign, normalize, num, retFn, smoothstep, sq, sub, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { calcAlbedoF0 } from './modules/calcAlbedoF0';
 import { calcL } from './modules/calcL';
-import { cubemapUV } from './modules/cubemapUV';
 import { defDoSomethingUsingSamplerArray } from './modules/defDoSomethingUsingSamplerArray';
+import { defIBL } from './modules/defIBL';
 import { doAnalyticLighting } from './modules/doAnalyticLighting';
 import { doShadowMapping } from './modules/doShadowMapping';
 import { forEachLights } from './modules/forEachLights';
@@ -37,10 +38,9 @@ export const deferredShadeFrag = ( { withAO }: {
   const sampler2 = defUniformNamed( 'sampler2D', 'sampler2' ); // normal.xyz
   const sampler3 = defUniformNamed( 'sampler2D', 'sampler3' ); // materialParams.xyz, materialId
   const samplerShadow = defUniformArrayNamed( 'sampler2D', 'samplerShadow', 8 );
-  const samplerIBLLUT = defUniformNamed( 'sampler2D', 'samplerIBLLUT' );
-  const samplerEnvDry = defUniformNamed( 'sampler2D', 'samplerEnvDry' );
-  const samplerEnvWet = defUniformNamed( 'sampler2D', 'samplerEnvWet' );
   const samplerAo = defUniformNamed( 'sampler2D', 'samplerAo' );
+
+  const { diffuseIBL, specularIBL } = defIBL();
 
   const doSomethingUsingSamplerShadow = defDoSomethingUsingSamplerArray( samplerShadow, 8 );
   const fetchShadowMap = defFn( 'vec4', [ 'int', 'vec2' ], ( iLight, uv ) => {
@@ -49,28 +49,6 @@ export const deferredShadeFrag = ( { withAO }: {
       ( sampler ) => texture( sampler, uv )
     ) );
   } );
-
-  const sampleEnvNearest = defFn( 'vec4', [ 'vec2', 'float' ], ( uv, lv ) => {
-    ifThen( gte( lv, 1.0 ), () => {
-      const p = def( 'float', pow( 0.5, lv ) );
-      const offset = vec2( 0.0, sub( 1.0, mul( 2.0, p ) ) );
-
-      assign( p, pow( 0.5, min( lv, 5.0 ) ) );
-      const uvt = def( 'vec2', mul( uv, p ) );
-      retFn( texture( samplerEnvWet, add( uvt, offset ) ) );
-    }, () => {
-      retFn( texture( samplerEnvDry, uv ) );
-    } );
-  } );
-
-  const sampleEnvLinear = (
-    uv: GLSLExpression<'vec2'>,
-    lv: GLSLExpression<'float'>,
-  ): GLSLExpression<'vec4'> => mix(
-    sampleEnvNearest( uv, floor( lv ) ),
-    sampleEnvNearest( uv, floor( add( lv, 1.0 ) ) ),
-    fract( lv ),
-  );
 
   main( () => {
     const tex0 = texture( sampler0, vUv );
@@ -104,12 +82,14 @@ export const deferredShadeFrag = ( { withAO }: {
 
         const dotNL = max( dot( normal, L ), 1E-3 );
 
+        const { albedo, f0 } = calcAlbedoF0( color, metallic );
+
         // shading
         const lightShaded = def( 'vec3', mul(
           lightColor,
           div( 1.0, sq( lenL ) ),
           dotNL,
-          doAnalyticLighting( V, L, normal, color, roughness, metallic ),
+          doAnalyticLighting( V, L, normal, roughness, albedo, f0 ),
           ao,
         ) );
 
@@ -142,22 +122,12 @@ export const deferredShadeFrag = ( { withAO }: {
         const albedo = mix( mul( color, ONE_SUB_DIELECTRIC_SPECULAR ), vec3( 0.0 ), metallic );
         const f0 = mix( DIELECTRIC_SPECULAR, color, metallic );
 
-        const uvEnvDiffuse = def( 'vec2', cubemapUV( normal ) );
-        const texEnvDiffuse = sw( sampleEnvNearest( uvEnvDiffuse, num( 6.0 ) ), 'rgb' );
-        addAssign( shaded, mul( iblAmp, ao, texEnvDiffuse, albedo ) );
+        addAssign( shaded, mul( iblAmp, ao, diffuseIBL( albedo, normal ) ) );
 
         // // reflective ibl
-        const reflEnvReflective = reflect( neg( V ), normal );
-        const uvEnvReflective = def( 'vec2', cubemapUV( reflEnvReflective ) );
-        const brdfEnvReflective = def( 'vec4', texture( samplerIBLLUT, vec2( dotNV, roughness ) ) );
-        const texEnvReflective = sw( sampleEnvLinear( uvEnvReflective, mul( 5.0, roughness ) ), 'rgb' );
         addAssign( shaded, mul(
           iblAmp,
-          texEnvReflective,
-          add(
-            mul( sw( brdfEnvReflective, 'x' ), f0 ),
-            sw( brdfEnvReflective, 'y' ),
-          )
+          specularIBL( f0, normal, V, num( roughness ) ),
         ) );
       } );
 

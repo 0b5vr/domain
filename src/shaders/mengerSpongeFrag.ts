@@ -1,5 +1,6 @@
 import { MTL_PBR_ROUGHNESS_METALLIC } from './deferredShadeFrag';
 import { abs, add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, discard, div, dot, glFragCoord, glFragDepth, gt, ifThen, insert, length, main, max, mod, mul, neg, normalize, retFn, sin, sq, step, sub, sw, texture, unrollLoop, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { calcAlbedoF0 } from './modules/calcAlbedoF0';
 import { calcDepth } from './modules/calcDepth';
 import { calcL } from './modules/calcL';
 import { calcNormal } from './modules/calcNormal';
@@ -91,6 +92,8 @@ export const mengerSpongeFrag = ( tag: 'forward' | 'deferred' | 'depth' ): strin
 
       const V = def( 'vec3', neg( rd ) );
 
+      const { albedo, f0 } = calcAlbedoF0( baseColor, metallic );
+
       forEachLights( ( { lightPos, lightColor } ) => {
         const [ L, lenL ] = calcL(
           mul( modelMatrixT3, lightPos ),
@@ -105,7 +108,7 @@ export const mengerSpongeFrag = ( tag: 'forward' | 'deferred' | 'depth' ): strin
 
         addAssign( col, mul(
           irradiance,
-          doAnalyticLighting( L, V, N, baseColor, roughness, metallic ),
+          doAnalyticLighting( L, V, N, roughness, albedo, f0 ),
         ) );
       } );
 

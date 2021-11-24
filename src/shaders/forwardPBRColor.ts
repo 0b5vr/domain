@@ -1,6 +1,8 @@
 import { add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformArrayNamed, defUniformNamed, div, dot, insert, main, max, mul, normalize, retFn, sq, sub, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { calcAlbedoF0 } from './modules/calcAlbedoF0';
 import { calcL } from './modules/calcL';
 import { defDoSomethingUsingSamplerArray } from './modules/defDoSomethingUsingSamplerArray';
+import { defIBL } from './modules/defIBL';
 import { doAnalyticLighting } from './modules/doAnalyticLighting';
 import { doShadowMapping } from './modules/doShadowMapping';
 import { forEachLights } from './modules/forEachLights';
@@ -28,6 +30,8 @@ export const forwardPBRColor = build( () => {
     ) );
   } );
 
+  const { diffuseIBL, specularIBL } = defIBL();
+
   main( () => {
     const posXYZ = sw( vPosition, 'xyz' );
 
@@ -50,6 +54,8 @@ export const forwardPBRColor = build( () => {
       const lightCol = lightColor;
       const lightDecay = div( 1.0, sq( lenL ) );
 
+      const { albedo, f0 } = calcAlbedoF0( baseColor, metallic );
+
       // fetch shadowmap + spot lighting
       const lightProj = mul( lightPV, vPosition );
       const lightP = div( sw( lightProj, 'xyz' ), sw( lightProj, 'w' ) );
@@ -66,10 +72,16 @@ export const forwardPBRColor = build( () => {
       // lighting
       const lightShaded = def( 'vec3', mul(
         irradiance,
-        doAnalyticLighting( L, V, vNormal, baseColor, roughness, metallic ),
+        doAnalyticLighting( L, V, vNormal, roughness, albedo, f0 ),
       ) );
 
       addAssign( col, lightShaded );
+
+      // diffuse ibl
+      addAssign( col, mul( diffuseIBL( albedo, vNormal ) ) );
+
+      // // reflective ibl
+      addAssign( col, mul( 10.0, specularIBL( f0, vNormal, V, roughness ) ) );
     } );
 
     assign( fragColor, vec4( col, opacity ) );

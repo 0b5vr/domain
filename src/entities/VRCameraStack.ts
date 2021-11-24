@@ -2,7 +2,6 @@ import { CameraStack } from './CameraStack';
 import { ComponentOptions } from '../heck/components/Component';
 import { Dog } from '../heck/Dog';
 import { Floor } from './Floor';
-import { GLCatTexture } from '@fms-cat/glcat-ts';
 import { RawBufferRenderTarget } from '../heck/RawBufferRenderTarget';
 import { SceneNode } from '../heck/components/SceneNode';
 import { VRSesh } from '../globals/vr/VRSesh';
@@ -10,7 +9,6 @@ import { dog } from '../scene';
 
 export interface VRCameraStackOptions extends ComponentOptions {
   scenes: SceneNode[];
-  textureIBLLUT: GLCatTexture;
   floor: Floor;
   vrSesh: VRSesh;
   dog: Dog;

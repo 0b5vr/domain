@@ -37,8 +37,6 @@ export class FloorCamera extends SceneNode {
     const mirrorCamera = this.mirrorCamera = new CameraStack( {
       scenes: primaryCamera.deferredCamera.scenes!,
       target: this.mirrorTarget,
-      textureIBLLUT: primaryCamera.textureIBLLUT,
-      cubemapNode: primaryCamera.cubemapNode,
       name: process.env.DEV && 'floorCameraStack',
     } );
 
