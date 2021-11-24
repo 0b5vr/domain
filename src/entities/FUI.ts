@@ -13,7 +13,7 @@ import { randomTexture } from '../globals/randomTexture';
 export class FUI extends SceneNode {
   public constructor( options?: SceneNodeOptions ) {
     super( options );
-    this.transform.position = [ 0.0, 3.0, 3.0 ];
+    this.transform.position = [ 0.0, 3.0, 3.2 ];
     this.transform.scale = [ 16.0 / 3.0, 9.0 / 3.0, 1.0 ];
 
     // -- geometry ---------------------------------------------------------------------------------

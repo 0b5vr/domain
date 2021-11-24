@@ -1,4 +1,4 @@
-import { GLSLExpression, abs, add, addAssign, assign, build, def, defConst, defFn, defInNamed, defOut, defUniformNamed, div, eq, exp, forBreak, forLoop, glFragCoord, gt, ifThen, insert, length, lt, main, max, mix, mul, mulAssign, retFn, sq, sub, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { GLSLExpression, abs, add, addAssign, assign, build, def, defConst, defFn, defInNamed, defOut, defUniformNamed, div, eq, exp, forBreak, forLoop, glFragCoord, gt, ifThen, insert, length, lt, main, max, mix, mul, mulAssign, retFn, sq, sub, subAssign, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcL } from './modules/calcL';
 import { defFluidSampleLinear3D } from './modules/defFluidSampleLinear3D';
 import { forEachLights } from './modules/forEachLights';
@@ -35,7 +35,7 @@ export const fluidRenderFrag = (
   const sampleLinear3D = defFluidSampleLinear3D( fGridResoSqrt, fGridReso );
 
   const stepLenRandom = ( len: number ): GLSLExpression<'float'> => (
-    mul( len, mix( 0.5, 1.0, random() ) )
+    mul( len, mix( 0.8, 1.0, random() ) )
   );
 
   const getDensity = defFn( 'vec4', [ 'vec3' ], ( p ) => {
@@ -57,7 +57,7 @@ export const fluidRenderFrag = (
     const { ro, rd } = setupRoRd( { inversePVM, p } );
 
     const rl = def( 'float', length( sub( sw( vPositionWithoutModel, 'xyz' ), ro ) ) );
-    addAssign( rl, mul( MARCH_STEP_LENGTH, random() ) );
+    subAssign( rl, mul( MARCH_STEP_LENGTH, random() ) );
     const rp = def( 'vec3', add( ro, mul( rd, rl ) ) );
 
     const accum = def( 'vec4', vec4( 0.0, 0.0, 0.0, 1.0 ) );

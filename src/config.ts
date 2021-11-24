@@ -7,6 +7,7 @@ export const
   IBLLUT_SIZE = 256,
   NEAR = 0.1,
   FAR = 30.0,
+  FOV = 50.0,
   RANDOM_RESOLUTION = [ 64, 64 ],
   STATIC_RANDOM_RESOLUTION = [ 2048, 2048 ],
   RESOLUTION = [ 1280, 720 ];

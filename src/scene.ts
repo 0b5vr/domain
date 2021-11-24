@@ -4,6 +4,7 @@ import { CubemapNode } from './entities/CubemapNode';
 import { Dog } from './heck/Dog';
 import { FAR, NEAR } from './config';
 import { FUI } from './entities/FUI';
+import { Fence } from './entities/Fence';
 import { Floor } from './entities/Floor';
 import { IBLLUTCalc } from './entities/IBLLUTCalc';
 import { Lambda } from './heck/components/Lambda';
@@ -85,52 +86,59 @@ if ( process.env.DEV ) {
 
 const iblLutCalc = new IBLLUTCalc();
 
-const light1 = new PointLightNode( {
+const lightRight = new PointLightNode( {
   scenes: [ dog.root ],
   shadowMapFov: 60.0,
   shadowMapNear: NEAR,
   shadowMapFar: FAR,
-  name: process.env.DEV && 'light1',
-  brtNamePrefix: process.env.DEV && 'SceneBegin/light1',
+  name: process.env.DEV && 'lightRight',
+  brtNamePrefix: process.env.DEV && 'SceneBegin/lightRight',
 } );
-light1.color = [ 100.0, 100.0, 100.0 ];
-light1.spotness = 0.9;
-light1.transform.lookAt( [ 3.0, 0.2, 3.0 ], [ 0.0, 3.0, 0.0 ] );
+lightRight.color = [ 100.0, 100.0, 100.0 ];
+lightRight.spotness = 0.9;
+lightRight.transform.lookAt( [ 4.0, 0.2, 2.5 ], [ 0.0, 3.0, 0.0 ] );
 
-const shaft1 = new LightShaft( {
-  light: light1,
+const shaftRight = new LightShaft( {
+  light: lightRight,
   intensity: 0.02,
 } );
-light1.children.push( shaft1 );
+lightRight.children.push( shaftRight );
 
-const light2 = new PointLightNode( {
+const lightLeft = new PointLightNode( {
   scenes: [ dog.root ],
-  shadowMapFov: 50.0,
+  shadowMapFov: 60.0,
   shadowMapNear: NEAR,
   shadowMapFar: FAR,
-  name: process.env.DEV && 'light2',
-  brtNamePrefix: process.env.DEV && 'SceneBegin/light2',
+  name: process.env.DEV && 'lightLeft',
+  brtNamePrefix: process.env.DEV && 'SceneBegin/lightLeft',
 } );
-light2.color = [ 100.0, 150.0, 190.0 ];
-light2.spotness = 0.9;
-light2.transform.lookAt( [ 0.01, 9.0, 0.01 ], [ 0.0, 3.0, 0.0 ] );
+lightLeft.color = [ 80.0, 60.0, 40.0 ];
+lightLeft.spotness = 0.9;
+lightLeft.transform.lookAt( [ -5.0, 0.2, 0.0 ], [ 0.0, 3.0, 0.0 ] );
 
-const shaft2 = new LightShaft( {
-  light: light2,
+const shaftLeft = new LightShaft( {
+  light: lightLeft,
   intensity: 0.02,
 } );
-light2.children.push( shaft2 );
+lightLeft.children.push( shaftLeft );
 
-const light3 = new PointLightNode( {
+const lightTop = new PointLightNode( {
   scenes: [ dog.root ],
-  shadowMapFov: 50.0,
+  shadowMapFov: 60.0,
   shadowMapNear: NEAR,
   shadowMapFar: FAR,
-  name: process.env.DEV && 'light3',
-  brtNamePrefix: process.env.DEV && 'SceneBegin/light3',
+  name: process.env.DEV && 'lightTop',
+  brtNamePrefix: process.env.DEV && 'SceneBegin/lightTop',
 } );
-light3.color = [ 12.0, 10.0, 8.0 ];
-light3.transform.lookAt( [ -5.9, 2.0, -4.0 ], [ 0.0, 2.0, 0.0 ] );
+lightTop.color = [ 100.0, 150.0, 190.0 ];
+lightTop.spotness = 0.9;
+lightTop.transform.lookAt( [ 0.01, 9.0, 0.01 ], [ 0.0, 3.0, 0.0 ] );
+
+const shaftTop = new LightShaft( {
+  light: lightTop,
+  intensity: 0.02,
+} );
+lightTop.children.push( shaftTop );
 
 const floor = new Floor();
 if ( process.env.DEV && module.hot ) {
@@ -144,6 +152,14 @@ const walls = new Walls();
 if ( process.env.DEV && module.hot ) {
   const replacer = new NodeReplacer( walls, () => new Walls() );
   module.hot.accept( './entities/Walls', () => {
+    replacer.replace( dog.root );
+  } );
+}
+
+const fence = new Fence();
+if ( process.env.DEV && module.hot ) {
+  const replacer = new NodeReplacer( fence, () => new Fence() );
+  module.hot.accept( './entities/Fence', () => {
     replacer.replace( dog.root );
   } );
 }
@@ -227,11 +243,12 @@ dog.root.children.push(
   iblLutCalc,
   fui,
   walls,
+  fence,
   floor,
   stuff,
-  light1,
-  light2,
-  light3,
+  lightRight,
+  lightLeft,
+  lightTop,
   cubemapNode,
   // plane,
   cameraStack,

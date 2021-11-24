@@ -1,14 +1,14 @@
 import { MTL_PBR_ROUGHNESS_METALLIC } from './deferredShadeFrag';
-import { abs, add, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, discard, div, glFragCoord, glFragDepth, gt, ifThen, insert, length, main, max, mod, mul, neg, normalize, retFn, sub, sw, texture, unrollLoop, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { add, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, discard, div, glFragCoord, glFragDepth, gt, ifThen, insert, length, main, max, min, mix, mod, mul, normalize, retFn, smoothstep, sub, subAssign, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcDepth } from './modules/calcDepth';
 import { calcNormal } from './modules/calcNormal';
+import { cyclicNoise } from './modules/cyclicNoise';
 import { glslDefRandom } from './modules/glslDefRandom';
 import { raymarch } from './modules/raymarch';
 import { sdbox } from './modules/sdbox';
 import { setupRoRd } from './modules/setupRoRd';
-import { sortVec3Components } from './modules/sortVec3Components';
 
-export const mengerSpongeFrag = ( tag: 'deferred' | 'depth' ): string => build( () => {
+export const fenceFrag = ( tag: 'deferred' | 'depth' ): string => build( () => {
   insert( 'precision highp float;' );
 
   const vPositionWithoutModel = defInNamed( 'vec4', 'vPositionWithoutModel' );
@@ -30,16 +30,14 @@ export const mengerSpongeFrag = ( tag: 'deferred' | 'depth' ): string => build( 
   const { init } = glslDefRandom();
 
   const map = defFn( 'vec4', [ 'vec3' ], ( p ) => {
-    // const d = def( 'float', sub( length( p ), 0.1 ) );
-    const d = def( 'float', sdbox( p, vec3( 0.5 ) ) );
-
-    let scale = 1.0;
-    unrollLoop( tag === 'depth' ? 3 : 4, () => {
-      const pt = def( 'vec3', abs( sub( mod( add( p, scale / 2.0 ), scale ), scale / 2.0 ) ) );
-      assign( pt, sortVec3Components( pt ) );
-      assign( d, max( d, neg( sdbox( pt, vec3( scale / 6.0, scale / 6.0, 9 ) ) ) ) );
-      scale /= 3.0;
-    } );
+    const d = def( 'float', sdbox( sub( p, vec3( 0.0, 0.5, 0.0 ) ), vec3( 10.0, 0.01, 0.1 ) ) );
+    subAssign( d, 0.004 );
+    const pt = def( 'vec3', p );
+    assign( sw( pt, 'x' ), sub( mod( sw( pt, 'x' ), 2.0 ), 1.0 ) );
+    assign( d, min( d, max(
+      sub( length( sw( pt, 'zx' ) ), 0.03 ),
+      sub( sw( pt, 'y' ), 0.49 ),
+    ) ) );
 
     retFn( vec4( d, 0, 0, 0 ) );
   } );
@@ -71,8 +69,12 @@ export const mengerSpongeFrag = ( tag: 'deferred' | 'depth' ): string => build( 
     assign( glFragDepth, add( 0.5, mul( 0.5, depth ) ) );
 
     const N = def( 'vec3', calcNormal( { rp, map } ) );
-    const roughness = 0.5;
-    const metallic = 0.0;
+    const roughness = mix(
+      0.2,
+      0.3,
+      smoothstep( -1.0, 1.0, sw( cyclicNoise( mul( 10.0, rp ) ), 'x' ) )
+    );
+    const metallic = 1.0;
     const baseColor = vec3( 0.7 );
 
     if ( tag === 'depth' ) {

@@ -14,6 +14,7 @@ export const fluidPressureFrag = (
   const fragColor = defOut( 'vec4' );
 
   const time = defUniformNamed( 'float', 'time' );
+  const deltaTime = defUniformNamed( 'float', 'deltaTime' );
   const samplerDivergence = defUniformNamed( 'sampler2D', 'samplerDivergence' );
   const samplerPressure = defUniformNamed( 'sampler2D', 'samplerPressure' );
 
@@ -40,11 +41,11 @@ export const fluidPressureFrag = (
     ) );
 
     const l = def( 'float', (
-      length( add( pos, mul( 0.4, sin( mul( time, vec3( 3, 4, 5 ) ) ) ) ) )
+      length( add( pos, mul( 0.4, sin( mul( time, vec3( 0.7, 1.1, 1.5 ) ) ) ) ) )
     ) );
     addAssign( pressure, mul(
-      50.0,
-      exp( mul( -20.0, fract( time ) ) ),
+      40.0,
+      deltaTime,
       smoothstep( 0.05, 0.0, l )
     ) );
 

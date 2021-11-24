@@ -13,6 +13,7 @@ export const fluidPokeDensityFrag = (
   const fragColor = defOut( 'vec4' );
 
   const time = defUniformNamed( 'float', 'time' );
+  const deltaTime = defUniformNamed( 'float', 'deltaTime' );
   const samplerDensity = defUniformNamed( 'sampler2D', 'samplerDensity' );
 
   const uvToPos = defFluidUvToPos( fGridResoSqrt, fGridReso );
@@ -24,11 +25,11 @@ export const fluidPokeDensityFrag = (
     const density = def( 'vec4', sampleNearest3D( samplerDensity, pos ) );
 
     const l = def( 'float', (
-      length( add( pos, mul( 0.4, sin( mul( time, vec3( 3, 4, 5 ) ) ) ) ) )
+      length( add( pos, mul( 0.4, sin( mul( time, vec3( 0.7, 1.1, 1.5 ) ) ) ) ) )
     ) );
     const poke = def( 'float', smoothstep( 0.2, 0.0, l ) );
     mulAssign( poke, exp( mul( -5.0, l ) ) );
-    addAssign( sw( density, 'x' ), mul( 10.0, exp( mul( -50.0, fract( time ) ) ), poke ) );
+    addAssign( sw( density, 'x' ), mul( 100.0, deltaTime, poke ) );
 
     assign( fragColor, density );
   } );

@@ -29,7 +29,7 @@ export const fuiFrag = ( tag: 'forward' | 'depth' ): string => build( () => {
 
     // slasherbox
     assign( haha, max( haha, mul(
-      step( abs( add( sw( p, 'x' ), 0.3 ) ), 1.4 ),
+      step( abs( sw( p, 'x' ) ), 1.7 ),
       step( abs( add( sw( p, 'y' ), 0.93 ) ), 0.003 ),
       step( -0.5, sin( mul( 100.0, add( sw( p, 'x' ), mul( 0.1, time ) ) ) ) ),
     ) ) );
