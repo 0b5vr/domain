@@ -90,8 +90,8 @@ export const musicVert = build( () => {
         mod( timeY, mul( beatLength, 0.5 ) ),
       );
       const phase = sub( mul( t, 50.0 ), mul( 3.0, exp( mul( -5.0, t ) ) ) );
-      const wave = glslTri( glslLofi( phase, 1.0 / 32.0 ) );
-      const amp = mul( 0.3, exp( mul( -0.5, t ) ), zcross( t, num( 9.0 ) ) );
+      const wave = sin( mul( TAU, phase ) );
+      const amp = mul( 0.4, exp( mul( -0.5, t ) ), zcross( t, num( 9.0 ) ) );
       addAssign( dest, mul( amp, wave ) );
     }
 
@@ -161,7 +161,7 @@ export const musicVert = build( () => {
         const index = int( add( mod( i, 7 ), mul( floor( mod( mul( phaseZ, 4 ), 2 ) ), 7 ) ) );
         const rate = n2r( arrayIndex( chords, index ) );
         const rateMul = def( 'vec3', pcg3df( mul( 1E5, add( i, vec3( 1, 2, 3 ) ) ) ) );
-        assign( rateMul, mix( vec3( 0.5 ), rateMul, 0.005 ) );
+        assign( rateMul, mix( vec3( 0.5 ), rateMul, 0.002 ) );
         const wave = vec2(
           sample( num( 10.0 ), snesloop( mul( rate, sw( rateMul, 'x' ), t ), 0.22, 0.53 ) ),
           sample( num( 10.0 ), snesloop( mul( rate, sw( rateMul, 'y' ), t ), 0.22, 0.53 ) ),
@@ -196,7 +196,7 @@ export const musicVert = build( () => {
       } );
     }
 
-    return dest;
+    return clamp( dest, -1.0, 1.0 );
   };
 
   main( () => {
