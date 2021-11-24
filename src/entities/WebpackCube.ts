@@ -3,14 +3,11 @@ import { MTL_PBR_ROUGHNESS_METALLIC } from '../shaders/deferredShadeFrag';
 import { Material } from '../heck/Material';
 import { Mesh } from '../heck/components/Mesh';
 import { SceneNode } from '../heck/components/SceneNode';
-import { createCubemapUniformsLambda } from './utils/createCubemapUniformsLambda';
-import { createLightUniformsLambda } from './utils/createLightUniformsLambda';
+import { TransparentShell } from './TransparentShell';
 import { deferredColorFrag } from '../shaders/deferredColorFrag';
 import { depthFrag } from '../shaders/depthFrag';
 import { dummyRenderTarget, dummyRenderTargetFourDrawBuffers } from '../globals/dummyRenderTarget';
-import { forwardPBRColor } from '../shaders/forwardPBRColor';
 import { genCube } from '../geometries/genCube';
-import { gl } from '../globals/canvas';
 import { objectVert } from '../shaders/objectVert';
 
 export class WebpackCube extends SceneNode {
@@ -45,38 +42,11 @@ export class WebpackCube extends SceneNode {
     } );
 
     // -- shell ------------------------------------------------------------------------------------
-    const geometryShellFront = genCube( { dimension: [ 0.5, 0.5, 0.5 ] } ).geometry;
-    const geometryShellBack = genCube( { dimension: [ -0.5, -0.5, -0.5 ] } ).geometry;
-
-    const forwardShell = new Material(
-      objectVert,
-      forwardPBRColor,
-      {
-        initOptions: { geometry: geometryShellFront, target: dummyRenderTarget },
-        blend: [ gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA ],
-      },
-    );
-    forwardShell.addUniform( 'baseColor', '3f', 0.272, 0.680, 0.949 );
-    forwardShell.addUniform( 'roughness', '1f', 0.2 );
-    forwardShell.addUniform( 'metallic', '1f', 0.0 );
-    forwardShell.addUniform( 'opacity', '1f', 0.1 );
-
-    const meshShellFront = new Mesh( {
-      geometry: geometryShellFront,
-      materials: { forward: forwardShell },
+    const shell = new TransparentShell( {
+      baseColor: [ 0.272, 0.680, 0.949 ],
+      roughness: 0.2,
+      opacity: 0.1,
     } );
-    meshShellFront.depthWrite = false;
-
-    const meshShellBack = new Mesh( {
-      geometry: geometryShellBack,
-      materials: { forward: forwardShell },
-    } );
-    meshShellBack.depthWrite = false;
-
-    const lightUniformsLambda = createLightUniformsLambda( [ forwardShell ] );
-
-    // -- receive cubemap stuff --------------------------------------------------------------------
-    const lambdaCubemap = createCubemapUniformsLambda( [ forwardShell ] );
 
     // -- strokes ----------------------------------------------------------------------------------
     const strokeCore = new BoundingBox( { dashRatio: 0.0 } );
@@ -87,21 +57,15 @@ export class WebpackCube extends SceneNode {
 
     // -- components -------------------------------------------------------------------------------
     this.children = [
-      lightUniformsLambda,
-      lambdaCubemap,
       meshCore,
-      meshShellBack,
-      meshShellFront,
+      shell,
       strokeCore,
       strokeShell,
     ];
 
     if ( process.env.DEV ) {
-      lightUniformsLambda.name = 'lightUniformsLambda';
-      lambdaCubemap.name = 'lambdaCubemap';
       meshCore.name = 'meshCore';
-      meshShellBack.name = 'meshShellBack';
-      meshShellFront.name = 'meshShellFront';
+      shell.name = 'shell';
       strokeCore.name = 'strokeCore';
       strokeShell.name = 'strokeShell';
     }

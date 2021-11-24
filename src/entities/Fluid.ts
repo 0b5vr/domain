@@ -4,6 +4,7 @@ import { Mesh } from '../heck/components/Mesh';
 import { Quad } from '../heck/components/Quad';
 import { SceneNode } from '../heck/components/SceneNode';
 import { Swap } from '@0b5vr/experimental';
+import { TransparentShell } from './TransparentShell';
 import { colorFrag } from '../shaders/colorFrag';
 import { createLightUniformsLambda } from './utils/createLightUniformsLambda';
 import { createRaymarchCameraUniformsLambda } from './utils/createRaymarchCameraUniformsLambda';
@@ -265,6 +266,13 @@ export class Fluid extends SceneNode {
     mesh.depthTest = false;
     mesh.depthWrite = false;
 
+    // -- shell ------------------------------------------------------------------------------------
+    const shell = new TransparentShell( {
+      roughness: 0.1,
+      roughnessNoise: 0.1,
+      insideChildren: [ mesh ],
+    } );
+
     // -- components -------------------------------------------------------------------------------
     this.children = [
       quadPokeDensity,
@@ -277,7 +285,7 @@ export class Fluid extends SceneNode {
       quadAdvectionDensity,
       lambdaLightUniforms,
       lambdaRaymarchCameraUniforms,
-      mesh,
+      shell,
     ];
   }
 }

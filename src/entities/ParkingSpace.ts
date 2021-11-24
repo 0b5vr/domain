@@ -1,10 +1,17 @@
 import { RaymarcherNode } from './utils/RaymarcherNode';
+import { TransparentShell } from './TransparentShell';
 import { objectVert } from '../shaders/objectVert';
 import { parkingSpaceFrag } from '../shaders/parkingSpaceFrag';
 
 export class ParkingSpace extends RaymarcherNode {
   public constructor() {
     super( parkingSpaceFrag );
+
+    const shell = new TransparentShell( {
+      opacity: 0.01,
+    } );
+    shell.transform.scale = [ 0.95, 0.95, 0.95 ];
+    this.children.push( shell );
 
     if ( process.env.DEV ) {
       if ( module.hot ) {
