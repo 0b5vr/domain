@@ -8,6 +8,7 @@ import { Material } from '../heck/Material';
 import { Quad } from '../heck/components/Quad';
 import { RawQuaternion, Swap } from '@0b5vr/experimental';
 import { SceneNode } from '../heck/components/SceneNode';
+import { cubemapBlurFrag } from '../shaders/cubemapBlurFrag';
 import { cubemapMergeFrag } from '../shaders/cubemapMergeFrag';
 import { cubemapSampleFrag } from '../shaders/cubemapSampleFrag';
 import { dummyRenderTarget } from '../globals/dummyRenderTarget';
@@ -33,8 +34,8 @@ export interface CubemapNodeOptions extends ComponentOptions {
 }
 
 export class CubemapNode extends SceneNode {
-  public targetCompiled: BufferRenderTarget;
-  public targetMerged: BufferRenderTarget;
+  public targetDry: BufferRenderTarget;
+  public targetWet: BufferRenderTarget;
 
   public constructor( options: CubemapNodeOptions ) {
     super( options );
@@ -68,7 +69,7 @@ export class CubemapNode extends SceneNode {
     } );
 
     // -- compiler ---------------------------------------------------------------------------------
-    const targetCompiled = this.targetCompiled = new BufferRenderTarget( {
+    const targetCompiled = this.targetDry = new BufferRenderTarget( {
       width: 768,
       height: 512,
       name: process.env.DEV && 'cubemapCompiled',
@@ -122,7 +123,7 @@ export class CubemapNode extends SceneNode {
     } );
 
     // -- merge accumulated ------------------------------------------------------------------------
-    const targetMerged = this.targetMerged = new BufferRenderTarget( {
+    const targetMerge = new BufferRenderTarget( {
       width: 768,
       height: 512,
       name: process.env.DEV && 'cubemapMerge',
@@ -142,7 +143,7 @@ export class CubemapNode extends SceneNode {
 
     const quadMerge = new Quad( {
       material: materialMerge,
-      target: targetMerged,
+      target: targetMerge,
       name: process.env.DEV && 'quadMerge',
     } );
 
@@ -157,6 +158,52 @@ export class CubemapNode extends SceneNode {
       },
     } );
 
+    // -- blur -------------------------------------------------------------------------------------
+    const targetBlurH = new BufferRenderTarget( {
+      width: 768,
+      height: 512,
+      name: process.env.DEV && 'cubemapBlurH',
+    } );
+
+    const targetBlurV = this.targetWet = new BufferRenderTarget( {
+      width: 768,
+      height: 512,
+      name: process.env.DEV && 'cubemapBlurV',
+    } );
+
+    const materialBlurH = new Material(
+      quadVert,
+      cubemapBlurFrag( 0 ),
+      { initOptions: { geometry: quadGeometry, target: dummyRenderTarget } },
+    );
+    materialBlurH.addUniformTextures( 'samplerCubemap', targetMerge.texture );
+
+    const materialBlurV = new Material(
+      quadVert,
+      cubemapBlurFrag( 1 ),
+      { initOptions: { geometry: quadGeometry, target: dummyRenderTarget } },
+    );
+    materialBlurV.addUniformTextures( 'samplerCubemap', targetBlurH.texture );
+
+    if ( process.env.DEV ) {
+      module.hot?.accept( '../shaders/cubemapBlurFrag', () => {
+        materialBlurH.replaceShader( quadVert, cubemapBlurFrag( 0 ) );
+        materialBlurV.replaceShader( quadVert, cubemapBlurFrag( 1 ) );
+      } );
+    }
+
+    const quadBlurH = new Quad( {
+      material: materialBlurH,
+      target: targetBlurH,
+      name: process.env.DEV && 'quadBlurH',
+    } );
+
+    const quadBlurV = new Quad( {
+      material: materialBlurV,
+      target: targetBlurV,
+      name: process.env.DEV && 'quadBlurV',
+    } );
+
     // -- children ---------------------------------------------------------------------------------
     this.children = [
       lambdaSwapTargetSample,
@@ -164,6 +211,8 @@ export class CubemapNode extends SceneNode {
       ...blitsCompile,
       quadSample,
       quadMerge,
+      quadBlurH,
+      quadBlurV,
     ];
   }
 }

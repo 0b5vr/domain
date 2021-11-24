@@ -1,5 +1,5 @@
 import { MTL_PBR_EMISSIVE3_ROUGHNESS } from './deferredShadeFrag';
-import { add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, discard, div, glFragCoord, glFragDepth, gt, ifThen, insert, length, main, mix, mul, normalize, retFn, sub, subAssign, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, discard, div, glFragCoord, glFragDepth, gt, ifThen, insert, length, main, mix, mul, normalize, retFn, sin, step, sub, subAssign, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcDepth } from './modules/calcDepth';
 import { calcNormal } from './modules/calcNormal';
 import { raymarch } from './modules/raymarch';
@@ -15,6 +15,7 @@ export const wallFrag = ( tag: 'deferred' | 'depth' ): string => build( () => {
   const fragNormal = defOut( 'vec4', 2 );
   const fragMisc = defOut( 'vec4', 3 );
 
+  const time = defUniformNamed( 'float', 'time' );
   const resolution = defUniformNamed( 'vec2', 'resolution' );
   const cameraNearFar = defUniformNamed( 'vec2', 'cameraNearFar' );
   const cameraPos = defUniformNamed( 'vec3', 'cameraPos' );
@@ -79,8 +80,11 @@ export const wallFrag = ( tag: 'deferred' | 'depth' ): string => build( () => {
     assign( baseColor, mix( baseColor, vec3( 0.2 ), dirt ) );
 
     const emissive = def( 'vec3', vec3( 0.0 ) );
-    // const phase = mul( 20.0, sw( rp, 'y' ) );
-    // addAssign( emissive, step( 0.99, sin( phase ) ) );
+    // const phase = mul( 10.0, add( sw( rp, 'y' ), time ) );
+    // addAssign( emissive, mul(
+    //   step( 0.99, sin( phase ) ),
+    //   vec3( 10.0, 12.0, 14.0 ),
+    // ) );
 
     assign( fragColor, vec4( baseColor, 1.0 ) );
     assign( fragPosition, vec4( sw( modelPos, 'xyz' ), depth ) );

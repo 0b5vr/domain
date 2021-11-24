@@ -226,9 +226,9 @@ if ( process.env.DEV && module.hot ) {
 dog.root.children.push(
   iblLutCalc,
   fui,
-  stuff,
   walls,
   floor,
+  stuff,
   light1,
   light2,
   light3,

@@ -24,11 +24,11 @@ export function createCubemapUniformsLambda( materials: Material[] ): Lambda {
       if ( cubemapNode ) {
         material.addUniformTextures(
           'samplerEnvDry',
-          cubemapNode.targetCompiled.texture
+          cubemapNode.targetDry.texture
         );
         material.addUniformTextures(
           'samplerEnvWet',
-          cubemapNode.targetMerged.texture
+          cubemapNode.targetWet.texture
         );
       }
     } );

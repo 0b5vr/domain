@@ -21,7 +21,7 @@ export const cubemapSampleFrag = build( () => {
   const { init, random } = glslDefRandom();
 
   main( () => {
-    init( vec4( mul( vUv, 100.0 ), mod( frameCount, 100.0 ), 0.0 ) );
+    init( vec4( mul( vUv, 100.0 ), mod( frameCount, 100.0 ), 100.0 ) );
 
     const isDiffuse = def( 'bool', false );
     const lv = def( 'float', floor( neg( log2( sub( 1.0, sw( vUv, 'y' ) ) ) ) ) );
@@ -64,7 +64,7 @@ export const cubemapSampleFrag = build( () => {
     assign( fragColor, mix(
       texture( samplerPrev, vUv ),
       accum,
-      0.1
+      0.2
     ) );
   } );
 } );
