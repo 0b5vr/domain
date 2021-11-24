@@ -13,9 +13,8 @@ export class SSSBox extends RaymarcherNode {
             '../shaders/sssBoxFrag',
           ],
           () => {
-            const { cubemap, deferred, depth } = this.materials;
+            const { deferred, depth } = this.materials;
 
-            cubemap.replaceShader( objectVert, sssBoxFrag( 'forward' ) );
             deferred.replaceShader( objectVert, sssBoxFrag( 'deferred' ) );
             depth.replaceShader( objectVert, sssBoxFrag( 'depth' ) );
           },

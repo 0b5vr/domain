@@ -1,12 +1,8 @@
 import { MTL_PBR_ROUGHNESS_METALLIC } from './deferredShadeFrag';
-import { abs, add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, discard, div, dot, glFragCoord, glFragDepth, gt, ifThen, insert, length, main, max, mix, mul, neg, normalize, retFn, sin, smoothstep, sq, sub, subAssign, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
-import { calcAlbedoF0 } from './modules/calcAlbedoF0';
+import { abs, add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, discard, div, dot, glFragCoord, glFragDepth, gt, ifThen, insert, length, main, max, mix, mul, normalize, retFn, sin, smoothstep, sub, subAssign, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcDepth } from './modules/calcDepth';
-import { calcL } from './modules/calcL';
 import { calcNormal } from './modules/calcNormal';
 import { cyclicNoise } from './modules/cyclicNoise';
-import { doAnalyticLighting } from './modules/doAnalyticLighting';
-import { forEachLights } from './modules/forEachLights';
 import { glslDefRandom } from './modules/glslDefRandom';
 import { glslSaturate } from './modules/glslSaturate';
 import { raymarch } from './modules/raymarch';
@@ -14,13 +10,12 @@ import { sdbox } from './modules/sdbox';
 import { setupRoRd } from './modules/setupRoRd';
 import { triplanarMapping } from './modules/triplanarMapping';
 
-export const warningCubeFrag = ( tag: 'forward' | 'deferred' | 'depth' ): string => build( () => {
+export const warningCubeFrag = ( tag: 'deferred' | 'depth' ): string => build( () => {
   insert( 'precision highp float;' );
 
   const vPositionWithoutModel = defInNamed( 'vec4', 'vPositionWithoutModel' );
   const pvm = defUniformNamed( 'mat4', 'pvm' );
   const modelMatrix = defUniformNamed( 'mat4', 'modelMatrix' );
-  const modelMatrixT3 = defUniformNamed( 'mat3', 'modelMatrixT3' );
   const normalMatrix = defUniformNamed( 'mat3', 'normalMatrix' );
 
   const fragColor = defOut( 'vec4' );
@@ -98,6 +93,7 @@ export const warningCubeFrag = ( tag: 'forward' | 'deferred' | 'depth' ): string
     if ( tag === 'depth' ) {
       const len = length( sub( cameraPos, sw( modelPos, 'xyz' ) ) );
       assign( fragColor, calcDepth( cameraNearFar, len ) );
+      retFn();
 
     }
 
@@ -115,39 +111,10 @@ export const warningCubeFrag = ( tag: 'forward' | 'deferred' | 'depth' ): string
       dirt,
     );
 
-    if ( tag === 'deferred' ) {
-      assign( fragColor, vec4( baseColor, 1.0 ) );
-      assign( fragPosition, vec4( sw( modelPos, 'xyz' ), depth ) );
-      assign( fragNormal, vec4( normalize( mul( normalMatrix, N ) ), MTL_PBR_ROUGHNESS_METALLIC ) );
-      assign( fragMisc, vec4( roughness, metallic, 0.0, 0.0 ) );
+    assign( fragColor, vec4( baseColor, 1.0 ) );
+    assign( fragPosition, vec4( sw( modelPos, 'xyz' ), depth ) );
+    assign( fragNormal, vec4( normalize( mul( normalMatrix, N ) ), MTL_PBR_ROUGHNESS_METALLIC ) );
+    assign( fragMisc, vec4( roughness, metallic, 0.0, 0.0 ) );
 
-    } else if ( tag === 'forward' ) {
-      const col = def( 'vec3', vec3( 0.0 ) );
-
-      const V = def( 'vec3', neg( rd ) );
-
-      forEachLights( ( { lightPos, lightColor } ) => {
-        const [ L, lenL ] = calcL(
-          mul( modelMatrixT3, lightPos ),
-          rp,
-        );
-
-        const dotNL = def( 'float', max( dot( N, L ), 0.0 ) );
-
-        const lightCol = lightColor;
-        const lightDecay = div( 1.0, sq( lenL ) );
-        const irradiance = def( 'vec3', mul( lightCol, dotNL, lightDecay ) );
-
-        const { albedo, f0 } = calcAlbedoF0( baseColor, metallic );
-
-        addAssign( col, mul(
-          irradiance,
-          doAnalyticLighting( L, V, N, roughness, albedo, f0 ),
-        ) );
-      } );
-
-      assign( fragColor, vec4( col, 1.0 ) );
-
-    }
   } );
 } );

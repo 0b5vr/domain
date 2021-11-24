@@ -10,27 +10,17 @@ import { randomTexture } from '../../globals/randomTexture';
 
 export class RaymarcherNode extends SceneNode {
   public materials: {
-    cubemap: Material,
     deferred: Material,
     depth: Material,
   };
 
   public constructor(
-    builder: ( tag: 'forward' | 'deferred' | 'depth' ) => string,
+    builder: ( tag: 'deferred' | 'depth' ) => string,
   ) {
     super();
 
     // -- render -----------------------------------------------------------------------------------
     const { geometry } = genCube( { dimension: [ 0.55, 0.55, 0.55 ] } );
-
-    const cubemap = new Material(
-      objectVert,
-      builder( 'forward' ),
-      {
-        initOptions: { geometry, target: dummyRenderTargetFourDrawBuffers },
-      },
-    );
-    cubemap.addUniformTextures( 'samplerRandom', randomTexture.texture );
 
     const deferred = new Material(
       objectVert,
@@ -51,17 +41,15 @@ export class RaymarcherNode extends SceneNode {
     depth.addUniformTextures( 'samplerRandom', randomTexture.texture );
 
     const lambdaLightUniforms = createLightUniformsLambda( [
-      cubemap,
       deferred,
     ] );
 
     const lambdaRaymarchCameraUniforms = createRaymarchCameraUniformsLambda( [
-      cubemap,
       deferred,
       depth,
     ] );
 
-    const materials = this.materials = { depth, deferred, cubemap };
+    const materials = this.materials = { depth, deferred };
 
     const mesh = new Mesh( {
       geometry,

@@ -13,9 +13,8 @@ export class Sp4ghet extends RaymarcherNode {
             '../shaders/sp4ghetFrag',
           ],
           () => {
-            const { cubemap, deferred, depth } = this.materials;
+            const { deferred, depth } = this.materials;
 
-            cubemap.replaceShader( objectVert, sp4ghetFrag( 'forward' ) );
             deferred.replaceShader( objectVert, sp4ghetFrag( 'deferred' ) );
             depth.replaceShader( objectVert, sp4ghetFrag( 'depth' ) );
           },

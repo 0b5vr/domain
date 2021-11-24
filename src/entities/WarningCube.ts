@@ -44,9 +44,8 @@ export class WarningCube extends RaymarcherNode {
             '../shaders/warningCubeFrag',
           ],
           () => {
-            const { cubemap, deferred, depth } = this.materials;
+            const { deferred, depth } = this.materials;
 
-            cubemap.replaceShader( objectVert, warningCubeFrag( 'forward' ) );
             deferred.replaceShader( objectVert, warningCubeFrag( 'deferred' ) );
             depth.replaceShader( objectVert, warningCubeFrag( 'depth' ) );
           },

@@ -13,9 +13,8 @@ export class MengerSponge extends RaymarcherNode {
             '../shaders/mengerSpongeFrag',
           ],
           () => {
-            const { cubemap, deferred, depth } = this.materials;
+            const { deferred, depth } = this.materials;
 
-            cubemap.replaceShader( objectVert, mengerSpongeFrag( 'forward' ) );
             deferred.replaceShader( objectVert, mengerSpongeFrag( 'deferred' ) );
             depth.replaceShader( objectVert, mengerSpongeFrag( 'depth' ) );
           },

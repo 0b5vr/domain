@@ -41,9 +41,8 @@ export class Asphalt extends RaymarcherNode {
             '../shaders/asphaltFrag',
           ],
           () => {
-            const { cubemap, deferred, depth } = this.materials;
+            const { deferred, depth } = this.materials;
 
-            cubemap.replaceShader( objectVert, asphaltFrag( 'forward' ) );
             deferred.replaceShader( objectVert, asphaltFrag( 'deferred' ) );
             depth.replaceShader( objectVert, asphaltFrag( 'depth' ) );
           },
