@@ -43,18 +43,20 @@ export class SceneNode extends Component {
   public __drawImpl( event: ComponentDrawEvent ): void {
     const ancestors = [ this, ...event.ancestors ];
 
-    let path: string;
+    let path: string | undefined;
     if ( process.env.DEV ) {
       path = `${ event.path }/${ this.name }`;
     }
 
+    const drawEvent = {
+      ...event,
+      globalTransform: this.globalTransformCache,
+      ancestors,
+      path,
+    };
+
     this.children.forEach( ( child ) => {
-      child.draw( {
-        ...event,
-        globalTransform: this.globalTransformCache,
-        ancestors,
-        path,
-      } );
+      child.draw( drawEvent );
     } );
   }
 }

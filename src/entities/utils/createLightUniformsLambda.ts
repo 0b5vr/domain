@@ -1,4 +1,5 @@
 import { Component } from '../../heck/components/Component';
+import { GLCatTexture } from '@fms-cat/glcat-ts';
 import { Lambda } from '../../heck/components/Lambda';
 import { MapOfSet } from '../../utils/MapOfSet';
 import { Material } from '../../heck/Material';
@@ -16,51 +17,42 @@ export function createLightUniformsLambda( materials: Material[] ): Lambda {
       ) ) as PointLightNode[];
 
     materials.map( ( material ) => {
-      material.addUniform(
-        'lightCount',
-        '1i',
-        activeLights.length,
-      );
+      const lightNearFar: number[] = [];
+      const lightPos: number[] = [];
+      const lightColor: number[] = [];
+      const lightParams: number[] = [];
+      const lightPV: number[] = [];
+      const samplerShadow: GLCatTexture[] = [];
 
-      material.addUniformVector(
-        'lightNearFar',
-        '2fv',
-        activeLights.map( ( light ) => [ light.camera.near, light.camera.far ] ).flat(),
-      );
+      activeLights.map( ( light ) => {
+        const { camera, color, spotness, spotSharpness } = light;
+        const position = light.globalTransformCache.position;
+        const pv = mat4Multiply(
+          camera.projectionMatrix,
+          mat4Inverse( light.globalTransformCache.matrix ),
+        );
 
-      material.addUniformVector(
-        'lightPos',
-        '3fv',
-        activeLights.map( ( light ) => light.globalTransformCache.position ).flat(),
-      );
+        // protip: spread operator is slow :wibbry:
+        lightNearFar.push( camera.near, camera.far );
+        lightPos.push( position[ 0 ], position[ 1 ], position[ 2 ] );
+        lightColor.push( color[ 0 ], color[ 1 ], color[ 2 ] );
+        lightParams.push( spotness, spotSharpness, 0.0, 0.0 );
+        lightPV.push(
+          pv[ 0 ], pv[ 1 ], pv[ 2 ], pv[ 3 ],
+          pv[ 4 ], pv[ 5 ], pv[ 6 ], pv[ 7 ],
+          pv[ 8 ], pv[ 9 ], pv[ 10 ], pv[ 11 ],
+          pv[ 12 ], pv[ 13 ], pv[ 14 ], pv[ 15 ],
+        );
+        samplerShadow.push( light.shadowMap.texture );
+      } );
 
-      material.addUniformVector(
-        'lightColor',
-        '3fv',
-        activeLights.map( ( light ) => light.color ).flat(),
-      );
-
-      material.addUniformVector(
-        'lightParams',
-        '4fv',
-        activeLights.map( ( light ) => [ light.spotness, light.spotSharpness, 0.0, 0.0 ] ).flat(),
-      );
-
-      material.addUniformMatrixVector(
-        'lightPV',
-        'Matrix4fv',
-        activeLights.map( ( light ) => (
-          mat4Multiply(
-            light.camera.projectionMatrix,
-            mat4Inverse( light.globalTransformCache.matrix ),
-          )
-        ) ).flat(),
-      );
-
-      material.addUniformTextures(
-        'samplerShadow',
-        ...activeLights.map( ( light ) => light.shadowMap.texture ),
-      );
+      material.addUniform( 'lightCount', '1i', activeLights.length );
+      material.addUniformVector( 'lightNearFar', '2fv', lightNearFar );
+      material.addUniformVector( 'lightPos', '3fv', lightPos );
+      material.addUniformVector( 'lightColor', '3fv', lightColor );
+      material.addUniformVector( 'lightParams', '4fv', lightParams );
+      material.addUniformMatrixVector( 'lightPV', 'Matrix4fv', lightPV );
+      material.addUniformTextures( 'samplerShadow', ...samplerShadow );
     } );
   };
 
