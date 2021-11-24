@@ -14,6 +14,7 @@ const texts = [
   [ 'webpack', 'still suffering in the minifier hell' ],
   [ 'infodesk', 'need some help? same' ],
   [ 'warning', 'gl_invalid_operation' ],
+  [ 'parking_space', 'beware of floating cubes' ],
 ];
 
 auto( 'FUI/yugopp', ( { progress } ) => {

@@ -706,6 +706,7 @@ type FloatArg =
   | Ex<'uint'>;
 export const float: {
   ( val: FloatArg ): Ex<'float'>;
+  ( val: Ex<'bool'> ): Ex<'float'>;
 } = __callFn( 'float' ) as any;
 
 type Vec2Args =
