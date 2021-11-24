@@ -96,7 +96,7 @@ const lightRight = new PointLightNode( {
 } );
 lightRight.color = [ 100.0, 100.0, 100.0 ];
 lightRight.spotness = 0.9;
-lightRight.transform.lookAt( [ 4.0, 0.2, 2.5 ], [ 0.0, 3.0, 0.0 ] );
+lightRight.transform.lookAt( [ 2.8, 0.2, 2.8 ], [ 0.0, 3.0, 0.0 ] );
 
 const shaftRight = new LightShaft( {
   light: lightRight,
