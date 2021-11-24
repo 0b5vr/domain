@@ -1,16 +1,20 @@
 import { BufferRenderTarget } from '../heck/BufferRenderTarget';
 import { Geometry } from '../heck/Geometry';
+import { HALF_SQRT_TWO } from '../utils/constants';
 import { Lambda } from '../heck/components/Lambda';
+import { MTL_PBR_ROUGHNESS_METALLIC } from '../shaders/deferredShadeFrag';
 import { Material } from '../heck/Material';
 import { Mesh, MeshCull } from '../heck/components/Mesh';
 import { PointLightNode } from './PointLightNode';
 import { SceneNode, SceneNodeOptions } from '../heck/components/SceneNode';
-import { dummyRenderTarget } from '../globals/dummyRenderTarget';
+import { deferredColorFrag } from '../shaders/deferredColorFrag';
+import { dummyRenderTarget, dummyRenderTargetFourDrawBuffers } from '../globals/dummyRenderTarget';
 import { genCylinder } from '../geometries/genCylinder';
 import { gl } from '../globals/canvas';
 import { lightShaftFrag } from '../shaders/lightShaftFrag';
 import { lightShaftVert } from '../shaders/lightShaftVert';
 import { mat4Inverse, mat4Multiply } from '@0b5vr/experimental';
+import { objectVert } from '../shaders/objectVert';
 import { randomTexture } from '../globals/randomTexture';
 
 export const LightShaftTag = Symbol();
@@ -31,18 +35,18 @@ export class LightShaft extends SceneNode {
     const { light, intensity } = options;
 
     // -- geometry ---------------------------------------------------------------------------------
-    const cube = genCylinder( {
+    const cylinder = genCylinder( {
       radialSegs: 64,
     } );
 
     const geometry = new Geometry();
 
-    geometry.vao.bindVertexbuffer( cube.position, 0, 3 );
-    geometry.vao.bindIndexbuffer( cube.index );
+    geometry.vao.bindVertexbuffer( cylinder.position, 0, 3 );
+    geometry.vao.bindIndexbuffer( cylinder.index );
 
-    geometry.count = cube.count;
-    geometry.mode = cube.mode;
-    geometry.indexType = cube.indexType;
+    geometry.count = cylinder.count;
+    geometry.mode = cylinder.mode;
+    geometry.indexType = cylinder.indexType;
 
     // -- materials --------------------------------------------------------------------------------
     const forward = this.__forward = new Material(
@@ -120,10 +124,35 @@ export class LightShaft extends SceneNode {
       mesh.name = 'mesh';
     }
 
+    // -- """light body""" -------------------------------------------------------------------------
+    const nodeBody = new SceneNode( {
+      name: process.env.DEV && 'nodeBody',
+    } );
+    nodeBody.transform.rotation = [ HALF_SQRT_TWO, 0.0, 0.0, HALF_SQRT_TWO ];
+    nodeBody.transform.scale = [ 0.2, 0.2, 0.2 ];
+
+    const materialBody = new Material(
+      objectVert,
+      deferredColorFrag,
+      {
+        initOptions: { geometry: geometry, target: dummyRenderTargetFourDrawBuffers },
+      },
+    );
+    materialBody.addUniform( 'color', '4f', 0.04, 0.04, 0.04, 1.0 );
+    materialBody.addUniform( 'mtlKind', '1f', MTL_PBR_ROUGHNESS_METALLIC );
+    materialBody.addUniform( 'mtlParams', '4f', 0.7, 1.0, 0.0, 0.0 );
+
+    const meshBody = new Mesh( {
+      geometry,
+      materials: { deferred: materialBody },
+    } );
+    nodeBody.children = [ meshBody ];
+
     // -- components -------------------------------------------------------------------------------
     this.children = [
       lambdaUniforms,
       mesh,
+      nodeBody,
     ];
   }
 
