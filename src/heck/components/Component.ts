@@ -30,6 +30,7 @@ export interface ComponentDrawEvent {
   projectionMatrix: RawMatrix4;
   ancestors: SceneNode[];
   componentsByTag: MapOfSet<symbol, Component>;
+  cameraPath?: string;
   path?: string;
 }
 
@@ -114,8 +115,15 @@ export class Component {
 
     if ( process.env.DEV ) {
       if ( Component.drawHaveReachedBreakpoint && !this.ignoreBreakpoints ) { return; }
+      const ha = gui;
+      const cameraPath = event.cameraPath;
+      const focusName = ha?.value( 'profilers/draw/camera' ) as string | undefined;
+      const focus = focusName != null
+        && focusName !== ''
+        && cameraPath != null
+        && cameraPath.includes( focusName );
 
-      if ( this.name != null ) {
+      if ( this.name != null && focus ) {
         guiMeasureDraw( this.name, () => {
           this.__drawImpl( event );
         } );

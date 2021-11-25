@@ -12,17 +12,17 @@ let profilerDrawGpu: any | undefined;
 export const promiseGui = new Promise<ImPane>( ( resolve ) => {
   if ( process.env.DEV ) {
     import( '@0b5vr/imtweakpane' ).then( ( { ImPane } ) => {
-      const gui_ = gui = new ImPane( { title: 'gui' } );
+      const gui_ = new ImPane( { title: 'gui' } );
 
-      const tpDfwv = gui.pane.element.parentNode! as HTMLDivElement;
+      gui_.value( 'active', true );
+
+      const tpDfwv = gui_.pane.element.parentNode! as HTMLDivElement;
       tpDfwv.style.zIndex = '100';
 
       const gpuTimer = GPUTimer.isSupported() ? new GPUTimer() : null;
       const createGPUMeasureHandler = (): any => (
         gpuTimer != null ? new GPUMeasureHandler( gpuTimer ) : new NullMeasureHandler()
       );
-
-      resolve( gui );
 
       import( '@0b5vr/tweakpane-plugin-profiler' ).then( ( plugin ) => {
         gui_.pane.registerPlugin( plugin as any );
@@ -40,16 +40,23 @@ export const promiseGui = new Promise<ImPane>( ( resolve ) => {
           measureHandler: createGPUMeasureHandler(),
         } );
 
+        gui_.value( 'profilers/draw/camera', '' );
+
         profilerDrawCpu = gui_.blade( 'profilers/draw/cpu', {
           view: 'profiler',
           label: 'cpu',
+          targetDelta: 1,
         } );
 
         profilerDrawGpu = gui_.blade( 'profilers/draw/gpu', {
           view: 'profiler',
           label: 'gpu',
+          targetDelta: 1,
           measureHandler: createGPUMeasureHandler(),
         } );
+
+        gui = gui_;
+        resolve( gui_ );
       } );
     } );
   } else {
