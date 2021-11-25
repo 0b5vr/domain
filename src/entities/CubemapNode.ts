@@ -42,6 +42,7 @@ export class CubemapNode extends SceneNode {
   public constructor( options: CubemapNodeOptions ) {
     super( options );
 
+    this.visible = false;
     this.tags.push( CubemapNodeTag );
 
     this.transform.position = [ 0.0, 3.0, 0.0 ];

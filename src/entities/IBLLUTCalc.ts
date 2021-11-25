@@ -25,6 +25,7 @@ export class IBLLUTCalc extends SceneNode {
   public constructor() {
     super();
 
+    this.visible = false;
     this.tags.push( IBLLUTCalcTag );
 
     // -- swap -------------------------------------------------------------------------------------

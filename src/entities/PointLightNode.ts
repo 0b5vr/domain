@@ -71,6 +71,7 @@ export class PointLightNode extends SceneNode {
       far,
       renderTarget: swap.o,
       scene: options.scene,
+      exclusionTags: [ PointLightTag ],
       name: process.env.DEV && 'shadowMapCamera',
       materialTag: 'depth',
     } );

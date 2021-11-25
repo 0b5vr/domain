@@ -42,6 +42,8 @@ export class CameraStack extends SceneNode {
   public constructor( options: CameraStackOptions ) {
     super( options );
 
+    this.visible = false;
+
     const near = options.near ?? NEAR;
     const far = options.far ?? FAR;
     const withAO = options.withAO ?? false;

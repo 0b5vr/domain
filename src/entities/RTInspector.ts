@@ -28,6 +28,8 @@ export class RTInspector extends SceneNode {
   public constructor( options: RTInspectorOptions ) {
     super();
 
+    this.visible = false;
+
     // -- single -----------------------------------------------------------------------------------
     this.nodeSingle = new SceneNode( {
       name: 'nodeSingle',

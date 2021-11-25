@@ -21,6 +21,13 @@ export class Walls extends SceneNode {
     wallE.transform.position = [ 8.0, 8.0, 0.0 ];
     wallE.transform.rotation = [ 0.0, -HALF_SQRT_TWO, 0.0, HALF_SQRT_TWO ];
 
+    if ( process.env.DEV ) {
+      wallN.name = 'wallN';
+      wallS.name = 'wallS';
+      wallW.name = 'wallW';
+      wallE.name = 'wallE';
+    }
+
     this.children = [ wallN, wallS, wallW, wallE ];
   }
 }
