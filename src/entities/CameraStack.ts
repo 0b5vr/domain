@@ -89,11 +89,17 @@ export class CameraStack extends SceneNode {
         { initOptions: { geometry: quadGeometry, target: dummyRenderTarget } },
       );
 
-      const lambdaAoSetCameraUniforms = new Lambda( {
-        onUpdate: () => {
-          const cameraView = mat4Inverse( this.transform.matrix );
+      if ( process.env.DEV ) {
+        module.hot?.accept( '../shaders/ssaoFrag', () => {
+          aoMaterial.replaceShader( quadVert, ssaoFrag );
+        } );
+      }
 
-          shadingMaterial.addUniformMatrixVector(
+      const lambdaAoSetCameraUniforms = new Lambda( {
+        onUpdate: ( { globalTransform } ) => {
+          const cameraView = mat4Inverse( globalTransform.matrix );
+
+          aoMaterial.addUniformMatrixVector(
             'cameraPV',
             'Matrix4fv',
             mat4Multiply( deferredCamera.projectionMatrix, cameraView ),

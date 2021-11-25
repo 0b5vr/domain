@@ -39,9 +39,9 @@ export const ssaoFrag = build( () => {
       const screenPos = def( 'vec4', mul( cameraPV, vec4( pt, 1.0 ) ) );
       divAssign( sw( screenPos, 'x' ), aspect );
       const screenUv = add( 0.5, mul( 0.5, div( sw( screenPos, 'xy' ), sw( screenPos, 'w' ) ) ) );
-      const s0 = sw( texture( sampler1, screenUv ), 'xyz' );
+      const s1 = sw( texture( sampler1, screenUv ), 'xyz' );
 
-      const dDir = def( 'vec3', sub( s0, position ) );
+      const dDir = def( 'vec3', sub( s1, position ) );
       ifThen( lt( length( dDir ), 1E-2 ), () => {
         addAssign( accum, 1.0 );
       }, () => {
