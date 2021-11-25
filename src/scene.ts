@@ -140,6 +140,11 @@ cameraStack.children.push( new Lambda( {
     const posT = auto( 'camera/pos/t' );
     const pos = vecAdd(
       [
+        auto( 'camera/pos/x' ),
+        auto( 'camera/pos/y' ),
+        auto( 'camera/pos/z' ),
+      ],
+      [
         posR * Math.cos( posT ) * Math.sin( posP ),
         posR * Math.sin( posT ),
         posR * Math.cos( posT ) * Math.cos( posP ),

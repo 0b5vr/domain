@@ -2,8 +2,6 @@ import { abs, add, assign, build, def, defInNamed, defOutNamed, defUniformNamed,
 import { calcDepth } from './modules/calcDepth';
 import { glslDefRandom } from './modules/glslDefRandom';
 
-const aspect = 16.0 / 9.0;
-
 export const fuiFrag = ( tag: 'forward' | 'depth' ): string => build( () => {
   insert( 'precision highp float;' );
 
@@ -23,7 +21,6 @@ export const fuiFrag = ( tag: 'forward' | 'depth' ): string => build( () => {
     init( texture( samplerRandom, vUv ) );
 
     const p = def( 'vec2', sub( mul( vUv, 2.0 ), 1.0 ) );
-    mulAssign( sw( p, 'x' ), aspect );
 
     const haha = def( 'float', 0.0 );
 

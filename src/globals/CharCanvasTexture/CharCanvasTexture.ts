@@ -113,8 +113,8 @@ export class CharCanvasTexture {
 
   public constructor() {
     const canvas = this.canvas = document.createElement( 'canvas' );
-    canvas.width = 1920;
-    canvas.height = 1080;
+    canvas.width = 2048;
+    canvas.height = 2048;
 
     const context = this.context = canvas.getContext( '2d' )!;
     context.lineCap = 'round';
@@ -125,7 +125,7 @@ export class CharCanvasTexture {
   }
 
   public clear(): void {
-    this.context.clearRect( 0, 0, 1920, 1080 );
+    this.context.clearRect( 0, 0, 2048, 2048 );
   }
 
   public drawChars( x: number, y: number, scale: number, str: string ): void {
