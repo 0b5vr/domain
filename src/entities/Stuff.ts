@@ -10,6 +10,7 @@ import { RandomTextureCube } from './RandomTextureCube';
 import { RawVector3, quatFromAxisAngle, vecNormalize } from '@0b5vr/experimental';
 import { SSSBox } from './SSSBox';
 import { SceneNode } from '../heck/components/SceneNode';
+import { SingleStep } from './SingleStep';
 import { Sp4ghet } from './Sp4ghet';
 import { WarningCube } from './WarningCube';
 import { WebpackCube } from './WebpackCube';
@@ -24,6 +25,7 @@ export class Stuff extends SceneNode {
 
     // -- children ---------------------------------------------------------------------------------
     this.children = [
+      new SingleStep(),
       new SSSBox(),
       new MengerSponge(),
       new Asphalt(),

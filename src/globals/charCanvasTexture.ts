@@ -5,6 +5,7 @@ import { getYugoppText } from '../utils/getYugoppText';
 export const charCanvasTexture = new CharCanvasTexture();
 
 const texts = [
+  [ 'cube', 'an important, single step' ],
   [ 'sss_box', 'subsurface scatter-brain' ],
   [ 'menger_sponge', 'fractal dimension = 2.7268...' ],
   [ 'asphalt', 'high-octane flavored' ],
@@ -15,7 +16,7 @@ const texts = [
   [ 'infodesk', 'need some help? same' ],
   [ 'warning', 'gl_invalid_operation' ],
   [ 'parking_space', 'beware of floating cubes' ],
-  [ 'octree', 'does not shaped like a tree' ],
+  [ 'octree', 'does not look like a tree at all' ],
 ];
 
 auto( 'FUI/yugopp', ( { progress } ) => {
