@@ -8,7 +8,7 @@ import { doAnalyticLighting } from './modules/doAnalyticLighting';
 import { doShadowMapping } from './modules/doShadowMapping';
 import { forEachLights } from './modules/forEachLights';
 
-export const forwardPBRColor = build( () => {
+export const forwardPBRColorFrag = build( () => {
   insert( 'precision highp float;' );
 
   const vPosition = defInNamed( 'vec4', 'vPosition' );
@@ -42,6 +42,15 @@ export const forwardPBRColor = build( () => {
 
     const col = def( 'vec3', vec3( 0.0 ) );
 
+    const { albedo, f0 } = calcAlbedoF0( baseColor, metallic );
+
+    const roughnessComputed = add(
+      roughness,
+      mul( roughnessNoise, sw( cyclicNoise(
+        mul( 4.0, sw( vPositionWithoutModel, 'xyz' ) )
+      ), 'x' ) )
+    );
+
     forEachLights( ( {
       iLight,
       lightPos,
@@ -57,8 +66,6 @@ export const forwardPBRColor = build( () => {
       const lightCol = lightColor;
       const lightDecay = div( 1.0, sq( lenL ) );
 
-      const { albedo, f0 } = calcAlbedoF0( baseColor, metallic );
-
       // fetch shadowmap + spot lighting
       const lightProj = mul( lightPV, vPosition );
       const lightP = div( sw( lightProj, 'xyz' ), sw( lightProj, 'w' ) );
@@ -72,14 +79,6 @@ export const forwardPBRColor = build( () => {
       );
       const irradiance = def( 'vec3', mul( lightCol, dotNL, lightDecay, shadow ) );
 
-      // roughness
-      const roughnessComputed = add(
-        roughness,
-        mul( roughnessNoise, sw( cyclicNoise(
-          mul( 4.0, sw( vPositionWithoutModel, 'xyz' ) )
-        ), 'x' ) )
-      );
-
       // lighting
       const lightShaded = def( 'vec3', mul(
         irradiance,
@@ -87,13 +86,13 @@ export const forwardPBRColor = build( () => {
       ) );
 
       addAssign( col, lightShaded );
-
-      // diffuse ibl
-      addAssign( col, mul( diffuseIBL( albedo, vNormal ) ) );
-
-      // // reflective ibl
-      addAssign( col, div( specularIBL( f0, vNormal, V, roughnessComputed ), opacity ) );
     } );
+
+    // diffuse ibl
+    addAssign( col, mul( diffuseIBL( albedo, vNormal ) ) );
+
+    // // reflective ibl
+    addAssign( col, div( specularIBL( f0, vNormal, V, roughnessComputed ), opacity ) );
 
     assign( fragColor, vec4( col, opacity ) );
   } );

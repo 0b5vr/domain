@@ -87,7 +87,7 @@ export function num( val: string | number | boolean ): string {
   if ( str.indexOf( '.' ) === -1 ) {
     str += '.';
   }
-  return str;
+  return `(${ str })`;
 }
 
 function __def( { type, init, initArray, location, name, modifier, local, size }: {
