@@ -5,9 +5,11 @@ import { ComponentOptions } from '../heck/components/Component';
 import { GLCatTexture } from '@fms-cat/glcat-ts';
 import { Lambda } from '../heck/components/Lambda';
 import { Material } from '../heck/Material';
+import { PointLightTag } from './PointLightNode';
 import { Quad } from '../heck/components/Quad';
 import { RawQuaternion, Swap } from '@0b5vr/experimental';
 import { SceneNode } from '../heck/components/SceneNode';
+import { StuffTag } from './Stuff';
 import { cubemapBlurFrag } from '../shaders/cubemapBlurFrag';
 import { cubemapMergeFrag } from '../shaders/cubemapMergeFrag';
 import { cubemapSampleFrag } from '../shaders/cubemapSampleFrag';
@@ -29,7 +31,7 @@ const CUBEMAP_ROTATIONS: RawQuaternion[] = [ // 🔥
 ];
 
 export interface CubemapNodeOptions extends ComponentOptions {
-  scenes: SceneNode[];
+  scene: SceneNode;
   textureIBLLUT: GLCatTexture;
 }
 
@@ -44,7 +46,7 @@ export class CubemapNode extends SceneNode {
 
     this.transform.position = [ 0.0, 3.0, 0.0 ];
 
-    const { scenes } = options;
+    const { scene } = options;
 
     // -- cubemap ----------------------------------------------------------------------------------
     const targets = [ ...Array( 6 ) ].map( ( _, i ) => new BufferRenderTarget( {
@@ -56,7 +58,8 @@ export class CubemapNode extends SceneNode {
     // -- cameras ----------------------------------------------------------------------------------
     const cameras = targets.map( ( target, i ) => {
       const cameraStack = new CameraStack( {
-        scenes,
+        scene,
+        exclusionTags: [ StuffTag, PointLightTag ],
         target,
         near: 2.9,
         fov: 90.0,

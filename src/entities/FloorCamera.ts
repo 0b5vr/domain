@@ -35,7 +35,7 @@ export class FloorCamera extends SceneNode {
     if ( process.env.DEV ) { this.mirrorTarget.name = `${ this.name }/mirrorTarget`; }
 
     const mirrorCamera = this.mirrorCamera = new CameraStack( {
-      scenes: primaryCamera.deferredCamera.scenes!,
+      scene: primaryCamera.deferredCamera.scene!,
       target: this.mirrorTarget,
       name: process.env.DEV && 'floorCameraStack',
     } );

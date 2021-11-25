@@ -23,8 +23,9 @@ import { randomTexture } from '../globals/randomTexture';
 import { ssaoFrag } from '../shaders/ssaoFrag';
 
 export interface CameraStackOptions extends ComponentOptions {
-  scenes: SceneNode[];
+  scene: SceneNode;
   target: RenderTarget;
+  exclusionTags?: symbol[];
   floor?: Floor;
   near?: number;
   far?: number;
@@ -45,7 +46,7 @@ export class CameraStack extends SceneNode {
     const far = options.far ?? FAR;
     const withAO = options.withAO ?? false;
 
-    const { target, scenes, floor, withPost, fov } = options;
+    const { target, scene, exclusionTags, floor, withPost, fov } = options;
 
     const cameraTarget = withPost ? new BufferRenderTarget( {
       width: target.width,
@@ -63,7 +64,8 @@ export class CameraStack extends SceneNode {
     } );
 
     const deferredCamera = this.deferredCamera = new PerspectiveCamera( {
-      scenes: scenes,
+      scene,
+      exclusionTags,
       renderTarget: deferredTarget,
       near,
       far,
@@ -211,7 +213,8 @@ export class CameraStack extends SceneNode {
     } );
 
     const forwardCamera = this.forwardCamera = new PerspectiveCamera( {
-      scenes: scenes,
+      scene,
+      exclusionTags,
       renderTarget: cameraTarget,
       near,
       far,

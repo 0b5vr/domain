@@ -12,7 +12,8 @@ export interface PerspectiveCameraOptions extends ComponentOptions {
   near?: number;
   far?: number;
   fov?: number;
-  scenes?: SceneNode[];
+  scene?: SceneNode;
+  exclusionTags?: symbol[];
   clear?: Array<number | undefined> | false;
 }
 
@@ -54,9 +55,6 @@ export class PerspectiveCamera extends Camera {
     super( {
       ...options,
       projectionMatrix,
-      renderTarget: options.renderTarget,
-      scenes: options.scenes,
-      clear: options.clear,
     } );
 
     this.__fov = fov;

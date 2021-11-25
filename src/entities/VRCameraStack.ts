@@ -8,7 +8,7 @@ import { VRSesh } from '../globals/vr/VRSesh';
 import { dog } from '../scene';
 
 export interface VRCameraStackOptions extends ComponentOptions {
-  scenes: SceneNode[];
+  scene: SceneNode;
   floor: Floor;
   vrSesh: VRSesh;
   dog: Dog;

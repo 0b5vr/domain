@@ -16,9 +16,13 @@ import { WarningCube } from './WarningCube';
 import { WebpackCube } from './WebpackCube';
 import { auto } from '../globals/automaton';
 
+export const StuffTag = Symbol();
+
 export class Stuff extends SceneNode {
   public constructor() {
     super();
+
+    this.tags = [ StuffTag ];
 
     this.transform.position = [ 0.0, 3.0, 0.0 ];
     this.transform.scale = [ 3.0, 3.0, 3.0 ];

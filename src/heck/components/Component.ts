@@ -5,6 +5,7 @@ import { RawMatrix4 } from '@0b5vr/experimental';
 import { RenderTarget } from '../RenderTarget';
 import { SceneNode } from './SceneNode';
 import { Transform } from '../Transform';
+import { arraySetIntersects } from '../../utils/arraySetIntersects';
 import { gui, guiMeasureDraw, guiMeasureUpdate } from '../../globals/gui';
 
 export interface ComponentUpdateEvent {
@@ -107,6 +108,9 @@ export class Component {
 
   public draw( event: ComponentDrawEvent ): void {
     if ( !this.visible ) { return; }
+    if ( arraySetIntersects( event.camera.exclusionTags, this.tags ) ) {
+      return;
+    }
 
     if ( process.env.DEV ) {
       if ( Component.drawHaveReachedBreakpoint && !this.ignoreBreakpoints ) { return; }

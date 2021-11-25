@@ -12,7 +12,7 @@ import { shadowBlurFrag } from '../shaders/shadowBlurFrag';
 export const PointLightTag = Symbol();
 
 export interface PointLightNodeOptions extends SceneNodeOptions {
-  scenes: SceneNode[];
+  scene: SceneNode;
   shadowMapFov?: number;
   shadowMapNear?: number;
   shadowMapFar?: number;
@@ -70,7 +70,7 @@ export class PointLightNode extends SceneNode {
       near,
       far,
       renderTarget: swap.o,
-      scenes: options.scenes,
+      scene: options.scene,
       name: process.env.DEV && 'shadowMapCamera',
       materialTag: 'depth',
     } );

@@ -84,7 +84,7 @@ if ( process.env.DEV ) {
 
 const iblLutCalc = new IBLLUTCalc();
 
-const lights = new Lights( [ dog.root ] );
+const lights = new Lights( dog.root );
 
 const floor = new Floor();
 if ( process.env.DEV && module.hot ) {
@@ -111,7 +111,7 @@ if ( process.env.DEV && module.hot ) {
 }
 
 const cubemapNode = new CubemapNode( {
-  scenes: [ dog.root ],
+  scene: dog.root,
   textureIBLLUT: iblLutCalc.texture,
 } );
 
@@ -120,7 +120,7 @@ if ( process.env.DEV ) {
 }
 
 const cameraStackOptions = {
-  scenes: [ dog.root ],
+  scene: dog.root,
   floor,
   withAO: true,
   withPost: true,

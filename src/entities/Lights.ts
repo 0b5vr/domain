@@ -6,11 +6,11 @@ import { auto } from '../globals/automaton';
 import { vecScale } from '@0b5vr/experimental';
 
 export class Lights extends SceneNode {
-  public constructor( scenes: SceneNode[] ) {
+  public constructor( scene: SceneNode ) {
     super();
 
     const lightRight = new PointLightNode( {
-      scenes,
+      scene,
       shadowMapFov: 60.0,
       shadowMapNear: NEAR,
       shadowMapFar: FAR,
@@ -31,7 +31,7 @@ export class Lights extends SceneNode {
     } );
 
     const lightLeft = new PointLightNode( {
-      scenes,
+      scene,
       shadowMapFov: 60.0,
       shadowMapNear: NEAR,
       shadowMapFar: FAR,
@@ -52,7 +52,7 @@ export class Lights extends SceneNode {
     } );
 
     const lightTop = new PointLightNode( {
-      scenes,
+      scene,
       shadowMapFov: 60.0,
       shadowMapNear: NEAR,
       shadowMapFar: FAR,

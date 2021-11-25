@@ -10,7 +10,8 @@ export interface CameraOptions extends ComponentOptions {
   renderTarget?: RenderTarget;
   projectionMatrix: RawMatrix4;
   materialTag: MaterialTag;
-  scenes?: SceneNode[];
+  exclusionTags?: symbol[];
+  scene?: SceneNode;
   clear?: Array<number | undefined> | false;
 }
 
@@ -19,7 +20,9 @@ export abstract class Camera extends Component {
 
   public renderTarget?: RenderTarget;
 
-  public scenes?: SceneNode[];
+  public scene?: SceneNode;
+
+  public exclusionTags: symbol[];
 
   public clear: Array<number | undefined> | false;
 
@@ -32,13 +35,16 @@ export abstract class Camera extends Component {
   public constructor( options: CameraOptions ) {
     super( options );
 
+    const { renderTarget, scene, exclusionTags, projectionMatrix, materialTag, clear } = options;
+
     this.visible = false;
 
-    this.renderTarget = options.renderTarget;
-    this.scenes = options.scenes;
-    this.projectionMatrix = options.projectionMatrix;
-    this.materialTag = options.materialTag;
-    this.clear = options.clear ?? [];
+    this.renderTarget = renderTarget;
+    this.scene = scene;
+    this.exclusionTags = exclusionTags ?? [];
+    this.projectionMatrix = projectionMatrix;
+    this.materialTag = materialTag;
+    this.clear = clear ?? [];
   }
 
   protected __updateImpl( {
@@ -47,13 +53,13 @@ export abstract class Camera extends Component {
     globalTransform,
     time,
   }: ComponentUpdateEvent ): void {
-    const { renderTarget, scenes } = this;
+    const { renderTarget, scene, materialTag } = this;
 
     if ( !renderTarget ) {
       throw process.env.DEV && new Error( 'You must assign a renderTarget to the Camera' );
     }
 
-    if ( !scenes ) {
+    if ( !scene ) {
       throw process.env.DEV && new Error( 'You must assign scenes to the Camera' );
     }
 
@@ -65,21 +71,19 @@ export abstract class Camera extends Component {
       glCat.clear( ...this.clear );
     }
 
-    scenes.map( ( scene ) => {
-      scene.draw( {
-        frameCount,
-        time: time,
-        renderTarget,
-        cameraTransform: globalTransform,
-        globalTransform: new Transform(),
-        componentsByTag,
-        viewMatrix,
-        projectionMatrix: this.projectionMatrix,
-        camera: this,
-        ancestors: [],
-        materialTag: this.materialTag,
-        path: process.env.DEV && `(${ this.materialTag }) `,
-      } );
+    scene.draw( {
+      frameCount,
+      time: time,
+      renderTarget,
+      cameraTransform: globalTransform,
+      globalTransform: new Transform(),
+      componentsByTag,
+      viewMatrix,
+      projectionMatrix: this.projectionMatrix,
+      camera: this,
+      ancestors: [],
+      materialTag,
+      path: process.env.DEV && `(${ this.materialTag }) `,
     } );
   }
 }
