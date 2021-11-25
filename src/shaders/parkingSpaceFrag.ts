@@ -22,6 +22,7 @@ export const parkingSpaceFrag = ( tag: 'deferred' | 'depth' ): string => build( 
   const fragMisc = defOut( 'vec4', 3 );
 
   const time = defUniformNamed( 'float', 'time' );
+  const full = defUniformNamed( 'float', 'full' );
   const resolution = defUniformNamed( 'vec2', 'resolution' );
   const cameraNearFar = defUniformNamed( 'vec2', 'cameraNearFar' );
   const cameraPos = defUniformNamed( 'vec3', 'cameraPos' );
@@ -111,7 +112,7 @@ export const parkingSpaceFrag = ( tag: 'deferred' | 'depth' ): string => build( 
           ].map( ( [ x, y, w, h ] ) => (
             assign( s, min( s, sdbox2( sub( pxy, vec2( x, y ) ), vec2( w, h ) ) ) )
           ) );
-          assign( lamp, tern( hitDot, neg( step( s, -10.0 ) ), lamp ) );
+          assign( lamp, tern( hitDot, neg( step( s, 0.0 ) ), lamp ) );
         }
       }
     } );
@@ -165,8 +166,8 @@ export const parkingSpaceFrag = ( tag: 'deferred' | 'depth' ): string => build( 
     const baseColor = vec3( tern( eq( mtl, 0.0 ), 0.8, 0.04 ) );
 
     const emissive = def( 'vec3', add(
-      mul( step( 0.0, lamp ), lamp, vec3( 0.0, 5.0, 1.0 ) ),
-      mul( step( lamp, 0.0 ), lamp, vec3( -5.0, -1.0, -0.0 ) ),
+      mul( step( full, 0.5 ), step( 0.0, lamp ), lamp, vec3( 0.0, 5.0, 1.0 ) ),
+      mul( step( 0.5, full ), step( lamp, 0.0 ), lamp, vec3( -5.0, -1.0, -0.0 ) ),
     ) );
     const flickerPhase = add( mul( time, 100.0 ), mul( sw( rp, 'y' ), 10.0 ) );
     mulAssign( emissive, add( 0.7, mul( 0.3, sin( flickerPhase ) ) ) );

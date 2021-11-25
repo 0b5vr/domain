@@ -1,5 +1,6 @@
 import { RaymarcherNode } from './utils/RaymarcherNode';
 import { TransparentShell } from './TransparentShell';
+import { auto } from '../globals/automaton';
 import { objectVert } from '../shaders/objectVert';
 import { parkingSpaceFrag } from '../shaders/parkingSpaceFrag';
 
@@ -12,6 +13,10 @@ export class ParkingSpace extends RaymarcherNode {
     } );
     shell.transform.scale = [ 0.95, 0.95, 0.95 ];
     this.children.push( shell );
+
+    auto( 'parkingSpace/full', ( { value } ) => (
+      this.materials.deferred.addUniform( 'full', '1f', value )
+    ) );
 
     if ( process.env.DEV ) {
       if ( module.hot ) {

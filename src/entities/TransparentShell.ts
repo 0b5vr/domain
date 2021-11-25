@@ -5,7 +5,7 @@ import { SceneNode, SceneNodeOptions } from '../heck/components/SceneNode';
 import { createCubemapUniformsLambda } from './utils/createCubemapUniformsLambda';
 import { createLightUniformsLambda } from './utils/createLightUniformsLambda';
 import { dummyRenderTarget } from '../globals/dummyRenderTarget';
-import { forwardPBRColor } from '../shaders/forwardPBRColor';
+import { forwardPBRColorFrag } from '../shaders/forwardPBRColorFrag';
 import { genCube } from '../geometries/genCube';
 import { gl } from '../globals/canvas';
 import { objectVert } from '../shaders/objectVert';
@@ -31,7 +31,7 @@ export class TransparentShell extends SceneNode {
 
     const forwardShell = new Material(
       objectVert,
-      forwardPBRColor,
+      forwardPBRColorFrag,
       {
         initOptions: { geometry: geometryShellFront, target: dummyRenderTarget },
         blend: [ gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA ],

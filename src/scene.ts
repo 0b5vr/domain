@@ -2,21 +2,19 @@ import { CameraStack } from './entities/CameraStack';
 import { CanvasRenderTarget } from './heck/CanvasRenderTarget';
 import { CubemapNode } from './entities/CubemapNode';
 import { Dog } from './heck/Dog';
-import { FAR, NEAR } from './config';
 import { FUI } from './entities/FUI';
 import { Fence } from './entities/Fence';
 import { Floor } from './entities/Floor';
 import { IBLLUTCalc } from './entities/IBLLUTCalc';
 import { Lambda } from './heck/components/Lambda';
-import { LightShaft } from './entities/LightShaft';
+import { Lights } from './entities/Lights';
 import { NodeReplacer } from './utils/NodeReplacer';
 import { Plane } from './entities/Plane';
-import { PointLightNode } from './entities/PointLightNode';
 import { RawVector3, vecAdd } from '@0b5vr/experimental';
 import { Stuff } from './entities/Stuff';
 import { VRCameraStack } from './entities/VRCameraStack';
 import { Walls } from './entities/Walls';
-import { automaton } from './globals/automaton';
+import { auto, automaton } from './globals/automaton';
 import { createVRSesh } from './globals/createVRSesh';
 import { music } from './globals/music';
 import { promiseGui } from './globals/gui';
@@ -86,59 +84,7 @@ if ( process.env.DEV ) {
 
 const iblLutCalc = new IBLLUTCalc();
 
-const lightRight = new PointLightNode( {
-  scenes: [ dog.root ],
-  shadowMapFov: 60.0,
-  shadowMapNear: NEAR,
-  shadowMapFar: FAR,
-  name: process.env.DEV && 'lightRight',
-  brtNamePrefix: process.env.DEV && 'SceneBegin/lightRight',
-} );
-lightRight.color = [ 100.0, 100.0, 100.0 ];
-lightRight.spotness = 0.9;
-lightRight.transform.lookAt( [ 2.8, 0.2, 2.8 ], [ 0.0, 3.0, 0.0 ] );
-
-const shaftRight = new LightShaft( {
-  light: lightRight,
-  intensity: 0.02,
-} );
-lightRight.children.push( shaftRight );
-
-const lightLeft = new PointLightNode( {
-  scenes: [ dog.root ],
-  shadowMapFov: 60.0,
-  shadowMapNear: NEAR,
-  shadowMapFar: FAR,
-  name: process.env.DEV && 'lightLeft',
-  brtNamePrefix: process.env.DEV && 'SceneBegin/lightLeft',
-} );
-lightLeft.color = [ 80.0, 60.0, 40.0 ];
-lightLeft.spotness = 0.9;
-lightLeft.transform.lookAt( [ -5.0, 0.2, 0.0 ], [ 0.0, 3.0, 0.0 ] );
-
-const shaftLeft = new LightShaft( {
-  light: lightLeft,
-  intensity: 0.02,
-} );
-lightLeft.children.push( shaftLeft );
-
-const lightTop = new PointLightNode( {
-  scenes: [ dog.root ],
-  shadowMapFov: 60.0,
-  shadowMapNear: NEAR,
-  shadowMapFar: FAR,
-  name: process.env.DEV && 'lightTop',
-  brtNamePrefix: process.env.DEV && 'SceneBegin/lightTop',
-} );
-lightTop.color = [ 100.0, 150.0, 190.0 ];
-lightTop.spotness = 0.9;
-lightTop.transform.lookAt( [ 0.01, 9.0, 0.01 ], [ 0.0, 3.0, 0.0 ] );
-
-const shaftTop = new LightShaft( {
-  light: lightTop,
-  intensity: 0.02,
-} );
-lightTop.children.push( shaftTop );
+const lights = new Lights( [ dog.root ] );
 
 const floor = new Floor();
 if ( process.env.DEV && module.hot ) {
@@ -184,27 +130,42 @@ const cameraStack = new CameraStack( {
   ...cameraStackOptions,
   target: canvasRenderTarget,
 } );
-cameraStack.transform.lookAt( [ 0.0, 1.6, 10.0 ], [ 0.0, 3.0, 0.0 ] );
 
 cameraStack.children.push( new Lambda( {
   onUpdate: ( { time } ) => {
+    const shake = auto( 'camera/shake' );
+
+    const posR = auto( 'camera/pos/r' );
+    const posP = auto( 'camera/pos/p' );
+    const posT = auto( 'camera/pos/t' );
     const pos = vecAdd(
-      [ 0.0, 1.6, 10.0 ],
       [
-        0.04 * Math.sin( time * 2.4 ) - 0.02,
-        0.04 * Math.sin( time * 3.4 ) - 0.02,
-        0.04 * Math.sin( time * 2.7 ) - 0.02,
+        posR * Math.cos( posT ) * Math.sin( posP ),
+        posR * Math.sin( posT ),
+        posR * Math.cos( posT ) * Math.cos( posP ),
+      ],
+      [
+        0.04 * shake * Math.sin( time * 2.4 ),
+        0.04 * shake * Math.sin( time * 3.4 ),
+        0.04 * shake * Math.sin( time * 2.7 ),
       ],
     ) as RawVector3;
+
     const tar = vecAdd(
-      [ 0.0, 1.6, 0.0 ],
       [
-        0.04 * Math.sin( time * 2.8 ) - 0.02,
-        0.04 * Math.sin( time * 2.5 ) - 0.02,
-        0.04 * Math.sin( time * 3.1 ) - 0.02,
+        auto( 'camera/tar/x' ),
+        auto( 'camera/tar/y' ),
+        auto( 'camera/tar/z' ),
+      ],
+      [
+        0.04 * shake * Math.sin( time * 2.8 ),
+        0.04 * shake * Math.sin( time * 2.5 ),
+        0.04 * shake * Math.sin( time * 3.1 ),
       ],
     ) as RawVector3;
-    const roll = 0.02 * Math.sin( time * 1.1 );
+
+    const roll = auto( 'camera/roll' ) + 0.01 * shake * Math.sin( time * 1.1 );
+
     cameraStack.transform.lookAt( pos, tar, [ 0.0, 1.0, 0.0 ], roll );
   },
 } ) );
@@ -246,9 +207,7 @@ dog.root.children.push(
   fence,
   floor,
   stuff,
-  lightRight,
-  lightLeft,
-  lightTop,
+  lights,
   cubemapNode,
   // plane,
   cameraStack,
