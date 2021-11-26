@@ -5,7 +5,7 @@
  * https://gist.github.com/mikhailov-work/0d177465a8151eb6ede1768d51d476c7
  */
 
-import { GLSLExpression, add, assign, cache, def, defFn, dot, mul, sq, sw, vec2, vec3, vec4, retFn } from '../../shader-builder/shaderBuilder';
+import { GLSLExpression, add, assign, cache, def, defFn, dot, mul, retFn, sq, sw, vec2, vec3, vec4 } from '../../shader-builder/shaderBuilder';
 import { glslSaturate } from './glslSaturate';
 
 const K_R_VEC4 = vec4( 0.13572138, 4.61539260, -42.66032258, 132.13108234 );

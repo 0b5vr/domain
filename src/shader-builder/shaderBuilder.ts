@@ -32,6 +32,10 @@ export type Swizzle2ComponentsVec4 = `${ SwizzleComponentVec4 }${ SwizzleCompone
 export type Swizzle3ComponentsVec4 = `${ Swizzle2ComponentsVec4 }${ SwizzleComponentVec4 }`;
 export type Swizzle4ComponentsVec4 = `${ Swizzle3ComponentsVec4 }${ SwizzleComponentVec4 }`;
 
+// since booleans are compiled into 0 and 1 in terser
+export const glslFalse = 'false' as GLSLExpression<'bool'>;
+export const glslTrue = 'true' as GLSLExpression<'bool'>;
+
 // †† the sacred zone of global state ††††††††††††††††††††††††††††††††††††††††††††††††††††††††††††††
 const __stack: string[] = [];
 
@@ -77,8 +81,8 @@ export function insertTop( code: string ): void {
 }
 
 export function num( val: GLSLFloatExpression ): GLSLExpression<'float'>;
-export function num( val: string | number | boolean ): string;
-export function num( val: string | number | boolean ): string {
+export function num( val: string | number ): string;
+export function num( val: string | number ): string {
   if ( typeof val !== 'number' ) {
     return `${ val }`;
   }
@@ -92,8 +96,8 @@ export function num( val: string | number | boolean ): string {
 
 function __def( { type, init, initArray, location, name, modifier, local, size }: {
   type: string,
-  init?: string | number | boolean,
-  initArray?: ( string | number | boolean )[],
+  init?: string | number,
+  initArray?: ( string | number )[],
   location?: number,
   name?: string,
   modifier?: string,
@@ -118,9 +122,8 @@ function __def( { type, init, initArray, location, name, modifier, local, size }
 
 export const def: {
   ( type: 'float', init?: Exf ): Tok<'float'>;
-  ( type: 'bool', init?: boolean ): Tok<'bool'>;
   <T extends string>( type: T, init?: Ex<T> ): Tok<T>;
-} = ( type: string, init?: string | number | boolean ) => __def( {
+} = ( type: string, init?: string | number ) => __def( {
   type,
   init,
   local: true,
@@ -146,7 +149,7 @@ export const defConst: {
 export const defConstArray: {
   ( type: 'float', initArray: Exf[] ): Tok<'float[]'>;
   <T extends string>( type: T, initArray: Ex<T>[] ): Tok<`${ T }[]`>;
-} = ( type: string, initArray: ( string | number | boolean )[] ) => __def( {
+} = ( type: string, initArray: ( string | number )[] ) => __def( {
   type,
   initArray,
   size: initArray.length,
@@ -203,10 +206,9 @@ export const defUniformArrayNamed: {
 } ) as any;
 
 export const assign: {
-  ( dst: Tok<'bool'>, src: boolean ): void;
   ( dst: Tok<'float'>, src: number ): void;
   <T extends string>( dst: Tok<T>, src: Ex<T> ): void;
-} = ( dst: string, src: string | number | boolean ) => (
+} = ( dst: string, src: string | number ) => (
   insert( `${dst}=${num( src )};` )
 );
 
@@ -436,19 +438,19 @@ export const gte: {
 
 export const not: {
   ( x: Ex<'bool'> ): Ex<'bool'>;
-} = ( x: string | boolean ) => (
+} = ( x: string ) => (
   `(!${ x })`
 ) as any;
 
 export const and: {
   ( ...args: Ex<'bool'>[] ): Ex<'bool'>;
-} = ( ...args: ( string | boolean )[] ) => (
+} = ( ...args: ( string )[] ) => (
   `(${args.map( ( arg ) => num( arg ) ).join( '&&' )})`
 ) as any;
 
 export const or: {
   ( ...args: Ex<'bool'>[] ): Ex<'bool'>;
-} = ( ...args: ( string | number | boolean )[] ) => (
+} = ( ...args: ( string | number )[] ) => (
   `(${args.map( ( arg ) => num( arg ) ).join( '||' )})`
 ) as any;
 
@@ -781,7 +783,7 @@ export function discard(): void {
   insert( 'discard;' );
 }
 
-export function retFn( val?: number | string | boolean ): void {
+export function retFn( val?: number | string ): void {
   insert( `return ${ num( val ?? '' ) };` );
 }
 

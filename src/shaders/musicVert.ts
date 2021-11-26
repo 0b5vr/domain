@@ -2,7 +2,6 @@ import { GLSLExpression, GLSLFloatExpression, add, addAssign, arrayIndex, assign
 import { TAU } from '../utils/constants';
 import { glslLofi } from './modules/glslLofi';
 import { glslSaturate } from './modules/glslSaturate';
-import { glslTri } from './modules/glslTri';
 import { pcg3df } from './modules/pcg3df';
 
 const SAMPLES = 16;

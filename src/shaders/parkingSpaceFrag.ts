@@ -1,5 +1,5 @@
 import { MTL_PBR_EMISSIVE3_ROUGHNESS, MTL_PBR_ROUGHNESS_METALLIC } from './deferredShadeFrag';
-import { abs, add, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, discard, div, divAssign, eq, glFragCoord, glFragDepth, gt, ifThen, insert, length, lt, main, max, min, mod, mul, mulAssign, neg, normalize, retFn, sin, smoothstep, step, sub, subAssign, sw, tern, ternChain, unrollLoop, vec2, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { abs, add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, discard, div, divAssign, eq, glFragCoord, glFragDepth, glslFalse, glslTrue, gt, ifThen, insert, length, lt, main, max, min, mod, mul, mulAssign, neg, normalize, retFn, sin, smoothstep, step, sub, subAssign, sw, tern, ternChain, unrollLoop, vec2, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcDepth } from './modules/calcDepth';
 import { calcNormal } from './modules/calcNormal';
 import { cyclicNoise } from './modules/cyclicNoise';
@@ -7,6 +7,7 @@ import { raymarch } from './modules/raymarch';
 import { sdbox } from './modules/sdbox';
 import { sdbox2 } from './modules/sdbox2';
 import { setupRoRd } from './modules/setupRoRd';
+import { simplex4d } from './modules/simplex4d';
 
 export const parkingSpaceFrag = ( tag: 'deferred' | 'depth' ): string => build( () => {
   insert( 'precision highp float;' );
@@ -28,9 +29,16 @@ export const parkingSpaceFrag = ( tag: 'deferred' | 'depth' ): string => build( 
   const cameraPos = defUniformNamed( 'vec3', 'cameraPos' );
   const inversePVM = defUniformNamed( 'mat4', 'inversePVM' );
 
+  const shouldUseNoise = def( 'bool', glslFalse );
+
   const map = defFn( 'vec4', [ 'vec3' ], ( p ) => {
     const d = def( 'float', sdbox( p, vec3( 0.48 ) ) );
-    subAssign( d, 0.01 );
+    subAssign( d, 0.02 );
+
+    ifThen( shouldUseNoise, () => {
+      const noise = simplex4d( vec4( mul( add( 2.0, p ), 50.0 ), 1.0 ) );
+      addAssign( d, mul( 0.0003, noise ) );
+    } );
 
     const mtl = def( 'float', 0.0 );
     const lamp = def( 'float', 0.0 );
@@ -39,7 +47,7 @@ export const parkingSpaceFrag = ( tag: 'deferred' | 'depth' ): string => build( 
       sub( p, vec3( 0.0, 0.0, 0.5 ) ),
       vec3( 0.43, 0.43, 0.0 )
     ) );
-    subAssign( dBlackFrame, 0.01 );
+    subAssign( dBlackFrame, 0.005 );
     assign( d, max( d, neg( dBlackFrame ) ) );
     ( tag !== 'depth' ) && assign( mtl, tern( lt( dBlackFrame, 0.0 ), 1.0, mtl ) );
 
@@ -140,8 +148,8 @@ export const parkingSpaceFrag = ( tag: 'deferred' | 'depth' ): string => build( 
     ifThen( gt( sw( isect, 'x' ), 1E-2 ), () => discard() );
 
     const modelPos = def( 'vec4', mul( modelMatrix, vec4( rp, 1.0 ) ) );
-    const mtl = def( 'float', sw( isect, 'y' ) );
-    const lamp = def( 'float', sw( isect, 'z' ) );
+    const mtl = sw( isect, 'y' );
+    const lamp = sw( isect, 'z' );
 
     const projPos = def( 'vec4', mul( pvm, vec4( rp, 1.0 ) ) );
     const depth = div( sw( projPos, 'z' ), sw( projPos, 'w' ) );
@@ -153,6 +161,8 @@ export const parkingSpaceFrag = ( tag: 'deferred' | 'depth' ): string => build( 
       retFn();
 
     }
+
+    assign( shouldUseNoise, glslTrue );
 
     const N = def( 'vec3', calcNormal( { rp, map } ) );
     const noise = mul( 0.1, smoothstep( -1.0, 1.0, sw( cyclicNoise( mul( 4.0, rp ) ), 'x' ) ) );

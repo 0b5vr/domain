@@ -1,4 +1,4 @@
-import { add, addAssign, assign, build, def, defInNamed, defOut, defUniformNamed, exp, fract, insert, length, main, mul, mulAssign, sin, smoothstep, sw, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { add, addAssign, assign, build, def, defInNamed, defOut, defUniformNamed, exp, insert, length, main, mul, mulAssign, sin, smoothstep, sw, vec3 } from '../shader-builder/shaderBuilder';
 import { defFluidSampleNearest3D } from './modules/defFluidSampleNearest3D';
 import { defFluidUvToPos } from './modules/defFluidUvToPos';
 

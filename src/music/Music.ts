@@ -2,6 +2,7 @@ import { AutomatonManager } from './AutomatonManager';
 import { GLCatBuffer, GLCatProgram, GLCatTransformFeedback } from '@fms-cat/glcat-ts';
 import { MUSIC_BPM } from '../config';
 import { SamplesManager } from './SamplesManager';
+import { TaskProgress } from '../utils/TaskProgress';
 import { audio } from '../globals/music';
 import { binarySearch } from '@0b5vr/automaton';
 import { createIR } from './createIR';
@@ -124,8 +125,11 @@ export abstract class Music {
     }
   }
 
-  public async prepare(): Promise<void> {
-    await this.__samplesManager.loadSamples();
+  public prepare(): TaskProgress {
+    return new TaskProgress( async ( setProgress ) => {
+      await this.__samplesManager.loadSamples();
+      setProgress( 1 );
+    } );
   }
 
   public async recompile(): Promise<void> {

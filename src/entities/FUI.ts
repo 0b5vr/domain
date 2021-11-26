@@ -1,14 +1,51 @@
+import { CharCanvasTexture } from './fui/CharCanvasTexture';
 import { Geometry } from '../heck/Geometry';
 import { Material } from '../heck/Material';
 import { Mesh, MeshCull } from '../heck/components/Mesh';
 import { SceneNode, SceneNodeOptions } from '../heck/components/SceneNode';
 import { TRIANGLE_STRIP_QUAD_3D, TRIANGLE_STRIP_QUAD_NORMAL, TRIANGLE_STRIP_QUAD_UV } from '@0b5vr/experimental';
-import { charCanvasTexture } from '../globals/charCanvasTexture';
+import { auto } from '../globals/automaton';
 import { dummyRenderTarget } from '../globals/dummyRenderTarget';
 import { fuiFrag } from '../shaders/fuiFrag';
+import { getYugoppText } from '../utils/getYugoppText';
 import { gl, glCat } from '../globals/canvas';
 import { objectVert } from '../shaders/objectVert';
 import { randomTexture } from '../globals/randomTexture';
+
+export const charCanvasTexture = new CharCanvasTexture();
+
+const texts = [
+  [ 'cube', 'an important, single step' ],
+  [ 'sss_box', 'subsurface scatter-brain' ],
+  [ 'menger_sponge', 'fractal dimension = 2.7268...' ],
+  [ 'asphalt', 'high-octane flavored' ],
+  [ 'sp4ghet', 'angura girl with a torus-knot' ],
+  [ 'fluid', 'the incomprehensible flow' ],
+  [ 'xorshit', 'shut up my brain' ],
+  [ 'webpack', 'still suffering in the minifier hell' ],
+  [ 'infodesk', 'need some help? same' ],
+  [ 'warning', 'gl_invalid_operation' ],
+  [ 'parking_space', 'beware of floating cubes' ],
+  [ 'octree', 'does not look like a tree at all' ],
+  [ 'Pool-LAN', 'the descending bear' ],
+  [ 'advantage_cube', 'press triangle to explode' ],
+  [ 'crate', 'whoa' ],
+];
+
+auto( 'FUI/yugopp', ( { progress } ) => {
+  const stuffIndex = auto( 'stuff' );
+  const t = texts[ stuffIndex ];
+
+  if ( t != null ) {
+    const indexText = ( '0' + stuffIndex ).slice( -2 );
+
+    charCanvasTexture.clear();
+    charCanvasTexture.drawChars( 24, 68, 11, getYugoppText( indexText, progress * 4.0 ) );
+    charCanvasTexture.drawChars( 320, 120, 7, getYugoppText( t[ 0 ], progress * 2.0 - 0.25 ) );
+    charCanvasTexture.drawChars( 316, 60, 2.5, getYugoppText( t[ 1 ], progress * 2.0 - 0.5 ) );
+    charCanvasTexture.updateTexture();
+  }
+} );
 
 export class FUI extends SceneNode {
   public constructor( options?: SceneNodeOptions ) {
@@ -41,6 +78,7 @@ export class FUI extends SceneNode {
       fuiFrag( 'forward' ),
       {
         initOptions: { geometry, target: dummyRenderTarget },
+        blend: [ gl.ONE, gl.ONE ],
       },
     );
     forward.addUniform( 'color', '4f', 1.0, 1.0, 1.0, 1.0 );

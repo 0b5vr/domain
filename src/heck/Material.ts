@@ -2,7 +2,9 @@ import { GLCatProgram, GLCatProgramLinkOptions, GLCatProgramUniformMatrixVectorT
 import { Geometry } from './Geometry';
 import { RenderTarget } from './RenderTarget';
 import { SHADERPOOL } from './ShaderPool';
+import { TaskProgress } from '../utils/TaskProgress';
 import { gl, glCat } from '../globals/canvas';
+import { sleep } from '../utils/sleep';
 
 export type MaterialTag =
   | 'deferred'
@@ -18,6 +20,24 @@ export interface MaterialInitOptions {
 }
 
 export class Material {
+  /**
+   * A list of """shader compilation""" functions.
+   * Blame ANGLE instead tbh
+   *
+   * See: https://scrapbox.io/0b5vr/WebGL:_%E3%82%B7%E3%82%A7%E3%83%BC%E3%83%80%E3%81%AE%E3%82%B3%E3%83%B3%E3%83%91%E3%82%A4%E3%83%AB%E3%81%8C%E6%8F%8F%E7%94%BB%E9%96%8B%E5%A7%8B%E6%99%82%E3%81%AB%E7%99%BA%E7%94%9F%E3%81%97%E3%81%A6stall%E3%81%99%E3%82%8B
+   */
+  public static d3dSucksList: ( () => void )[] = [];
+
+  public static d3dSucks(): TaskProgress {
+    return new TaskProgress( async ( setProgress ) => {
+      for ( const [ i, fuck ] of Material.d3dSucksList.entries() ) {
+        fuck();
+        setProgress( ( i + 1 ) / Material.d3dSucksList.length );
+        await sleep( 1 );
+      }
+    } );
+  }
+
   protected __linkOptions: GLCatProgramLinkOptions;
 
   protected __uniforms: {
@@ -85,7 +105,12 @@ export class Material {
     this.blend = blend ?? [ gl.ONE, gl.ZERO ];
 
     if ( initOptions ) {
-      this.d3dSucks( initOptions );
+      Material.d3dSucksList.push( () => {
+        initOptions.target.bind();
+        glCat.useProgram( this.program, () => {
+          initOptions.geometry.drawElementsOrArrays();
+        } );
+      } );
     } else {
       if ( process.env.DEV ) {
         console.warn( 'Material created without initOptions' );
@@ -169,18 +194,5 @@ export class Material {
 
       SHADERPOOL.discardProgram( this, prevVert, prevFrag );
     }
-  }
-
-  /**
-   * "Compile the shader code".
-   * Blame ANGLE instead tbh
-   *
-   * See: https://scrapbox.io/0b5vr/WebGL:_%E3%82%B7%E3%82%A7%E3%83%BC%E3%83%80%E3%81%AE%E3%82%B3%E3%83%B3%E3%83%91%E3%82%A4%E3%83%AB%E3%81%8C%E6%8F%8F%E7%94%BB%E9%96%8B%E5%A7%8B%E6%99%82%E3%81%AB%E7%99%BA%E7%94%9F%E3%81%97%E3%81%A6stall%E3%81%99%E3%82%8B
-   */
-  public d3dSucks( { geometry, target }: MaterialInitOptions ): void {
-    target.bind();
-    glCat.useProgram( this.program, () => {
-      geometry.drawElementsOrArrays();
-    } );
   }
 }

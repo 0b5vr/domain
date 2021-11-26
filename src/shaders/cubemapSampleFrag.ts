@@ -1,5 +1,5 @@
 import { PI } from '../utils/constants';
-import { addAssign, assign, build, def, defInNamed, defOutNamed, defUniformNamed, dot, floor, forLoop, fract, gte, ifThen, insert, log2, main, max, mix, mod, mul, mulAssign, neg, num, pow, reflect, sq, sub, sw, texture, vec2, vec4 } from '../shader-builder/shaderBuilder';
+import { addAssign, assign, build, def, defInNamed, defOutNamed, defUniformNamed, dot, floor, forLoop, fract, glslFalse, glslTrue, gte, ifThen, insert, log2, main, max, mix, mod, mul, mulAssign, neg, num, pow, reflect, sq, sub, sw, texture, vec2, vec4 } from '../shader-builder/shaderBuilder';
 import { cubemapUV } from './modules/cubemapUV';
 import { cubemapUVInv } from './modules/cubemapUVInv';
 import { glslDefRandom } from './modules/glslDefRandom';
@@ -23,11 +23,11 @@ export const cubemapSampleFrag = build( () => {
   main( () => {
     init( vec4( mul( vUv, 100.0 ), mod( frameCount, 100.0 ), 100.0 ) );
 
-    const isDiffuse = def( 'bool', false );
+    const isDiffuse = def( 'bool', glslFalse );
     const lv = def( 'float', floor( neg( log2( sub( 1.0, sw( vUv, 'y' ) ) ) ) ) );
     addAssign( lv, 1.0 );
     ifThen( gte( lv, 6.0 ), () => {
-      assign( isDiffuse, true );
+      assign( isDiffuse, glslTrue );
       assign( lv, 5.0 );
     } );
 

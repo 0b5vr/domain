@@ -1,5 +1,4 @@
 import { GLSLExpression, add, addAssign, cache, def, defFn, div, floor, mod, mul, retFn, sw, texture, vec2 } from '../../shader-builder/shaderBuilder';
-import { glslLofi } from './glslLofi';
 import { glslSaturate } from './glslSaturate';
 
 const symbol = Symbol();

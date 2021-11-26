@@ -1,5 +1,5 @@
 import { FAR } from '../config';
-import { GLSLExpression, GLSLToken, abs, add, addAssign, assign, build, def, defFn, defOut, defUniformNamed, discard, div, divAssign, eq, floor, forBreak, forLoop, glFragCoord, glFragDepth, gt, ifThen, insert, length, lt, main, max, min, mul, neg, normalize, not, or, retFn, sign, smoothstep, step, sub, sw, tern, ternChain, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { GLSLExpression, GLSLToken, abs, add, addAssign, assign, build, def, defFn, defOut, defUniformNamed, discard, div, divAssign, eq, floor, forBreak, forLoop, glFragCoord, glFragDepth, glslFalse, glslTrue, gt, ifThen, insert, length, lt, main, max, min, mul, neg, normalize, not, or, retFn, sign, smoothstep, step, sub, sw, tern, ternChain, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { MTL_PBR_EMISSIVE3_ROUGHNESS, MTL_PBR_ROUGHNESS_METALLIC } from './deferredShadeFrag';
 import { calcDepth } from './modules/calcDepth';
 import { cyclicNoise } from './modules/cyclicNoise';
@@ -47,10 +47,10 @@ export const octreeFrag = ( tag: 'deferred' | 'depth' ): string => build( () => 
       gt( abs( sw( p, 'y' ) ), 0.5 ),
       gt( abs( sw( p, 'z' ) ), 0.5 ),
     ), () => {
-      retFn( true );
+      retFn( glslTrue );
     } );
 
-    retFn( false );
+    retFn( glslFalse );
   } );
 
   const qt = ( ro: GLSLExpression<'vec3'>, rd: GLSLExpression<'vec3'> ): {
@@ -63,7 +63,7 @@ export const octreeFrag = ( tag: 'deferred' | 'depth' ): string => build( () => 
     const size = def( 'float', 1.0 );
     const cell = def( 'vec3' );
     const dice = def( 'vec3' );
-    const hole = def( 'bool', false );
+    const hole = def( 'bool', glslFalse );
 
     forLoop( 4, () => {
       divAssign( size, 2.0 );

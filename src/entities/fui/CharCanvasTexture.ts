@@ -1,5 +1,4 @@
-import { GLCatTexture } from '@fms-cat/glcat-ts';
-import { glCat } from '../canvas';
+import { CanvasTexture } from '../utils/CanvasTexture';
 
 /**
  * 6 xx xxx xx
@@ -106,26 +105,13 @@ widthArray[ 32 ] = 6; // space
 [ ...'()[]{}' ].map( ( char ) => widthArray[ char.charCodeAt( 0 ) ] = 8 );
 [ ...'"-' ].map( ( char ) => widthArray[ char.charCodeAt( 0 ) ] = 9 );
 
-export class CharCanvasTexture {
-  public canvas: HTMLCanvasElement;
-  public context: CanvasRenderingContext2D;
-  public texture: GLCatTexture;
-
+export class CharCanvasTexture extends CanvasTexture {
   public constructor() {
-    const canvas = this.canvas = document.createElement( 'canvas' );
-    canvas.width = 2048;
-    canvas.height = 2048;
+    super( 2048, 2048 );
 
-    const context = this.context = canvas.getContext( '2d' )!;
-    context.lineCap = 'round';
-    context.lineJoin = 'round';
-    context.strokeStyle = '#fff';
-
-    this.texture = glCat.createTexture()!;
-  }
-
-  public clear(): void {
-    this.context.clearRect( 0, 0, 2048, 2048 );
+    this.context.lineCap = 'round';
+    this.context.lineJoin = 'round';
+    this.context.strokeStyle = '#fff';
   }
 
   public drawChars( x: number, y: number, scale: number, str: string ): void {
@@ -170,9 +156,5 @@ export class CharCanvasTexture {
     } );
 
     context.restore();
-  }
-
-  public updateTexture(): void {
-    this.texture.setTexture( this.canvas );
   }
 }

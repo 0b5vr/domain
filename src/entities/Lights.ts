@@ -18,11 +18,11 @@ export class Lights extends SceneNode {
       brtNamePrefix: process.env.DEV && 'SceneBegin/lightRight',
     } );
     lightRight.spotness = 0.9;
-    lightRight.transform.lookAt( [ 2.8, 0.2, 2.8 ], [ 0.0, 3.0, 0.0 ] );
+    lightRight.transform.lookAt( [ 2.8, 0.2, 2.5 ], [ 0.0, 3.0, 0.0 ] );
 
     const shaftRight = new LightShaft( {
       light: lightRight,
-      intensity: 0.02,
+      intensity: 0.01,
     } );
     lightRight.children.push( shaftRight );
 
@@ -43,7 +43,7 @@ export class Lights extends SceneNode {
 
     const shaftLeft = new LightShaft( {
       light: lightLeft,
-      intensity: 0.02,
+      intensity: 0.01,
     } );
     lightLeft.children.push( shaftLeft );
 
@@ -64,7 +64,7 @@ export class Lights extends SceneNode {
 
     const shaftTop = new LightShaft( {
       light: lightTop,
-      intensity: 0.02,
+      intensity: 0.01,
     } );
     lightTop.children.push( shaftTop );
 

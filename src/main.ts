@@ -1,8 +1,10 @@
 import { AutomatonWithGUI } from '@0b5vr/automaton-with-gui';
+import { Material } from './heck/Material';
 import { automaton } from './globals/automaton';
 import { canvas } from './globals/canvas';
 import { dog } from './scene';
 import { getDivCanvasContainer } from './globals/dom';
+import { gui } from './globals/gui';
 import { music } from './globals/music';
 
 // == dom ==========================================================================================
@@ -20,23 +22,59 @@ if ( process.env.DEV ) {
   canvas.style.margin = 'auto';
   canvas.style.maxWidth = '100%';
   canvas.style.maxHeight = '100%';
-} else {
-  document.body.appendChild( canvas );
-
-  canvas.style.position = 'fixed';
-  canvas.style.left = '0';
-  canvas.style.top = '0';
-  document.body.style.width = canvas.style.width = '100%';
-  document.body.style.height = canvas.style.height = '100%';
 }
 
-// == load =========================================================================================
-async function load(): Promise<void> {
-  if ( process.env.DEV ) {
-    console.info( dog );
-    ( automaton as AutomatonWithGUI ).play();
-  }
+// == dev kickstarter ==============================================================================
+async function kickstartDev(): Promise<void> {
+  console.info( dog );
 
-  await music.prepare();
+  [
+    Material.d3dSucks(),
+    music.prepare(),
+  ].map( ( task, i ) => {
+    const taskname = [ 'shaders', 'music' ][ i ];
+    task.onProgress = ( progress ) => {
+      const gui_ = gui;
+      gui_?.monitor( `tasks/${ taskname }`, `${ Math.floor( progress * 100.0 ) }%` );
+    };
+    return task.promise;
+  } );
+
+  ( automaton as AutomatonWithGUI ).play();
 }
-load();
+
+if ( process.env.DEV ) {
+  kickstartDev();
+}
+
+// == prod kickstarter =============================================================================
+if ( !process.env.DEV ) {
+  document.write( '<a></a><a></a><a></a><style>a{display:block}canvas{position:fixed;left:0;top:0;width:100%;height:100%}</style>' );
+
+  const anchors = document.querySelectorAll( 'a' );
+  const mainAnchor = anchors[ 0 ];
+  mainAnchor.textContent = 'wait a moment';
+
+  Promise.all( [
+    Material.d3dSucks(),
+    music.prepare(),
+  ].map( ( task, i ) => {
+    const a = anchors[ i + 1 ];
+    const taskname = [ 'shaders', 'music' ][ i ];
+    a.textContent = `${ taskname }: 0%`;
+    task.onProgress = ( progress ) => (
+      a.textContent = `${ taskname }: ${ Math.floor( progress * 100.0 ) }%`
+    );
+    return task.promise;
+  } ) ).then( () => {
+    mainAnchor.textContent = 'click';
+
+    mainAnchor.onclick = () => {
+      document.body.appendChild( canvas );
+
+      document.documentElement.requestFullscreen();
+
+      music.isPlaying = true;
+    };
+  } );
+}

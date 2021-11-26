@@ -1,5 +1,6 @@
 import { MUSIC_LENGTH } from '../config';
 import { Music } from './Music';
+import { TaskProgress } from '../utils/TaskProgress';
 import { audio } from '../globals/music';
 import { gl } from '../globals/canvas';
 
@@ -19,34 +20,38 @@ export class MusicOffline extends Music {
     );
   }
 
-  public async prepare(): Promise<void> {
-    await super.prepare();
+  public prepare(): TaskProgress {
+    return new TaskProgress( async ( setProgress ) => {
+      await super.prepare().promise;
 
-    let head = 0;
+      let head = 0;
+      const numBuffer = MUSIC_LENGTH * audio.sampleRate;
 
-    return new Promise( ( resolve ) => {
-      const render = (): void => {
-        const remain = ( MUSIC_LENGTH * audio.sampleRate ) - head;
-        if ( remain <= 0 ) {
-          resolve();
-          return;
-        }
+      await new Promise<void>( ( resolve ) => {
+        const render = (): void => {
+          setProgress( head / numBuffer );
 
-        this.__render( head / audio.sampleRate, ( i ) => {
-          gl.getBufferSubData(
-            gl.ARRAY_BUFFER,
-            0,
-            this.__buffer.getChannelData( i ),
-            head,
-            Math.min( remain, BUFFER_LENGTH )
-          );
-        } );
+          if ( numBuffer <= head ) {
+            resolve();
+            return;
+          }
 
-        head += BUFFER_LENGTH;
+          this.__render( head / audio.sampleRate, ( i ) => {
+            gl.getBufferSubData(
+              gl.ARRAY_BUFFER,
+              0,
+              this.__buffer.getChannelData( i ),
+              head,
+              BUFFER_LENGTH,
+            );
+          } );
 
-        setTimeout( render, 1 );
-      };
-      render();
+          head += BUFFER_LENGTH;
+
+          setTimeout( render, 1 );
+        };
+        render();
+      } );
     } );
   }
 

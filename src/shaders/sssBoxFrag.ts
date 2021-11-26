@@ -1,6 +1,6 @@
 import { DIELECTRIC_SPECULAR, INV_PI } from '../utils/constants';
 import { MTL_PBR_EMISSIVE3_ROUGHNESS } from './deferredShadeFrag';
-import { add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, discard, div, dot, glFragCoord, glFragDepth, gt, ifThen, insert, length, main, max, mix, mul, neg, normalize, retFn, sq, sub, subAssign, sw, tern, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, discard, div, dot, glFragCoord, glFragDepth, glslFalse, glslTrue, gt, ifThen, insert, length, main, max, mix, mul, neg, normalize, retFn, sq, sub, subAssign, sw, tern, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcDepth } from './modules/calcDepth';
 import { calcL } from './modules/calcL';
 import { calcNormal } from './modules/calcNormal';
@@ -37,7 +37,7 @@ export const sssBoxFrag = ( tag: 'deferred' | 'depth' ): string => build( () => 
 
   const { init } = glslDefRandom();
 
-  const shouldCalcVoronoi = def( 'bool', false );
+  const shouldCalcVoronoi = def( 'bool', glslFalse );
 
   const map = defFn( 'vec4', [ 'vec3' ], ( p ) => {
     // const d = def( 'float', sub( length( p ), 0.1 ) );
@@ -79,7 +79,7 @@ export const sssBoxFrag = ( tag: 'deferred' | 'depth' ): string => build( () => 
     ifThen( gt( sw( isect, 'x' ), 1E-2 ), () => discard() );
 
     //  calc voronoi for finalizing map and normals
-    assign( shouldCalcVoronoi, true );
+    assign( shouldCalcVoronoi, glslTrue );
     assign( isect, map( rp ) );
 
     const modelPos = def( 'vec4', mul( modelMatrix, vec4( rp, 1.0 ) ) );
@@ -101,7 +101,7 @@ export const sssBoxFrag = ( tag: 'deferred' | 'depth' ): string => build( () => 
     ) );
 
     // don't calc voronoi for ss
-    assign( shouldCalcVoronoi, false );
+    assign( shouldCalcVoronoi, glslFalse );
 
     if ( tag === 'depth' ) {
       const len = length( sub( cameraPos, sw( modelPos, 'xyz' ) ) );
