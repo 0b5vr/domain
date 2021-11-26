@@ -1,6 +1,7 @@
 import { AdvantageCube } from './AdvantageCube';
 import { Asphalt } from './Asphalt';
 import { BoundingBox } from './BoundingBox';
+import { Cardboard } from './Cardboard';
 import { Crate } from './Crate';
 import { Fluid } from './Fluid';
 import { Info } from './Info';
@@ -47,6 +48,7 @@ export class Stuff extends SceneNode {
       new PoolLAN(),
       new AdvantageCube(),
       new Crate(),
+      new Cardboard(),
     ].map( ( node, i ) => {
       if ( process.env.DEV ) {
         const current = auto( 'stuff' );

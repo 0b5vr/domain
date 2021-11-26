@@ -1,4 +1,4 @@
-import { GLSLExpression, GLSLFloatExpression, addAssign, def, defFn, div, mulAssign, retFn, unrollLoop, vec4 } from '../../shader-builder/shaderBuilder';
+import { GLSLExpression, GLSLFloatExpression, addAssign, def, defFn, div, forLoop, mulAssign, retFn, vec4 } from '../../shader-builder/shaderBuilder';
 import { simplex4d } from './simplex4d';
 
 export function defSimplexFBM4d( {
@@ -13,7 +13,7 @@ export function defSimplexFBM4d( {
   return defFn( 'float', [ 'vec4' ], ( p ) => {
     const accum = def( 'float', 0.0 );
     const amount = def( 'float', 0.0 );
-    unrollLoop( 6, () => {
+    forLoop( 6, () => {
       mulAssign( p, freq );
       addAssign( p, off );
 
