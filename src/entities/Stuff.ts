@@ -9,6 +9,7 @@ import { Lambda } from '../heck/components/Lambda';
 import { MengerSponge } from './MengerSponge';
 import { Octree } from './Octree';
 import { ParkingSpace } from './ParkingSpace';
+import { Particles } from './Particles';
 import { PoolLAN } from './PoolLAN';
 import { RandomTextureCube } from './RandomTextureCube';
 import { RawVector3, quatFromAxisAngle, vecNormalize } from '@0b5vr/experimental';
@@ -49,6 +50,7 @@ export class Stuff extends SceneNode {
       new AdvantageCube(),
       new Crate(),
       new Cardboard(),
+      new Particles(),
     ].map( ( node, i ) => {
       if ( process.env.DEV ) {
         const current = auto( 'stuff' );

@@ -690,6 +690,12 @@ export const smoothstep: {
   <T extends GLSLGenType>( edge0: Ex<T>, edge1: Ex<T>, x: Ex<T> ): Ex<T>;
 } = __callFn( 'smoothstep' ) as any;
 
+export const transpose: {
+  ( a: Ex<'mat2'> ): Ex<'mat2'>;
+  ( a: Ex<'mat3'> ): Ex<'mat3'>;
+  ( a: Ex<'mat4'> ): Ex<'mat4'>;
+} = __callFn( 'transpose' ) as any;
+
 export const texture: {
   ( sampler: Ex<'sampler2D'>, x: Ex<'vec2'> ): Ex<'vec4'>;
 } = __callFn( 'texture' ) as any;

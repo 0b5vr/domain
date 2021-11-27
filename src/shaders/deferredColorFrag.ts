@@ -1,4 +1,4 @@
-import { assign, build, defInNamed, defOut, defUniformNamed, div, insert, main, sw, vec4 } from '../shader-builder/shaderBuilder';
+import { assign, build, defInNamed, defOut, defUniformNamed, div, insert, main, normalize, sw, vec4 } from '../shader-builder/shaderBuilder';
 
 export const deferredColorFrag = build( () => {
   insert( 'precision highp float;' );
@@ -21,7 +21,7 @@ export const deferredColorFrag = build( () => {
 
     assign( fragColor, color );
     assign( fragPosition, vec4( sw( vPosition, 'xyz' ), depth ) );
-    assign( fragNormal, vec4( vNormal, mtlKind ) );
+    assign( fragNormal, vec4( normalize( vNormal ), mtlKind ) );
     assign( fragMisc, mtlParams );
     return;
   } );

@@ -16,6 +16,7 @@ import { VRCameraStack } from './entities/VRCameraStack';
 import { Walls } from './entities/Walls';
 import { auto, automaton } from './globals/automaton';
 import { createVRSesh } from './globals/createVRSesh';
+import { gl } from './globals/canvas';
 import { music } from './globals/music';
 import { promiseGui } from './globals/gui';
 import { randomTexture } from './globals/randomTexture';
@@ -47,6 +48,51 @@ if ( process.env.DEV ) {
     },
     name: 'automaton',
   } ) );
+
+  promiseGui.then( ( gui ) => {
+    const webglMemory = gl.getExtension( 'GMAN_webgl_memory' );
+
+    if ( webglMemory ) {
+      gui.input( 'webgl-memory/enabled', true );
+
+      dog.root.children.push( new Lambda( {
+        onUpdate: () => {
+          if ( gui.value( 'webgl-memory/enabled' ) ) {
+            const info = webglMemory.getMemoryInfo();
+
+            gui.monitor(
+              'webgl-memory/buffer',
+              `${ info.resources.buffer } / ${ ( info.memory.buffer * 1E-6 ).toFixed( 3 ) } MB`,
+            );
+            gui.monitor(
+              'webgl-memory/texture',
+              `${ info.resources.texture } / ${ ( info.memory.texture * 1E-6 ).toFixed( 3 ) } MB`,
+            );
+            gui.monitor(
+              'webgl-memory/renderbuffer',
+              `${ info.resources.renderbuffer } / ${ ( info.memory.renderbuffer * 1E-6 ).toFixed( 3 ) } MB`,
+            );
+            gui.monitor(
+              'webgl-memory/program',
+              info.resources.program,
+            );
+            gui.monitor(
+              'webgl-memory/shader',
+              info.resources.shader,
+            );
+            gui.monitor(
+              'webgl-memory/drawingbuffer',
+              `${ ( info.memory.drawingbuffer * 1E-6 ).toFixed( 3 ) } MB`,
+            );
+            gui.monitor(
+              'webgl-memory/total',
+              `${ ( info.memory.total * 1E-6 ).toFixed( 3 ) } MB`,
+            );
+          }
+        },
+      } ) );
+    }
+  } );
 } else {
   dog.root.children.push( new Lambda( {
     onUpdate: () => {

@@ -30,7 +30,8 @@ const texts = [
   [ 'Pool-LAN', 'the descending bear' ],
   [ 'advantage_cube', 'press triangle to explode' ],
   [ 'crate', 'whoa' ],
-  [ 'cardboard_box', 'whoa' ],
+  [ 'cardboard_box', '' ],
+  [ 'particles', '' ],
 ];
 
 auto( 'FUI/yugopp', ( { progress } ) => {

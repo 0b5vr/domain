@@ -9,6 +9,9 @@ interface ResultGenCube {
   uv: GLCatBuffer;
   index: GLCatBuffer;
   geometry: Geometry;
+  count: number;
+  mode: GLenum;
+  indexType: GLenum;
 }
 
 export function genCube( options?: {
@@ -94,11 +97,9 @@ export function genCube( options?: {
   geometry.vao.bindVertexbuffer( uv, 2, 2 );
   geometry.vao.bindIndexbuffer( index );
 
-  geometry.count = arrayIndex.length;
-  geometry.mode = gl.TRIANGLES;
-  geometry.indexType = gl.UNSIGNED_SHORT;
-
-
+  const count = geometry.count = arrayIndex.length;
+  const mode = geometry.mode = gl.TRIANGLES;
+  const indexType = geometry.indexType = gl.UNSIGNED_SHORT;
 
   return {
     position,
@@ -106,5 +107,8 @@ export function genCube( options?: {
     uv,
     index,
     geometry,
+    count,
+    mode,
+    indexType,
   };
 }
