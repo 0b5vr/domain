@@ -65,6 +65,18 @@ export class Stuff extends SceneNode {
         node.visible = value === i;
       } );
 
+      auto( 'stuff/prewarm', ( { value } ) => {
+        if ( value === i ) {
+          node.active = true;
+        }
+      } );
+
+      auto( 'stuff/prewarm2', ( { value } ) => {
+        if ( value === i ) {
+          node.active = true;
+        }
+      } );
+
       return node;
     } );
 
