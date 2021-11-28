@@ -1,5 +1,6 @@
 import { MTL_PBR_ROUGHNESS_METALLIC } from './deferredShadeFrag';
-import { add, assign, build, defInNamed, defOut, div, insert, main, mix, mul, normalize, sin, sw, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { assign, build, defInNamed, defOut, div, fract, insert, main, mul, normalize, sw, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { glslGradient } from './modules/glslGradient';
 
 export const particlesRenderFrag = build( () => {
   insert( 'precision highp float;' );
@@ -7,7 +8,7 @@ export const particlesRenderFrag = build( () => {
   const vPosition = defInNamed( 'vec4', 'vPosition' );
   const vProjPosition = defInNamed( 'vec4', 'vProjPosition' );
   const vNormal = defInNamed( 'vec3', 'vNormal' );
-  const vLife = defInNamed( 'float', 'vLife' );
+  const vDice = defInNamed( 'vec4', 'vDice' );
 
   const fragColor = defOut( 'vec4' );
   const fragPosition = defOut( 'vec4', 1 );
@@ -17,16 +18,19 @@ export const particlesRenderFrag = build( () => {
   main( () => {
     const depth = div( sw( vProjPosition, 'z' ), sw( vProjPosition, 'w' ) );
 
-    const col = mix(
+    const gradientPhase = fract( mul( 100.0, sw( vDice, 'x' ) ) );
+    const color = glslGradient( gradientPhase, [
+      vec3( 0.04 ),
+      vec3( 0.7, 0.7, 0.04 ),
+      vec3( 0.3, 0.7, 0.1 ),
       vec3( 0.7 ),
-      vec3( 0.8 ),
-      sin( add( mul( -4.0, vLife ), vec3( 0, 2, 4 ) ) ),
-    );
+    ] );
+    const roughness = 0.8;
 
-    assign( fragColor, vec4( col, 1.0 ) );
+    assign( fragColor, vec4( color, 1.0 ) );
     assign( fragPosition, vec4( sw( vPosition, 'xyz' ), depth ) );
     assign( fragNormal, vec4( normalize( vNormal ), MTL_PBR_ROUGHNESS_METALLIC ) );
-    assign( fragMisc, vec4( 0.8, 1.0, 0.0, 0.0 ) );
+    assign( fragMisc, vec4( roughness, 0.0, 0.0, 0.0 ) );
     return;
   } );
 } );

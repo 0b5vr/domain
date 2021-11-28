@@ -41,13 +41,17 @@ export const particlesRenderVert = build( () => {
 
     const size = mul(
       sin( mul( PI, glslSaturate( vLife ) ) ),
-      pow( sw( vDice, 'x' ), 6.0 ),
-      smoothstep( 0.5, 0.49, maxOfVec3( abs( sw( vPositionWithoutModel, 'xyz' ) ) ) ),
-      0.04,
+      pow( sw( vDice, 'x' ), 8.0 ),
+      smoothstep( 0.5, 0.45, maxOfVec3( abs( sw( vPositionWithoutModel, 'xyz' ) ) ) ),
+      0.05,
     );
 
-    const rotYZ = rotate2D( mul( 7.0, add( sw( vPositionWithoutModel, 'x' ), sw( vDice, 'z' ) ) ) );
-    const rotZX = rotate2D( mul( 7.0, add( sw( vPositionWithoutModel, 'y' ), sw( vDice, 'w' ) ) ) );
+    const rotYZ = def( 'mat2', (
+      rotate2D( mul( 7.0, add( sw( vPositionWithoutModel, 'x' ), sw( vDice, 'z' ) ) ) )
+    ) );
+    const rotZX = def( 'mat2', (
+      rotate2D( mul( 7.0, add( sw( vPositionWithoutModel, 'y' ), sw( vDice, 'w' ) ) ) )
+    ) );
 
     const shape = def( 'vec3', mul( position, size ) );
     assign( sw( shape, 'yz' ), mul( rotYZ, sw( shape, 'yz' ) ) );
