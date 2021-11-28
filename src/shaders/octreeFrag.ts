@@ -1,9 +1,10 @@
 import { FAR } from '../config';
-import { GLSLExpression, GLSLToken, abs, add, addAssign, assign, build, def, defFn, defOut, defUniformNamed, discard, div, divAssign, eq, floor, forBreak, forLoop, glFragCoord, glFragDepth, glslFalse, glslTrue, gt, ifThen, insert, length, lt, main, max, min, mul, neg, normalize, not, or, retFn, sign, smoothstep, step, sub, sw, tern, ternChain, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { GLSLExpression, GLSLToken, abs, add, addAssign, assign, build, def, defFn, defOut, defUniformNamed, discard, div, divAssign, eq, floor, forBreak, forLoop, glFragCoord, glFragDepth, glslFalse, glslTrue, gt, ifThen, insert, length, lt, main, min, mul, neg, normalize, not, or, retFn, smoothstep, sub, sw, tern, ternChain, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { MTL_PBR_EMISSIVE3_ROUGHNESS, MTL_PBR_ROUGHNESS_METALLIC } from './deferredShadeFrag';
 import { calcDepth } from './modules/calcDepth';
 import { cyclicNoise } from './modules/cyclicNoise';
 import { glslLofi } from './modules/glslLofi';
+import { isectBox } from './modules/isectBox';
 import { pcg3df } from './modules/pcg3df';
 import { setupRoRd } from './modules/setupRoRd';
 
@@ -24,22 +25,6 @@ export const octreeFrag = ( tag: 'deferred' | 'depth' ): string => build( () => 
   const cameraNearFar = defUniformNamed( 'vec2', 'cameraNearFar' );
   const cameraPos = defUniformNamed( 'vec3', 'cameraPos' );
   const inversePVM = defUniformNamed( 'mat4', 'inversePVM' );
-
-  const tbox = defFn( 'vec4', [ 'vec3', 'vec3', 'vec3' ], ( ro, rd, s ) => {
-    const src = neg( div( ro, rd ) );
-    const dst = abs( div( s, rd ) );
-    const f = def( 'vec3', sub( src, dst ) );
-    const b = def( 'vec3', add( src, dst ) );
-    const fl = def( 'float', max( sw( f, 'x' ), max( sw( f, 'y' ), sw( f, 'z' ) ) ) );
-    const bl = min( sw( b, 'x' ), min( sw( b, 'y' ), sw( b, 'z' ) ) );
-    ifThen( or( lt( bl, fl ), lt( fl, 0.0 ) ), () => retFn( vec4( FAR ) ) );
-    const n = mul(
-      neg( sign( rd ) ),
-      step( sw( f, 'yzx' ), f ),
-      step( sw( f, 'zxy' ), f ),
-    );
-    retFn( vec4( n, fl ) );
-  } );
 
   const isHole = defFn( 'bool', [ 'vec3' ], ( p ) => {
     ifThen( or(
@@ -101,7 +86,7 @@ export const octreeFrag = ( tag: 'deferred' | 'depth' ): string => build( () => 
 
       ifThen( not( qtr.hole ), () => {
         const size = sub( mul( 0.5, qtr.size ), 0.01 );
-        assign( isect, tbox( sub( rp, qtr.cell ), rd, vec3( size ) ) );
+        assign( isect, isectBox( sub( rp, qtr.cell ), rd, vec3( size ) ) );
       } );
 
       ifThen( lt( isectlen, FAR ), () => {

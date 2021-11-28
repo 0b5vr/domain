@@ -34,6 +34,7 @@ const texts = [
   [ 'particles', '65,536 cube pickles' ],
   [ 'trails', 'send noodles' ],
   [ 'esc', 'press esc to end the experience' ],
+  [ 'infinity_grid', 'the suffer never ends' ],
 ];
 
 auto( 'FUI/yugopp', ( { progress } ) => {

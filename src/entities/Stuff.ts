@@ -5,6 +5,7 @@ import { Cardboard } from './Cardboard';
 import { Crate } from './Crate';
 import { Esc } from './Esc';
 import { Fluid } from './Fluid';
+import { GridCube } from './GridCube';
 import { Info } from './Info';
 import { Lambda } from '../heck/components/Lambda';
 import { MengerSponge } from './MengerSponge';
@@ -55,6 +56,7 @@ export class Stuff extends SceneNode {
       new Particles(),
       new Trails(),
       new Esc(),
+      new GridCube(),
     ].map( ( node, i ) => {
       if ( process.env.DEV ) {
         const current = auto( 'stuff' );

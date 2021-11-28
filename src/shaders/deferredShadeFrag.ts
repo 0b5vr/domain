@@ -9,6 +9,10 @@ import { doShadowMapping } from './modules/doShadowMapping';
 import { forEachLights } from './modules/forEachLights';
 
 export const MTL_NONE = 0;
+
+/**
+ * no need to set params
+ */
 export const MTL_UNLIT = 1;
 
 /**
