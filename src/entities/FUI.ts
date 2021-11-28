@@ -33,6 +33,7 @@ const texts = [
   [ 'cardboard_box', 'trace 1,000,000 rays to get free global illumination' ],
   [ 'particles', '65,536 cube pickles' ],
   [ 'trails', 'send noodles' ],
+  [ 'esc', 'press esc to end the experience' ],
 ];
 
 auto( 'FUI/yugopp', ( { progress } ) => {

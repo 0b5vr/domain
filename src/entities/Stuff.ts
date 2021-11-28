@@ -3,6 +3,7 @@ import { Asphalt } from './Asphalt';
 import { BoundingBox } from './BoundingBox';
 import { Cardboard } from './Cardboard';
 import { Crate } from './Crate';
+import { Esc } from './Esc';
 import { Fluid } from './Fluid';
 import { Info } from './Info';
 import { Lambda } from '../heck/components/Lambda';
@@ -53,6 +54,7 @@ export class Stuff extends SceneNode {
       new Cardboard(),
       new Particles(),
       new Trails(),
+      new Esc(),
     ].map( ( node, i ) => {
       if ( process.env.DEV ) {
         const current = auto( 'stuff' );

@@ -1,4 +1,4 @@
-import { GLSLExpression, GLSLFloatExpression, GLSLToken, Swizzle3ComponentsVec2, add, def, mul, normalize, sw, vec2 } from '../../shader-builder/shaderBuilder';
+import { GLSLExpression, GLSLFloatExpression, GLSLToken, Swizzle3ComponentsVec2, add, def, normalize, sub, sw, vec2, vec3 } from '../../shader-builder/shaderBuilder';
 
 // Ref: https://www.iquilezles.org/www/articles/normalsSDF/normalsSDF.htm
 export function calcNormal( {
@@ -10,20 +10,18 @@ export function calcNormal( {
   map: ( p: GLSLExpression<'vec3'> ) => GLSLExpression<'vec4'>,
   delta?: GLSLFloatExpression,
 } ): GLSLToken<'vec3'> {
-  const k = vec2( 1.0, -1.0 );
-  const dk = def( 'vec2', mul( k, delta ?? 1E-4 ) );
+  const d = vec2( 0.0, delta ?? 1E-4 );
 
-  return def( 'vec3', normalize( add(
+  return def( 'vec3', normalize( vec3(
     ...( [
-      'xyy',
-      'yyx',
-      'yxy',
-      'xxx',
+      'yxx',
+      'xyx',
+      'xxy',
     ] as Swizzle3ComponentsVec2[] ).map(
-      ( s: Swizzle3ComponentsVec2 ): GLSLExpression<'vec3'> => mul(
-        sw( k, s ),
-        sw( map( add( rp, sw( dk, s ) ) ), 'x' ),
-      )
-    )
+      ( s: Swizzle3ComponentsVec2 ): GLSLExpression<'float'> => sw( sub(
+        map( add( rp, sw( d, s ) ) ),
+        map( sub( rp, sw( d, s ) ) ),
+      ), 'x' )
+    ) as [ GLSLExpression<'float'>, GLSLExpression<'float'>, GLSLExpression<'float'> ]
   ) ) );
 }
