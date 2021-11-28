@@ -1,5 +1,4 @@
 import { GPUParticles } from './utils/GPUParticles';
-import { InstancedGeometry } from '../heck/InstancedGeometry';
 import { Lambda } from '../heck/components/Lambda';
 import { MTL_PBR_ROUGHNESS_METALLIC } from '../shaders/deferredShadeFrag';
 import { Material } from '../heck/Material';
@@ -47,16 +46,10 @@ export class Trails extends GPUParticles {
     }
 
     // -- geometry render --------------------------------------------------------------------------
-    const { position, normal, index, count, mode, indexType } = genCylinder( {
+    const { geometry } = genCylinder( {
       heightSegs: trailLength,
       radialSegs: 16,
     } );
-
-    const geometryRender = new InstancedGeometry();
-
-    geometryRender.vao.bindVertexbuffer( position, 0, 3 );
-    geometryRender.vao.bindVertexbuffer( normal, 1, 3 );
-    geometryRender.vao.bindIndexbuffer( index );
 
     const bufferComputeV = glCat.createBuffer();
     bufferComputeV.setVertexbuffer( ( () => {
@@ -68,19 +61,16 @@ export class Trails extends GPUParticles {
       return ret;
     } )() );
 
-    geometryRender.vao.bindVertexbuffer( bufferComputeV, 2, 1, 1 );
+    geometry.vao.bindVertexbuffer( bufferComputeV, 3, 1, 1 );
 
-    geometryRender.count = count;
-    geometryRender.mode = mode;
-    geometryRender.indexType = indexType;
-    geometryRender.primcount = trails;
+    geometry.primcount = trails;
 
     // -- material render --------------------------------------------------------------------------
     const deferred = new Material(
       trailsRenderVert( trailLength ),
       trailsRenderFrag( 'deferred' ),
       {
-        initOptions: { geometry: geometryRender, target: dummyRenderTargetFourDrawBuffers },
+        initOptions: { geometry, target: dummyRenderTargetFourDrawBuffers },
       },
     );
     deferred.addUniform( 'color', '4f', 0.6, 0.7, 0.8, 1.0 );
@@ -90,7 +80,7 @@ export class Trails extends GPUParticles {
     const depth = new Material(
       trailsRenderVert( trailLength ),
       trailsRenderFrag( 'depth' ),
-      { initOptions: { geometry: geometryRender, target: dummyRenderTarget } },
+      { initOptions: { geometry, target: dummyRenderTarget } },
     );
 
     deferred.addUniformTextures( 'samplerRandomStatic', randomTextureStatic.texture );
@@ -120,7 +110,7 @@ export class Trails extends GPUParticles {
     // -- gpu particles ----------------------------------------------------------------------------
     super( {
       materialCompute,
-      geometryRender,
+      geometryRender: geometry,
       materialsRender: { deferred, depth },
       computeWidth: trailLength,
       computeHeight: trails,

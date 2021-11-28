@@ -19,6 +19,7 @@ export class Geometry {
   public first = 0;
   public count = 0;
   public indexType: GLenum | null = null; // null to not use index buffer
+  public primcount: GLenum | null = null; // null to not use instancing
 
   public vao: GLCatVertexArray;
 
@@ -46,18 +47,34 @@ export class Geometry {
   }
 
   public drawElementsOrArrays(): void {
-    glCat.bindVertexArray( this.vao, () => {
-      if ( this.indexType != null ) {
-        gl.drawElements(
-          this.mode,
-          this.count,
-          this.indexType!,
-          this.first * Geometry.typeSizeMap[ this.indexType! ],
-        );
-      } else {
-        gl.drawArrays( this.mode, this.first, this.count );
-      }
-    } );
+    if ( this.primcount != null ) {
+      glCat.bindVertexArray( this.vao, () => {
+        if ( this.indexType != null ) {
+          gl.drawElementsInstanced(
+            this.mode,
+            this.count,
+            this.indexType!,
+            this.first * Geometry.typeSizeMap[ this.indexType! ],
+            this.primcount!,
+          );
+        } else {
+          gl.drawArraysInstanced( this.mode, this.first, this.count, this.primcount! );
+        }
+      } );
+    } else {
+      glCat.bindVertexArray( this.vao, () => {
+        if ( this.indexType != null ) {
+          gl.drawElements(
+            this.mode,
+            this.count,
+            this.indexType!,
+            this.first * Geometry.typeSizeMap[ this.indexType! ],
+          );
+        } else {
+          gl.drawArrays( this.mode, this.first, this.count );
+        }
+      } );
+    }
   }
 
   public disposeBuffers(): void {

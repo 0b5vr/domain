@@ -1,5 +1,4 @@
 import { GPUParticles } from './utils/GPUParticles';
-import { InstancedGeometry } from '../heck/InstancedGeometry';
 import { MTL_PBR_ROUGHNESS_METALLIC } from '../shaders/deferredShadeFrag';
 import { Material } from '../heck/Material';
 import { TransparentShell } from './TransparentShell';
@@ -44,13 +43,7 @@ export class Particles extends GPUParticles {
     }
 
     // -- geometry render --------------------------------------------------------------------------
-    const { position, normal, index, count, mode, indexType } = genCube();
-
-    const geometryRender = new InstancedGeometry();
-
-    geometryRender.vao.bindVertexbuffer( position, 0, 3 );
-    geometryRender.vao.bindVertexbuffer( normal, 1, 3 );
-    geometryRender.vao.bindIndexbuffer( index );
+    const { geometry } = genCube();
 
     const bufferComputeUV = glCat.createBuffer();
     bufferComputeUV.setVertexbuffer( ( () => {
@@ -67,19 +60,16 @@ export class Particles extends GPUParticles {
       return ret;
     } )() );
 
-    geometryRender.vao.bindVertexbuffer( bufferComputeUV, 2, 2, 1 );
+    geometry.vao.bindVertexbuffer( bufferComputeUV, 3, 2, 1 );
 
-    geometryRender.count = count;
-    geometryRender.mode = mode;
-    geometryRender.indexType = indexType;
-    geometryRender.primcount = particles;
+    geometry.primcount = particles;
 
     // -- material render --------------------------------------------------------------------------
     const deferred = new Material(
       particlesRenderVert,
       particlesRenderFrag,
       {
-        initOptions: { geometry: geometryRender, target: dummyRenderTargetFourDrawBuffers },
+        initOptions: { geometry, target: dummyRenderTargetFourDrawBuffers },
       },
     );
     deferred.addUniform( 'color', '4f', 0.6, 0.7, 0.8, 1.0 );
@@ -89,7 +79,7 @@ export class Particles extends GPUParticles {
     const depth = new Material(
       particlesRenderVert,
       depthFrag,
-      { initOptions: { geometry: geometryRender, target: dummyRenderTarget } },
+      { initOptions: { geometry, target: dummyRenderTarget } },
     );
 
     deferred.addUniformTextures( 'samplerRandomStatic', randomTextureStatic.texture );
@@ -113,7 +103,7 @@ export class Particles extends GPUParticles {
     // -- gpu particles ----------------------------------------------------------------------------
     super( {
       materialCompute,
-      geometryRender,
+      geometryRender: geometry,
       materialsRender: { deferred, depth },
       computeWidth: particlesSqrt,
       computeHeight: particlesSqrt,

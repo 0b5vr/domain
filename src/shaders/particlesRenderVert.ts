@@ -7,7 +7,7 @@ import { rotate2D } from './modules/rotate2D';
 export const particlesRenderVert = build( () => {
   const position = defIn( 'vec3', 0 );
   const normal = defIn( 'vec3', 1 );
-  const computeUV = defIn( 'vec2', 2 );
+  const computeUV = defIn( 'vec2', 3 );
 
   const vLife = defOutNamed( 'float', 'vLife' );
   const vPositionWithoutModel = defOutNamed( 'vec4', 'vPositionWithoutModel' );

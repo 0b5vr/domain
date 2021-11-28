@@ -5,7 +5,7 @@ import { orthBas } from './modules/orthBas';
 export const trailsRenderVert = ( trailLength: number ): string => build( () => {
   const position = defIn( 'vec3', 0 );
   const normal = defIn( 'vec3', 1 );
-  const computeV = defIn( 'float', 2 );
+  const computeV = defIn( 'float', 3 );
 
   const vLife = defOutNamed( 'float', 'vLife' );
   const vPositionWithoutModel = defOutNamed( 'vec4', 'vPositionWithoutModel' );

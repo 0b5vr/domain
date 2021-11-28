@@ -1,4 +1,5 @@
 import { GLCatBuffer } from '@fms-cat/glcat-ts';
+import { Geometry } from '../heck/Geometry';
 import { TAU } from '../utils/constants';
 import { gl, glCat } from '../globals/canvas';
 
@@ -7,6 +8,7 @@ interface ResultGenCylinder {
   normal: GLCatBuffer;
   uv: GLCatBuffer;
   index: GLCatBuffer;
+  geometry: Geometry;
   count: number;
   mode: GLenum;
   indexType: GLenum;
@@ -19,10 +21,10 @@ export function genCylinder( options?: {
   const radialSegs = options?.radialSegs ?? 16;
   const heightSegs = options?.heightSegs ?? 1;
 
-  const pos: number[] = [];
-  const nor: number[] = [];
-  const auv: number[] = [];
-  const ind: number[] = [];
+  const arrayPosition: number[] = [];
+  const arrayNormal: number[] = [];
+  const arrayUv: number[] = [];
+  const arrayIndex: number[] = [];
 
   for ( let ih = 0; ih < heightSegs + 1; ih ++ ) {
     const v = ih / heightSegs;
@@ -35,42 +37,56 @@ export function genCylinder( options?: {
       const x = Math.cos( t );
       const y = Math.sin( t );
 
-      pos.push( x, y, z );
-      nor.push( x, y, 0.0 );
-      auv.push( ir / radialSegs, v );
+      arrayPosition.push( x, y, z );
+      arrayNormal.push( x, y, 0.0 );
+      arrayUv.push( ir / radialSegs, v );
 
       if ( ih !== heightSegs ) {
-        ind.push(
+        arrayIndex.push(
           i, i + radialSegs + 1, i1 + radialSegs + 1,
           i, i1 + radialSegs + 1, i1,
         );
       }
     }
 
-    pos.push( 1, 0.0, z );
-    nor.push( 1.0, 0.0, 0.0 );
-    auv.push( 1.0, v );
+    arrayPosition.push( 1, 0.0, z );
+    arrayNormal.push( 1.0, 0.0, 0.0 );
+    arrayUv.push( 1.0, v );
   }
 
+  // -- buffers ------------------------------------------------------------------------------------
   const position = glCat.createBuffer();
-  position.setVertexbuffer( new Float32Array( pos ) );
+  position.setVertexbuffer( new Float32Array( arrayPosition ) );
 
   const normal = glCat.createBuffer();
-  normal.setVertexbuffer( new Float32Array( nor ) );
+  normal.setVertexbuffer( new Float32Array( arrayNormal ) );
 
   const uv = glCat.createBuffer();
-  uv.setVertexbuffer( new Float32Array( auv ) );
+  uv.setVertexbuffer( new Float32Array( arrayUv ) );
 
   const index = glCat.createBuffer();
-  index.setIndexbuffer( new Uint16Array( ind ) );
+  index.setIndexbuffer( new Uint16Array( arrayIndex ) );
+
+  // -- geometry -----------------------------------------------------------------------------------
+  const geometry = new Geometry();
+
+  geometry.vao.bindVertexbuffer( position, 0, 3 );
+  geometry.vao.bindVertexbuffer( normal, 1, 3 );
+  geometry.vao.bindVertexbuffer( uv, 2, 2 );
+  geometry.vao.bindIndexbuffer( index );
+
+  const count = geometry.count = arrayIndex.length;
+  const mode = geometry.mode = gl.TRIANGLES;
+  const indexType = geometry.indexType = gl.UNSIGNED_SHORT;
 
   return {
     position,
     normal,
     uv,
     index,
-    count: ind.length,
-    mode: gl.TRIANGLES,
-    indexType: gl.UNSIGNED_SHORT,
+    geometry,
+    count,
+    mode,
+    indexType,
   };
 }
