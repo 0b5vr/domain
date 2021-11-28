@@ -36,6 +36,7 @@ const texts = [
   [ 'esc', 'press esc to end the experience' ],
   [ 'infinity_grid', 'the suffer never ends' ],
   [ 'sierpinski', 'wanna lay on this?' ],
+  [ 'instancer', 'hello fltcncd' ],
 ];
 
 auto( 'FUI/yugopp', ( { progress } ) => {

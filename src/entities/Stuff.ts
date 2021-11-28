@@ -9,6 +9,7 @@ import { GridCube } from './GridCube';
 import { Info } from './Info';
 import { Lambda } from '../heck/components/Lambda';
 import { MengerSponge } from './MengerSponge';
+import { NotchyStuff } from './NotchyStuff';
 import { Octree } from './Octree';
 import { ParkingSpace } from './ParkingSpace';
 import { Particles } from './Particles';
@@ -59,6 +60,7 @@ export class Stuff extends SceneNode {
       new Esc(),
       new GridCube(),
       new Sierpinski(),
+      new NotchyStuff(),
     ].map( ( node, i ) => {
       if ( process.env.DEV ) {
         const current = auto( 'stuff' );
