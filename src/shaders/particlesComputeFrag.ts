@@ -1,4 +1,4 @@
-import { add, addAssign, and, assign, build, def, defInNamed, defOut, defUniformNamed, div, dot, exp, floor, ifThen, insert, lt, lte, main, mix, mul, mulAssign, sin, sub, subAssign, sw, texture, vec2, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { add, addAssign, and, assign, build, def, defInNamed, defOut, defUniformNamed, div, dot, exp, floor, ifThen, insert, lt, lte, main, max, mix, mul, mulAssign, sin, sub, subAssign, sw, texture, vec2, vec3 } from '../shader-builder/shaderBuilder';
 import { cyclicNoise } from './modules/cyclicNoise';
 import { glslDefRandom } from './modules/glslDefRandom';
 import { glslLofi } from './modules/glslLofi';
@@ -32,12 +32,12 @@ export const particlesComputeFrag = (
     const seed = texture( samplerRandom, vUv );
     init( seed );
 
-    const tex0 = texture( samplerCompute0, vUv );
-    const tex1 = texture( samplerCompute1, vUv );
+    const tex0 = def( 'vec4', texture( samplerCompute0, vUv ) );
+    const tex1 = def( 'vec4', texture( samplerCompute1, vUv ) );
 
-    const pos = def( 'vec3', sw( tex0, 'xyz' ) );
-    const life = def( 'float', sw( tex0, 'w' ) );
-    const vel = def( 'vec3', sw( tex1, 'xyz' ) );
+    const pos = sw( tex0, 'xyz' );
+    const life = sw( tex0, 'w' );
+    const vel = sw( tex1, 'xyz' );
 
     const spawnTime = def( 'float', mix(
       0.0,
@@ -79,11 +79,11 @@ export const particlesComputeFrag = (
 
     // usual update stuff
     addAssign( pos, mul( vel, dt ) );
-    subAssign( life, div( dt, particleSpawnLength ) );
+    assign( life, max( 0.0, sub( life, div( dt, particleSpawnLength ) ) ) );
 
     // -- almost done ------------------------------------------------------------------------------
-    assign( fragCompute0, vec4( pos, life ) );
-    assign( fragCompute1, vec4( vel, 1.0 ) );
+    assign( fragCompute0, tex0 );
+    assign( fragCompute1, tex1 );
 
   } );
 } );

@@ -53,7 +53,7 @@ if ( process.env.DEV ) {
     const webglMemory = gl.getExtension( 'GMAN_webgl_memory' );
 
     if ( webglMemory ) {
-      gui.input( 'webgl-memory/enabled', true );
+      gui.input( 'webgl-memory/enabled', false );
 
       dog.root.children.push( new Lambda( {
         onUpdate: () => {

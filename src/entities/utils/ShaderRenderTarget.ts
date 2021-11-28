@@ -1,4 +1,5 @@
 import { BufferRenderTarget } from '../../heck/BufferRenderTarget';
+import { Lambda } from '../../heck/components/Lambda';
 import { Material } from '../../heck/Material';
 import { Quad } from '../../heck/components/Quad';
 import { dummyRenderTarget } from '../../globals/dummyRenderTarget';
@@ -29,5 +30,14 @@ export class ShaderRenderTarget extends BufferRenderTarget {
       target: this,
     } );
     quad.drawImmediate();
+  }
+
+  public createUpdateLambda(): Lambda {
+    return new Lambda( {
+      onUpdate: ( { time, deltaTime } ) => this.quad.drawImmediate( {
+        time,
+        deltaTime,
+      } ),
+    } );
   }
 }

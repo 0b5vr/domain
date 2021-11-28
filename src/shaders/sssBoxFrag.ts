@@ -44,7 +44,7 @@ export const sssBoxFrag = ( tag: 'deferred' | 'depth' ): string => build( () => 
     const noise = cyclicNoise( add( mul( p, 5.0 ), time ), {
       freq: 1.3,
     } );
-    addAssign( p, mul( 0.1, noise ) );
+    addAssign( p, mul( 0.04, noise ) );
     const d = def( 'float', sdbox( p, vec3( 0.38 ) ) );
     subAssign( d, 0.07 );
 

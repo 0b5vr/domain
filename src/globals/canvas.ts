@@ -1,4 +1,4 @@
-import 'webgl-memory';
+// import 'webgl-memory';
 import { GLCat } from '@fms-cat/glcat-ts';
 import { RESOLUTION } from '../config';
 

@@ -33,7 +33,7 @@ export const asphaltFrag = ( tag: 'deferred' | 'depth' ): string => build( () =>
   const { init } = glslDefRandom();
 
   const map = defFn( 'vec4', [ 'vec3' ], ( p ) => {
-    addAssign( p, mul( 0.04, cyclicNoise( p ) ) );
+    addAssign( p, mul( 0.02, cyclicNoise( p ) ) );
 
     const d = def( 'float', sdbox( p, vec3( 0.45 ) ) );
     subAssign( d, 0.05 );

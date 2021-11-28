@@ -17,6 +17,7 @@ import { SSSBox } from './SSSBox';
 import { SceneNode } from '../heck/components/SceneNode';
 import { SingleStep } from './SingleStep';
 import { Sp4ghet } from './Sp4ghet';
+import { Trails } from './Trails';
 import { WarningCube } from './WarningCube';
 import { WebpackCube } from './WebpackCube';
 import { auto } from '../globals/automaton';
@@ -51,6 +52,7 @@ export class Stuff extends SceneNode {
       new Crate(),
       new Cardboard(),
       new Particles(),
+      new Trails(),
     ].map( ( node, i ) => {
       if ( process.env.DEV ) {
         const current = auto( 'stuff' );

@@ -11,33 +11,38 @@ import { genCube } from '../geometries/genCube';
 import { psxVert } from '../shaders/psxVert';
 import { quadVert } from '../shaders/quadVert';
 
-const advantageCubeTextureTarget = new ShaderRenderTarget(
-  32,
-  advantageCubeTextureFrag,
-  process.env.DEV && 'AdvantageCube/texture',
-);
-
-if ( process.env.DEV ) {
-  if ( module.hot ) {
-    module.hot.accept(
-      [
-        '../shaders/advantageCubeTextureFrag',
-      ],
-      () => {
-        advantageCubeTextureTarget.material.replaceShader(
-          quadVert,
-          advantageCubeTextureFrag,
-        ).then( () => {
-          advantageCubeTextureTarget.quad.drawImmediate();
-        } );
-      },
-    );
-  }
-}
-
 export class AdvantageCube extends SceneNode {
   public constructor() {
     super();
+
+    // -- target -----------------------------------------------------------------------------------
+    const advantageCubeTextureTarget = new ShaderRenderTarget(
+      32,
+      advantageCubeTextureFrag,
+      process.env.DEV && 'AdvantageCube/texture',
+    );
+
+    const lambdaUpdateAdvantageCube = advantageCubeTextureTarget.createUpdateLambda();
+
+    if ( process.env.DEV ) {
+      lambdaUpdateAdvantageCube.name = 'lambdaUpdateAdvantageCube';
+
+      if ( module.hot ) {
+        module.hot.accept(
+          [
+            '../shaders/advantageCubeTextureFrag',
+          ],
+          () => {
+            advantageCubeTextureTarget.material.replaceShader(
+              quadVert,
+              advantageCubeTextureFrag,
+            ).then( () => {
+              advantageCubeTextureTarget.quad.drawImmediate();
+            } );
+          },
+        );
+      }
+    }
 
     // -- geometry ---------------------------------------------------------------------------------
     const geometry = genCube( { dimension: [ 0.5, 0.5, 0.5 ] } ).geometry;
@@ -77,6 +82,7 @@ export class AdvantageCube extends SceneNode {
 
     // -- components -------------------------------------------------------------------------------
     this.children = [
+      lambdaUpdateAdvantageCube,
       mesh,
     ];
 
