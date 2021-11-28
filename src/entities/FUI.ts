@@ -35,6 +35,7 @@ const texts = [
   [ 'trails', 'send noodles' ],
   [ 'esc', 'press esc to end the experience' ],
   [ 'infinity_grid', 'the suffer never ends' ],
+  [ 'sierpinski', 'wanna lay on this?' ],
 ];
 
 auto( 'FUI/yugopp', ( { progress } ) => {

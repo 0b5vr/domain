@@ -1,15 +1,17 @@
-import { MTL_PBR_ROUGHNESS_METALLIC } from './deferredShadeFrag';
-import { abs, add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, discard, div, dot, glFragCoord, glFragDepth, gt, ifThen, insert, length, main, max, mix, mul, normalize, retFn, sin, smoothstep, sub, subAssign, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { MTL_PBR_SHEEN } from './deferredShadeFrag';
+import { PI } from '../utils/constants';
+import { abs, add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, discard, div, glFragCoord, glFragDepth, glslFalse, glslTrue, gt, ifThen, insert, length, main, max, mul, normalize, retFn, sin, sq, sub, subAssign, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcDepth } from './modules/calcDepth';
 import { calcNormal } from './modules/calcNormal';
 import { cyclicNoise } from './modules/cyclicNoise';
+import { defSimplexFBM4d } from './modules/simplexFBM4d';
 import { glslDefRandom } from './modules/glslDefRandom';
 import { raymarch } from './modules/raymarch';
 import { sdbox } from './modules/sdbox';
 import { setupRoRd } from './modules/setupRoRd';
 import { triplanarMapping } from './modules/triplanarMapping';
 
-export const asphaltFrag = ( tag: 'deferred' | 'depth' ): string => build( () => {
+export const sierpinskiFrag = ( tag: 'deferred' | 'depth' ): string => build( () => {
   insert( 'precision highp float;' );
 
   const vPositionWithoutModel = defInNamed( 'vec4', 'vPositionWithoutModel' );
@@ -27,38 +29,39 @@ export const asphaltFrag = ( tag: 'deferred' | 'depth' ): string => build( () =>
   const cameraNearFar = defUniformNamed( 'vec2', 'cameraNearFar' );
   const cameraPos = defUniformNamed( 'vec3', 'cameraPos' );
   const inversePVM = defUniformNamed( 'mat4', 'inversePVM' );
-  const samplerSurface = defUniformNamed( 'sampler2D', 'samplerSurface' );
   const samplerRandom = defUniformNamed( 'sampler2D', 'samplerRandom' );
+  const samplerPattern = defUniformNamed( 'sampler2D', 'samplerPattern' );
+
+  const shouldUseNoise = def( 'bool', glslFalse );
 
   const { init } = glslDefRandom();
 
+  const fbm = defSimplexFBM4d();
+
   const map = defFn( 'vec4', [ 'vec3' ], ( p ) => {
-    addAssign( p, mul( 0.02, cyclicNoise( p ) ) );
+    addAssign( p, mul(
+      0.02,
+      cyclicNoise( add( mul( p, 2.0 ), mul( 0.1, time ) ), { freq: 1.6 } ),
+    ) );
 
-    const d = def( 'float', sdbox( p, vec3( 0.45 ) ) );
-    subAssign( d, 0.05 );
+    const d = def( 'float', sub( sdbox( p, vec3( 0.45 ) ), 0.04 ) );
 
-    const phase = add( dot( p, vec3( 10.0 ) ), time );
-    const line = def( 'float', smoothstep( 0.1, 0.3, sin( phase ) ) );
+    ifThen( shouldUseNoise, () => {
+      subAssign( d, triplanarMapping(
+        p,
+        normalize( max( sub( abs( p ), 0.45 ), 0.0 ) ),
+        1.0,
+        ( uv ) => {
+          const pp = def( 'vec2', sq( sin( mul( PI, 64.0, uv ) ) ) );
+          return mul( 0.001, sw( pp, 'x' ), sw( pp, 'y' ) );
+        },
+      ) );
+      subAssign( d, mul( 0.003, fbm(
+        vec4( mul( 20.0, p ), 0.0 )
+      ) ) );
+    } );
 
-    if ( tag !== 'depth' ) {
-      const N = normalize( max( sub( abs( p ), 0.45 ), 0.0 ) );
-      const mapSurface = triplanarMapping(
-        add( 0.5, mul( p, 0.5 ) ),
-        N,
-        4.0,
-        ( uv ) => texture( samplerSurface, uv ),
-      );
-
-      subAssign( d, mix( sw( mapSurface, 'x' ), 0.01, line ) );
-      // const voronoiSamplePos = mul( 50.0, add( p, 1.0 ) );
-      // const voronoi = voronoi3d( voronoiSamplePos );
-      // const border = sw( voronoi3dBorder( voronoiSamplePos, voronoi ), 'w' );
-      // subAssign( d, div( border, 100.0 ) );
-      // assign( line, smoothstep( 0.2, 0.1, border ) );
-    }
-
-    retFn( vec4( d, line, 0, 0 ) );
+    retFn( vec4( d, p ) );
   } );
 
   main( () => {
@@ -81,8 +84,10 @@ export const asphaltFrag = ( tag: 'deferred' | 'depth' ): string => build( () =>
 
     ifThen( gt( sw( isect, 'x' ), 1E-2 ), () => discard() );
 
+    assign( shouldUseNoise, glslTrue );
+    assign( isect, map( rp ) );
+
     const modelPos = def( 'vec4', mul( modelMatrix, vec4( rp, 1.0 ) ) );
-    const line = def( 'float', sw( isect, 'y' ) );
 
     const projPos = def( 'vec4', mul( pvm, vec4( rp, 1.0 ) ) );
     const depth = div( sw( projPos, 'z' ), sw( projPos, 'w' ) );
@@ -96,19 +101,19 @@ export const asphaltFrag = ( tag: 'deferred' | 'depth' ): string => build( () =>
     }
 
     const N = def( 'vec3', calcNormal( { rp, map } ) );
-    const roughness = mix( 0.5, 0.8, line );
-    const metallic = 0.0;
+    const pSurface = sw( isect, 'yzw' );
 
-    const baseColor = mix(
-      vec3( 0.1 ),
-      vec3( 0.8 ),
-      line
-    );
+    const col = sw( triplanarMapping(
+      pSurface,
+      N,
+      1.0,
+      ( uv ) => texture( samplerPattern, add( uv, 0.5 ) ),
+    ), 'xyz' );
 
-    assign( fragColor, vec4( baseColor, 1.0 ) );
+    assign( fragColor, vec4( col, 1.0 ) );
     assign( fragPosition, vec4( sw( modelPos, 'xyz' ), depth ) );
-    assign( fragNormal, vec4( normalize( mul( normalMatrix, N ) ), MTL_PBR_ROUGHNESS_METALLIC ) );
-    assign( fragMisc, vec4( roughness, metallic, 0.0, 0.0 ) );
+    assign( fragNormal, vec4( normalize( mul( normalMatrix, N ) ), MTL_PBR_SHEEN ) );
+    assign( fragMisc, vec4( vec3( 0.1 ), 0.5 ) );
 
   } );
 } );

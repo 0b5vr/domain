@@ -17,6 +17,7 @@ import { RandomTextureCube } from './RandomTextureCube';
 import { RawVector3, quatFromAxisAngle, vecNormalize } from '@0b5vr/experimental';
 import { SSSBox } from './SSSBox';
 import { SceneNode } from '../heck/components/SceneNode';
+import { Sierpinski } from './Sierpinski';
 import { SingleStep } from './SingleStep';
 import { Sp4ghet } from './Sp4ghet';
 import { Trails } from './Trails';
@@ -57,6 +58,7 @@ export class Stuff extends SceneNode {
       new Trails(),
       new Esc(),
       new GridCube(),
+      new Sierpinski(),
     ].map( ( node, i ) => {
       if ( process.env.DEV ) {
         const current = auto( 'stuff' );

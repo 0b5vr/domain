@@ -1,20 +1,16 @@
-import { GLSLExpression, GLSLFloatExpression, abs, add, div, dot, mul, pow, sw, texture, vec3 } from '../../shader-builder/shaderBuilder';
+import { GLSLExpression, GLSLFloatExpression, abs, add, div, dot, mul, pow, sw, vec3 } from '../../shader-builder/shaderBuilder';
 
-export function triplanarMapping(
+export function triplanarMapping<T extends GLSLExpression<'float'> | GLSLExpression<'vec2'> | GLSLExpression<'vec3'> | GLSLExpression<'vec4'>>(
   p: GLSLExpression<'vec3'>,
   N: GLSLExpression<'vec3'>,
   smoothFactor: GLSLFloatExpression,
-  sampler: GLSLExpression<'sampler2D'>,
-): GLSLExpression<'vec4'> {
-  const textureYZ = texture( sampler, sw( p, 'yz' ) );
-  const textureZX = texture( sampler, sw( p, 'zx' ) );
-  const textureXY = texture( sampler, sw( p, 'xy' ) );
-
+  fn: ( uv: GLSLExpression<'vec2'> ) => T,
+): T {
   const nPowered = pow( abs( N ), vec3( smoothFactor ) );
 
   return div( add(
-    mul( textureYZ, sw( nPowered, 'x' ) ),
-    mul( textureZX, sw( nPowered, 'y' ) ),
-    mul( textureXY, sw( nPowered, 'z' ) ),
-  ), dot( nPowered, vec3( 1.0 ) ) );
+    mul( fn( sw( p, 'zy' ) ) as any, sw( nPowered, 'x' ) ),
+    mul( fn( sw( p, 'xz' ) ) as any, sw( nPowered, 'y' ) ),
+    mul( fn( sw( p, 'xy' ) ) as any, sw( nPowered, 'z' ) ),
+  ), dot( nPowered, vec3( 1.0 ) ) ) as any;
 }

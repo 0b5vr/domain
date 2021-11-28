@@ -47,7 +47,7 @@ export const warningCubeFrag = ( tag: 'deferred' | 'depth' ): string => build( (
         add( 0.5, mul( p, 0.5 ) ),
         N,
         4.0,
-        samplerSurface,
+        ( uv ) => texture( samplerSurface, uv ),
       );
 
       const phase = dot( p, vec3( 10.0 ) );

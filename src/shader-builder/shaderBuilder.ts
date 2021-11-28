@@ -454,6 +454,30 @@ export const or: {
   `(${args.map( ( arg ) => num( arg ) ).join( '||' )})`
 ) as any;
 
+export const xor: {
+  ( ...args: Ex<'bool'>[] ): Ex<'bool'>;
+} = ( ...args: ( string | number )[] ) => (
+  `(${args.map( ( arg ) => num( arg ) ).join( '^^' )})`
+) as any;
+
+export const band: {
+  ( ...args: Ex<'int'>[] ): Ex<'int'>;
+} = ( ...args: ( string | number )[] ) => (
+  `(${args.map( ( arg ) => num( arg ) ).join( '&' )})`
+) as any;
+
+export const bor: {
+  ( ...args: Ex<'int'>[] ): Ex<'int'>;
+} = ( ...args: ( string | number )[] ) => (
+  `(${args.map( ( arg ) => num( arg ) ).join( '|' )})`
+) as any;
+
+export const bxor: {
+  ( ...args: Ex<'int'>[] ): Ex<'int'>;
+} = ( ...args: ( string | number )[] ) => (
+  `(${args.map( ( arg ) => num( arg ) ).join( '^' )})`
+) as any;
+
 export const arrayIndex: {
   <T extends string>( array: Ex<`${ T }[]`>, i: Ex<'int'> ): Ex<T>;
 } = ( array: string, i: string ) => (

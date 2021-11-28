@@ -1,5 +1,6 @@
 import { DIELECTRIC_SPECULAR, ONE_SUB_DIELECTRIC_SPECULAR } from '../utils/constants';
 import { GLSLExpression, GLSLFloatExpression, add, addAssign, assign, build, clamp, def, defFn, defInNamed, defOut, defUniformArrayNamed, defUniformNamed, div, dot, eq, glFragDepth, gt, ifChain, ifThen, insert, length, main, max, mix, mul, mulAssign, normalize, num, retFn, smoothstep, sq, sub, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { brdfSheen } from './modules/brdfSheen';
 import { calcAlbedoF0 } from './modules/calcAlbedoF0';
 import { calcL } from './modules/calcL';
 import { defDoSomethingUsingSamplerArray } from './modules/defDoSomethingUsingSamplerArray';
@@ -24,6 +25,11 @@ export const MTL_PBR_ROUGHNESS_METALLIC = 2;
  * vec4( emissiveRGB, roughness )
  */
 export const MTL_PBR_EMISSIVE3_ROUGHNESS = 3;
+
+/**
+ * vec4( sheenTint, sheenRoughness )
+ */
+export const MTL_PBR_SHEEN = 4;
 
 const EPSILON = 1E-3;
 
@@ -77,6 +83,8 @@ export const deferredShadeFrag = ( { withAO }: {
     const shadePBR = (
       roughness: GLSLFloatExpression,
       metallic: GLSLFloatExpression,
+      sheenRoughness: GLSLFloatExpression,
+      sheenTint: GLSLExpression<'vec3'>,
     ): GLSLExpression<'vec3'> => {
       // begin lighting
       const shaded = def( 'vec3', vec3( 0.0 ) );
@@ -88,14 +96,27 @@ export const deferredShadeFrag = ( { withAO }: {
 
         const { albedo, f0 } = calcAlbedoF0( color, metallic );
 
-        // shading
-        const lightShaded = def( 'vec3', mul(
+        const irradiance = mul(
           lightColor,
           div( 1.0, sq( lenL ) ),
           dotNL,
+        );
+
+        // shading
+        const lightShaded = def( 'vec3', mul(
+          irradiance,
           doAnalyticLighting( V, L, normal, roughness, albedo, f0 ),
-          ao,
+          ao, // cringe
         ) );
+
+        // sheen
+        ifThen( gt( sw( sheenTint, 'x' ), 0.0 ), () => {
+          addAssign( lightShaded, mul(
+            irradiance,
+            brdfSheen( L, V, normal, sheenRoughness, sheenTint ),
+            ao, // cringe
+          ) );
+        } );
 
         // fetch shadowmap + spot lighting
         const lightProj = def( 'vec4', mul( lightPV, vec4( position, 1.0 ) ) );
@@ -146,12 +167,15 @@ export const deferredShadeFrag = ( { withAO }: {
         assign( outColor, color );
       } ],
       [ eq( mtlId, MTL_PBR_ROUGHNESS_METALLIC ), () => {
-        assign( outColor, shadePBR( sw( tex3, 'x' ), sw( tex3, 'y' ) ) );
+        assign( outColor, shadePBR( sw( tex3, 'x' ), sw( tex3, 'y' ), 0.0, vec3( 0.0 ) ) );
         addAssign( outColor, mul( sw( tex3, 'z' ), dotNV, color ) );
       } ],
       [ eq( mtlId, MTL_PBR_EMISSIVE3_ROUGHNESS ), () => {
-        assign( outColor, shadePBR( sw( tex3, 'w' ), 0.0 ) );
+        assign( outColor, shadePBR( sw( tex3, 'w' ), 0.0, 0.0, vec3( 0.0 ) ) );
         addAssign( outColor, sw( tex3, 'xyz' ) );
+      } ],
+      [ eq( mtlId, MTL_PBR_SHEEN ), () => {
+        assign( outColor, shadePBR( 1.0, 0.0, sw( tex3, 'w' ), sw( tex3, 'xyz' ) ) );
       } ],
     );
 
