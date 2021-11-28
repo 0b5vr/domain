@@ -22,11 +22,7 @@ export class AdvantageCube extends SceneNode {
       process.env.DEV && 'AdvantageCube/texture',
     );
 
-    const lambdaUpdateAdvantageCube = advantageCubeTextureTarget.createUpdateLambda();
-
     if ( process.env.DEV ) {
-      lambdaUpdateAdvantageCube.name = 'lambdaUpdateAdvantageCube';
-
       if ( module.hot ) {
         module.hot.accept(
           [
@@ -82,7 +78,6 @@ export class AdvantageCube extends SceneNode {
 
     // -- components -------------------------------------------------------------------------------
     this.children = [
-      lambdaUpdateAdvantageCube,
       mesh,
     ];
 

@@ -268,8 +268,6 @@ export class Fluid extends SceneNode {
 
     // -- shell ------------------------------------------------------------------------------------
     const shell = new TransparentShell( {
-      roughness: 0.1,
-      roughnessNoise: 0.1,
       insideChildren: [ mesh ],
     } );
 

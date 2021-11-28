@@ -1,4 +1,3 @@
-import { MTL_PBR_ROUGHNESS_METALLIC } from '../shaders/deferredShadeFrag';
 import { Material } from '../heck/Material';
 import { Mesh } from '../heck/components/Mesh';
 import { SceneNode } from '../heck/components/SceneNode';
@@ -40,9 +39,6 @@ export class NotchyStuff extends SceneNode {
         initOptions: { geometry, target: dummyRenderTargetFourDrawBuffers },
       },
     );
-    deferred.addUniform( 'color', '4f', 1.0, 1.0, 1.0, 1.0 );
-    deferred.addUniform( 'mtlKind', '1f', MTL_PBR_ROUGHNESS_METALLIC );
-    deferred.addUniform( 'mtlParams', '4f', 1.0, 0.0, 0.0, 0.0 );
 
     const depth = new Material(
       notchyStuffVert,
@@ -74,8 +70,6 @@ export class NotchyStuff extends SceneNode {
     // -- shell ------------------------------------------------------------------------------------
     const shell = new TransparentShell( {
       opacity: 0.03,
-      roughness: 0.1,
-      roughnessNoise: 0.1,
     } );
 
     // -- components -------------------------------------------------------------------------------

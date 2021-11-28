@@ -111,9 +111,6 @@ export class Particles extends GPUParticles {
     } );
 
     // -- shell ------------------------------------------------------------------------------------
-    this.children.push( new TransparentShell( {
-      roughness: 0.1,
-      roughnessNoise: 0.1,
-    } ) );
+    this.children.push( new TransparentShell() );
   }
 }

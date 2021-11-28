@@ -20,10 +20,17 @@ export interface TransparentShellOptions extends SceneNodeOptions {
 }
 
 export class TransparentShell extends SceneNode {
-  public constructor( options: TransparentShellOptions ) {
+  public constructor( options?: TransparentShellOptions ) {
     super( options );
 
-    const { baseColor, roughness, roughnessNoise, metallic, opacity, insideChildren } = options;
+    const {
+      baseColor,
+      roughness,
+      roughnessNoise,
+      metallic,
+      opacity,
+      insideChildren,
+    } = options ?? {};
 
     // -- shell ------------------------------------------------------------------------------------
     const geometryShellFront = genCube( { dimension: [ 0.5, 0.5, 0.5 ] } ).geometry;
@@ -38,8 +45,8 @@ export class TransparentShell extends SceneNode {
       },
     );
     forwardShell.addUniform( 'baseColor', '3f', ...( baseColor ?? [ 1.0, 1.0, 1.0 ] ) );
-    forwardShell.addUniform( 'roughness', '1f', roughness ?? 0.0 );
-    forwardShell.addUniform( 'roughnessNoise', '1f', roughnessNoise ?? 0.0 );
+    forwardShell.addUniform( 'roughness', '1f', roughness ?? 0.1 );
+    forwardShell.addUniform( 'roughnessNoise', '1f', roughnessNoise ?? 0.1 );
     forwardShell.addUniform( 'metallic', '1f', metallic ?? 0.0 );
     forwardShell.addUniform( 'opacity', '1f', opacity ?? 0.01 );
 

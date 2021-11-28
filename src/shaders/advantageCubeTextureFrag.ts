@@ -1,4 +1,4 @@
-import { assign, build, defInNamed, defOut, defUniformNamed, insert, main, mul, pow, smoothstep, step, sw, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { assign, build, defInNamed, defOut, insert, main, mul, pow, smoothstep, step, sw, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { cyclicNoise } from './modules/cyclicNoise';
 import { glslGradient } from './modules/glslGradient';
 
@@ -9,14 +9,12 @@ export const advantageCubeTextureFrag = build( () => {
 
   const fragColor = defOut( 'vec4' );
 
-  const time = defUniformNamed( 'float', 'time' );
-
   main( () => {
     const noise = sw( mul(
       smoothstep(
         -1.0,
         1.0,
-        cyclicNoise( vec3( mul( 3.0, vUv ), time ), { warp: 2.0, pump: 1.6 } )
+        cyclicNoise( vec3( mul( 3.0, vUv ), 2.0 ), { warp: 2.0, pump: 1.6 } )
       ),
       step( 1.0 / 32.0, sw( vUv, 'x' ) ),
     ), 'x' );

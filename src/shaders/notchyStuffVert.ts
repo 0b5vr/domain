@@ -8,9 +8,7 @@ export const notchyStuffVert = build( () => {
   const instanceId = defIn( 'float', 3 );
 
   const vInstanceId = defOutNamed( 'float', 'vInstanceId' );
-  const vPositionWithoutModel = defOutNamed( 'vec4', 'vPositionWithoutModel' );
   const vProjPosition = defOutNamed( 'vec4', 'vProjPosition' );
-  const vViewPosition = defOutNamed( 'vec4', 'vViewPosition' );
   const vPosition = defOutNamed( 'vec4', 'vPosition' );
   const vNormal = defOutNamed( 'vec3', 'vNormal' );
 
@@ -39,7 +37,7 @@ export const notchyStuffVert = build( () => {
     //   mul( time, vec3( 1.0, 0.5, 0.3 ) ),
     //   vec3( 2.0, 0.0, 4.0 ),
     // ) ) );
-    assign( vPositionWithoutModel, vec4( off, 1.0 ) );
+    const pos = def( 'vec4', vec4( off, 1.0 ) );
 
     const size = def( 'vec3', vec3( mix( 0.03, 0.04, sin( mul( 8.0, phase ) ) ) ) );
 
@@ -51,7 +49,7 @@ export const notchyStuffVert = build( () => {
     mulAssign( sw( shape, 'yz' ), rotate2D( mul( 3.0, phase ) ) );
     mulAssign( sw( shape, 'xy' ), rotate2D( time ) );
 
-    addAssign( sw( vPositionWithoutModel, 'xyz' ), shape );
+    addAssign( sw( pos, 'xyz' ), shape );
 
     // -- compute normals --------------------------------------------------------------------------
     assign( vNormal, normal );
@@ -61,9 +59,8 @@ export const notchyStuffVert = build( () => {
     assign( vNormal, mul( normalMatrix, vNormal ) );
 
     // -- send the vertex position -----------------------------------------------------------------
-    assign( vPosition, mul( modelMatrix, vPositionWithoutModel ) );
-    assign( vViewPosition, mul( viewMatrix, vPosition ) );
-    assign( vProjPosition, mul( projectionMatrix, vViewPosition ) );
+    assign( vPosition, mul( modelMatrix, pos ) );
+    assign( vProjPosition, mul( projectionMatrix, viewMatrix, vPosition ) );
     const outPos = def( 'vec4', vProjPosition );
 
     const aspect = div( sw( resolution, 'x' ), sw( resolution, 'y' ) );

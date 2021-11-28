@@ -22,11 +22,7 @@ export class PoolLAN extends RaymarcherNode {
 
     this.materials.deferred.addUniformTextures( 'samplerText', textCanvas.texture );
 
-    const shell = new TransparentShell( {
-      opacity: 0.01,
-      roughness: 0.1,
-      roughnessNoise: 0.1,
-    } );
+    const shell = new TransparentShell();
     shell.transform.position = [ 0.0, 0.05, 0.4 ];
     shell.transform.scale = [ 0.9, 0.8, 0.01 ];
     this.children.push( shell );

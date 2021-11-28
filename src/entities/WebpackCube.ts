@@ -45,6 +45,7 @@ export class WebpackCube extends SceneNode {
     const shell = new TransparentShell( {
       baseColor: [ 0.272, 0.680, 0.949 ],
       roughness: 0.2,
+      roughnessNoise: 0.0,
       opacity: 0.1,
     } );
 

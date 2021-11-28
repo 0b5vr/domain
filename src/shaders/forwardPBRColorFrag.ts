@@ -1,4 +1,4 @@
-import { add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformArrayNamed, defUniformNamed, div, dot, insert, main, max, mul, normalize, retFn, sq, sub, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformArrayNamed, defUniformNamed, div, divAssign, dot, insert, main, max, mul, normalize, retFn, sq, sub, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcAlbedoF0 } from './modules/calcAlbedoF0';
 import { calcL } from './modules/calcL';
 import { cyclicNoise } from './modules/cyclicNoise';
@@ -43,6 +43,7 @@ export const forwardPBRColorFrag = build( () => {
     const col = def( 'vec3', vec3( 0.0 ) );
 
     const { albedo, f0 } = calcAlbedoF0( baseColor, metallic );
+    divAssign( f0, opacity );
 
     const roughnessComputed = add(
       roughness,
@@ -92,7 +93,7 @@ export const forwardPBRColorFrag = build( () => {
     addAssign( col, mul( diffuseIBL( albedo, vNormal ) ) );
 
     // // reflective ibl
-    addAssign( col, div( specularIBL( f0, vNormal, V, roughnessComputed ), opacity ) );
+    addAssign( col, specularIBL( f0, vNormal, V, roughnessComputed ) );
 
     assign( fragColor, vec4( col, opacity ) );
   } );

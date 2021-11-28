@@ -9,8 +9,6 @@ export class GridCube extends RaymarcherNode {
 
     const shell = new TransparentShell( {
       baseColor: [ 0.0, 0.0, 0.0 ],
-      roughness: 0.1,
-      roughnessNoise: 0.1,
     } );
     shell.transform.scale = [ 1.01, 1.01, 1.01 ];
     this.children.push( shell );

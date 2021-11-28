@@ -8,8 +8,6 @@ export class Octree extends RaymarcherNode {
     super( octreeFrag );
 
     this.children.push( new TransparentShell( {
-      roughness: 0.1,
-      roughnessNoise: 0.1,
       opacity: 0.04,
     } ) );
 

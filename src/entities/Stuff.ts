@@ -25,6 +25,7 @@ import { Trails } from './Trails';
 import { WarningCube } from './WarningCube';
 import { WebpackCube } from './WebpackCube';
 import { auto } from '../globals/automaton';
+import { Oscilloscope } from './Oscilloscope';
 
 export const StuffTag = Symbol();
 
@@ -61,6 +62,7 @@ export class Stuff extends SceneNode {
       new GridCube(),
       new Sierpinski(),
       new NotchyStuff(),
+      new Oscilloscope(),
     ].map( ( node, i ) => {
       if ( process.env.DEV ) {
         const current = auto( 'stuff' );
