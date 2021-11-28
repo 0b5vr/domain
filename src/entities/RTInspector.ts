@@ -207,13 +207,13 @@ export class RTInspector extends SceneNode {
         if ( !( new RegExp( single ).test( name ) ) ) { continue; }
 
         const attachment = gl.COLOR_ATTACHMENT0 + singleIndex;
+        const texture = target?.getTexture( attachment );
 
-        if ( !target ) {
+        if ( !texture ) {
           this.nodeSingle.active = false;
           return;
         }
 
-        const texture = target.getTexture( attachment )!;
         this.materialSingle.addUniformTextures( 'sampler0', texture );
 
         this.nodeSingle.active = true;
