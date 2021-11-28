@@ -26,25 +26,28 @@ export function genCylinder( options?: {
 
   for ( let ih = 0; ih < heightSegs + 1; ih ++ ) {
     const v = ih / heightSegs;
-    const y = v * 2.0 - 1.0;
+    const z = v * 2.0 - 1.0;
     for ( let ir = 0; ir < radialSegs; ir ++ ) {
       const i = ih * radialSegs + ir;
       const i1 = i + 1;
 
       const t = TAU * ir / radialSegs;
       const x = Math.cos( t );
-      const z = Math.sin( t );
+      const y = Math.sin( t );
 
       pos.push( x, y, z );
-      nor.push( x, 0.0, z );
+      nor.push( x, y, 0.0 );
       auv.push( ir / radialSegs, v );
-      ind.push(
-        i, i + radialSegs, i1 + radialSegs,
-        i, i1 + radialSegs, i1,
-      );
+
+      if ( ih !== heightSegs ) {
+        ind.push(
+          i, i + radialSegs + 1, i1 + radialSegs + 1,
+          i, i1 + radialSegs + 1, i1,
+        );
+      }
     }
 
-    pos.push( 1, y, 0.0 );
+    pos.push( 1, 0.0, z );
     nor.push( 1.0, 0.0, 0.0 );
     auv.push( 1.0, v );
   }

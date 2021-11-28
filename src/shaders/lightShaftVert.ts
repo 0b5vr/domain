@@ -16,7 +16,7 @@ export const lightShaftVert = build( () => {
   const modelMatrix = defUniformNamed( 'mat4', 'modelMatrix' );
 
   main( () => {
-    assign( vFrustumZ, add( 0.5, mul( 0.5, sw( position, 'y' ) ) ) );
+    assign( vFrustumZ, add( 0.5, mul( 0.5, sw( position, 'z' ) ) ) );
 
     const tanFov = def( 'float', tan( mul( lightFov, PI / 360.0 ) ) );
     const near = sw( lightNearFar, 'x' );
@@ -24,7 +24,7 @@ export const lightShaftVert = build( () => {
 
     assign( vShaftRadius, mix( near, far, vFrustumZ ) );
 
-    const posXYMulTanFov = def( 'vec2', mul( sw( position, 'xz' ), tanFov ) );
+    const posXYMulTanFov = def( 'vec2', mul( sw( position, 'xy' ), tanFov ) );
     const pos = mix(
       vec3( mul( posXYMulTanFov, near ), neg( near ) ),
       vec3( mul( posXYMulTanFov, far ), neg( far ) ),

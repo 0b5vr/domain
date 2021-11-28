@@ -1,6 +1,5 @@
 import { BufferRenderTarget } from '../heck/BufferRenderTarget';
 import { Geometry } from '../heck/Geometry';
-import { HALF_SQRT_TWO } from '../utils/constants';
 import { Lambda } from '../heck/components/Lambda';
 import { MTL_PBR_ROUGHNESS_METALLIC } from '../shaders/deferredShadeFrag';
 import { Material } from '../heck/Material';
@@ -128,7 +127,6 @@ export class LightShaft extends SceneNode {
     const nodeBody = new SceneNode( {
       name: process.env.DEV && 'nodeBody',
     } );
-    nodeBody.transform.rotation = [ HALF_SQRT_TWO, 0.0, 0.0, HALF_SQRT_TWO ];
     nodeBody.transform.scale = [ 0.2, 0.2, 0.2 ];
 
     const materialBody = new Material(
