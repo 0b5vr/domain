@@ -3,6 +3,7 @@ import { Asphalt } from './Asphalt';
 import { BoundingBox } from './BoundingBox';
 import { Cardboard } from './Cardboard';
 import { Crate } from './Crate';
+import { CubeRoot } from './CubeRoot';
 import { Esc } from './Esc';
 import { Fluid } from './Fluid';
 import { GridCube } from './GridCube';
@@ -65,6 +66,7 @@ export class Stuff extends SceneNode {
       new NotchyStuff(),
       new Oscilloscope(),
       new ObsvrCube(),
+      new CubeRoot(),
     ].map( ( node, i ) => {
       if ( process.env.DEV ) {
         const current = auto( 'stuff' );

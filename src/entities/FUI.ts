@@ -39,6 +39,7 @@ const texts = [
   [ 'instancer', 'hello fltcncd' ],
   [ 'lissajous', '3d oscilloscope???' ],
   [ '0b5vr', 'live coding and tax saving vtuber' ],
+  [ 'root', 'it\'s a real cube root!' ],
 ];
 
 auto( 'FUI/yugopp', ( { progress } ) => {
