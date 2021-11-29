@@ -1,8 +1,7 @@
 import { MTL_PBR_ROUGHNESS_METALLIC } from './deferredShadeFrag';
-import { abs, add, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, discard, div, glFragCoord, glFragDepth, gt, ifThen, insert, length, main, max, mod, mul, neg, normalize, retFn, sub, sw, texture, unrollLoop, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { abs, add, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, discard, div, glFragCoord, glFragDepth, gt, ifThen, insert, length, main, max, mod, mul, neg, normalize, retFn, sub, sw, unrollLoop, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcDepth } from './modules/calcDepth';
 import { calcNormal } from './modules/calcNormal';
-import { glslDefRandom } from './modules/glslDefRandom';
 import { raymarch } from './modules/raymarch';
 import { sdbox } from './modules/sdbox';
 import { setupRoRd } from './modules/setupRoRd';
@@ -25,9 +24,6 @@ export const mengerSpongeFrag = ( tag: 'deferred' | 'depth' ): string => build( 
   const cameraNearFar = defUniformNamed( 'vec2', 'cameraNearFar' );
   const cameraPos = defUniformNamed( 'vec3', 'cameraPos' );
   const inversePVM = defUniformNamed( 'mat4', 'inversePVM' );
-  const samplerRandom = defUniformNamed( 'sampler2D', 'samplerRandom' );
-
-  const { init } = glslDefRandom();
 
   const map = defFn( 'vec4', [ 'vec3' ], ( p ) => {
     // const d = def( 'float', sub( length( p ), 0.1 ) );
@@ -49,7 +45,6 @@ export const mengerSpongeFrag = ( tag: 'deferred' | 'depth' ): string => build( 
       sub( mul( 2.0, sw( glFragCoord, 'xy' ) ), resolution ),
       sw( resolution, 'y' ),
     ) );
-    init( texture( samplerRandom, p ) );
 
     const { ro, rd } = setupRoRd( { inversePVM, p } );
 

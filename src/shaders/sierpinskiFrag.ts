@@ -5,7 +5,6 @@ import { calcDepth } from './modules/calcDepth';
 import { calcNormal } from './modules/calcNormal';
 import { cyclicNoise } from './modules/cyclicNoise';
 import { defSimplexFBM4d } from './modules/simplexFBM4d';
-import { glslDefRandom } from './modules/glslDefRandom';
 import { raymarch } from './modules/raymarch';
 import { sdbox } from './modules/sdbox';
 import { setupRoRd } from './modules/setupRoRd';
@@ -29,12 +28,9 @@ export const sierpinskiFrag = ( tag: 'deferred' | 'depth' ): string => build( ()
   const cameraNearFar = defUniformNamed( 'vec2', 'cameraNearFar' );
   const cameraPos = defUniformNamed( 'vec3', 'cameraPos' );
   const inversePVM = defUniformNamed( 'mat4', 'inversePVM' );
-  const samplerRandom = defUniformNamed( 'sampler2D', 'samplerRandom' );
   const samplerPattern = defUniformNamed( 'sampler2D', 'samplerPattern' );
 
   const shouldUseNoise = def( 'bool', glslFalse );
-
-  const { init } = glslDefRandom();
 
   const fbm = defSimplexFBM4d();
 
@@ -69,7 +65,6 @@ export const sierpinskiFrag = ( tag: 'deferred' | 'depth' ): string => build( ()
       sub( mul( 2.0, sw( glFragCoord, 'xy' ) ), resolution ),
       sw( resolution, 'y' ),
     ) );
-    init( texture( samplerRandom, p ) );
 
     const { ro, rd } = setupRoRd( { inversePVM, p } );
 

@@ -3,7 +3,6 @@ import { abs, add, addAssign, assign, build, def, defFn, defInNamed, defOut, def
 import { calcDepth } from './modules/calcDepth';
 import { calcNormal } from './modules/calcNormal';
 import { cyclicNoise } from './modules/cyclicNoise';
-import { glslDefRandom } from './modules/glslDefRandom';
 import { glslSaturate } from './modules/glslSaturate';
 import { raymarch } from './modules/raymarch';
 import { sdbox } from './modules/sdbox';
@@ -28,9 +27,6 @@ export const warningCubeFrag = ( tag: 'deferred' | 'depth' ): string => build( (
   const cameraPos = defUniformNamed( 'vec3', 'cameraPos' );
   const inversePVM = defUniformNamed( 'mat4', 'inversePVM' );
   const samplerSurface = defUniformNamed( 'sampler2D', 'samplerSurface' );
-  const samplerRandom = defUniformNamed( 'sampler2D', 'samplerRandom' );
-
-  const { init } = glslDefRandom();
 
   const map = defFn( 'vec4', [ 'vec3' ], ( p ) => {
     addAssign( p, mul( 0.01, cyclicNoise( p ) ) );
@@ -67,7 +63,6 @@ export const warningCubeFrag = ( tag: 'deferred' | 'depth' ): string => build( (
       sub( mul( 2.0, sw( glFragCoord, 'xy' ) ), resolution ),
       sw( resolution, 'y' ),
     ) );
-    init( texture( samplerRandom, p ) );
 
     const { ro, rd } = setupRoRd( { inversePVM, p } );
 

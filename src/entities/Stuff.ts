@@ -7,6 +7,7 @@ import { CubeRoot } from './CubeRoot';
 import { Esc } from './Esc';
 import { Fluid } from './Fluid';
 import { GridCube } from './GridCube';
+import { IFSCube } from './IFSCube';
 import { Info } from './Info';
 import { Lambda } from '../heck/components/Lambda';
 import { MengerSponge } from './MengerSponge';
@@ -67,6 +68,7 @@ export class Stuff extends SceneNode {
       new Oscilloscope(),
       new ObsvrCube(),
       new CubeRoot(),
+      new IFSCube(),
     ].map( ( node, i ) => {
       if ( process.env.DEV ) {
         const current = auto( 'stuff' );
