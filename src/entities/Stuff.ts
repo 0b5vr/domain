@@ -10,7 +10,9 @@ import { Info } from './Info';
 import { Lambda } from '../heck/components/Lambda';
 import { MengerSponge } from './MengerSponge';
 import { NotchyStuff } from './NotchyStuff';
+import { ObsvrCube } from './ObsvrCube';
 import { Octree } from './Octree';
+import { Oscilloscope } from './Oscilloscope';
 import { ParkingSpace } from './ParkingSpace';
 import { Particles } from './Particles';
 import { PoolLAN } from './PoolLAN';
@@ -25,7 +27,6 @@ import { Trails } from './Trails';
 import { WarningCube } from './WarningCube';
 import { WebpackCube } from './WebpackCube';
 import { auto } from '../globals/automaton';
-import { Oscilloscope } from './Oscilloscope';
 
 export const StuffTag = Symbol();
 
@@ -63,6 +64,7 @@ export class Stuff extends SceneNode {
       new Sierpinski(),
       new NotchyStuff(),
       new Oscilloscope(),
+      new ObsvrCube(),
     ].map( ( node, i ) => {
       if ( process.env.DEV ) {
         const current = auto( 'stuff' );

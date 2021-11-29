@@ -37,7 +37,8 @@ const texts = [
   [ 'infinity_grid', 'the suffer never ends' ],
   [ 'sierpinski', 'wanna lay here?' ],
   [ 'instancer', 'hello fltcncd' ],
-  [ 'oscilloscope', 'lissajous' ],
+  [ 'lissajous', '3d oscilloscope???' ],
+  [ '0b5vr', 'live coding and tax saving vtuber' ],
 ];
 
 auto( 'FUI/yugopp', ( { progress } ) => {
