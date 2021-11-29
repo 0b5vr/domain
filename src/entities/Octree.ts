@@ -1,11 +1,17 @@
 import { RaymarcherNode } from './utils/RaymarcherNode';
 import { TransparentShell } from './TransparentShell';
+import { auto } from '../globals/automaton';
 import { objectVert } from '../shaders/objectVert';
 import { octreeFrag } from '../shaders/octreeFrag';
 
 export class Octree extends RaymarcherNode {
   public constructor() {
     super( octreeFrag );
+
+    auto( 'octree/seed', ( { value } ) => {
+      this.materials.deferred.addUniform( 'seed', '1f', value );
+      this.materials.depth.addUniform( 'seed', '1f', value );
+    } );
 
     this.children.push( new TransparentShell( {
       opacity: 0.04,

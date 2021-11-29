@@ -20,7 +20,7 @@ export const octreeFrag = ( tag: 'deferred' | 'depth' ): string => build( () => 
   const fragNormal = defOut( 'vec4', 2 );
   const fragMisc = defOut( 'vec4', 3 );
 
-  const time = defUniformNamed( 'float', 'time' );
+  const seed = defUniformNamed( 'float', 'seed' );
   const resolution = defUniformNamed( 'vec2', 'resolution' );
   const cameraNearFar = defUniformNamed( 'vec2', 'cameraNearFar' );
   const cameraPos = defUniformNamed( 'vec3', 'cameraPos' );
@@ -53,7 +53,7 @@ export const octreeFrag = ( tag: 'deferred' | 'depth' ): string => build( () => 
     forLoop( 4, () => {
       divAssign( size, 2.0 );
       assign( cell, add( glslLofi( add( ro, mul( rd, 0.01, size ) ), size ), div( size, 2.0 ) ) );
-      assign( dice, pcg3df( add( 1E3, mul( 1E2, cell ), mul( time, 1E1 ) ) ) );
+      assign( dice, pcg3df( add( 1E3, mul( 1E2, cell ), mul( floor( seed ), 1E1 ) ) ) );
       assign( hole, or( isHole( cell ), lt( sw( dice, 'y' ), 0.4 ) ) );
       ifThen( hole, () => forBreak() );
       ifThen( gt( sw( dice, 'x' ), mul( size, 1.5 ) ), () => forBreak() );
