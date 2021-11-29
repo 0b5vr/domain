@@ -9,6 +9,7 @@ import { Fluid } from './Fluid';
 import { GridCube } from './GridCube';
 import { IFSCube } from './IFSCube';
 import { Info } from './Info';
+import { Iridescent } from './Iridescent';
 import { Lambda } from '../heck/components/Lambda';
 import { MengerSponge } from './MengerSponge';
 import { NotchyStuff } from './NotchyStuff';
@@ -69,6 +70,7 @@ export class Stuff extends SceneNode {
       new ObsvrCube(),
       new CubeRoot(),
       new IFSCube(),
+      new Iridescent(),
     ].map( ( node, i ) => {
       if ( process.env.DEV ) {
         const current = auto( 'stuff' );

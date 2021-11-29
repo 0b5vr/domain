@@ -41,6 +41,7 @@ const texts = [
   [ '0b5vr', 'live coding and tax saving vtuber' ],
   [ 'root', 'it\'s a real cube root!' ],
   [ 'ifs', 'the classic' ],
+  [ 'iridescent', 'shoutouts to murasaqi' ],
 ];
 
 auto( 'FUI/yugopp', ( { progress } ) => {
