@@ -81,7 +81,6 @@ export const sp4ghetFrag = ( tag: 'deferred' | 'depth' ): string => build( () =>
 
     const V = def( 'vec3', neg( rd ) );
     const N = def( 'vec3', calcNormal( { rp, map } ) );
-    const roughness = 0.5;
     const baseColor = def( 'vec3', mul( 0.5, vec3( 0.2, 0.7, 0.6 ) ) );
     const subsurfaceColor = mul( 0.5, vec3( 0.2, 0.2, 0.6 ) );
 
@@ -129,7 +128,7 @@ export const sp4ghetFrag = ( tag: 'deferred' | 'depth' ): string => build( () =>
       normalize( mul( normalMatrix, N ) ),
       MTL_PBR_EMISSIVE3_ROUGHNESS,
     ) );
-    assign( fragMisc, vec4( ssAccum, roughness ) );
+    assign( fragMisc, vec4( ssAccum, 0.5 ) );
 
   } );
 } );

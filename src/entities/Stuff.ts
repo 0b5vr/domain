@@ -28,6 +28,7 @@ import { Sierpinski } from './Sierpinski';
 import { SingleStep } from './SingleStep';
 import { Sp4ghet } from './Sp4ghet';
 import { Trails } from './Trails';
+import { Traveler } from './Traveler';
 import { WarningCube } from './WarningCube';
 import { WebpackCube } from './WebpackCube';
 import { auto } from '../globals/automaton';
@@ -73,6 +74,7 @@ export class Stuff extends SceneNode {
       new IFSCube(),
       new Iridescent(),
       new Dice(),
+      new Traveler(),
     ].map( ( node, i ) => {
       if ( process.env.DEV ) {
         const current = auto( 'stuff' );

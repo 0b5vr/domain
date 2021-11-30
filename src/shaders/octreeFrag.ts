@@ -1,6 +1,6 @@
 import { FAR } from '../config';
 import { GLSLExpression, GLSLToken, abs, add, addAssign, assign, build, def, defFn, defOut, defUniformNamed, discard, div, divAssign, eq, floor, forBreak, forLoop, glFragCoord, glFragDepth, glslFalse, glslTrue, gt, ifThen, insert, length, lt, main, min, mul, neg, normalize, not, or, retFn, smoothstep, sub, sw, tern, ternChain, vec3, vec4 } from '../shader-builder/shaderBuilder';
-import { MTL_PBR_EMISSIVE3_ROUGHNESS, MTL_PBR_ROUGHNESS_METALLIC } from './deferredShadeFrag';
+import { MTL_PBR_ROUGHNESS_METALLIC } from './deferredShadeFrag';
 import { calcDepth } from './modules/calcDepth';
 import { cyclicNoise } from './modules/cyclicNoise';
 import { glslLofi } from './modules/glslLofi';
@@ -138,18 +138,10 @@ export const octreeFrag = ( tag: 'deferred' | 'depth' ): string => build( () => 
       [ eq( mtl, 2.0 ), vec3( 0.6, 0.07, 0.07 ) ],
     );
 
-    const mtlKind = tern(
-      eq( mtl, 3.0 ),
-      MTL_PBR_EMISSIVE3_ROUGHNESS,
-      MTL_PBR_ROUGHNESS_METALLIC,
-    );
-
-    const mtlParams = vec4( roughness, metallic, 0.0, 0.0 );
-
     assign( fragColor, vec4( baseColor, 1.0 ) );
     assign( fragPosition, vec4( sw( modelPos, 'xyz' ), depth ) );
-    assign( fragNormal, vec4( normalize( mul( normalMatrix, N ) ), mtlKind ) );
-    assign( fragMisc, mtlParams );
+    assign( fragNormal, vec4( normalize( mul( normalMatrix, N ) ), MTL_PBR_ROUGHNESS_METALLIC ) );
+    assign( fragMisc, vec4( roughness, metallic, 0.0, 0.0 ) );
 
   } );
 } );

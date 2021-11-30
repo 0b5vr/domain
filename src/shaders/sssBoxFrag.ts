@@ -90,7 +90,6 @@ export const sssBoxFrag = ( tag: 'deferred' | 'depth' ): string => build( () => 
 
     const V = def( 'vec3', neg( rd ) );
     const N = def( 'vec3', calcNormal( { rp, map } ) );
-    const roughness = 0.1;
     const baseColor = def( 'vec3', mul( 0.7, vec3( 0.9, 0.7, 0.4 ) ) );
     const subsurfaceColor = mul( 0.3, vec3( 0.7, 0.04, 0.04 ) );
 
@@ -147,7 +146,7 @@ export const sssBoxFrag = ( tag: 'deferred' | 'depth' ): string => build( () => 
       normalize( mul( normalMatrix, N ) ),
       MTL_PBR_EMISSIVE3_ROUGHNESS,
     ) );
-    assign( fragMisc, vec4( ssAccum, roughness ) );
+    assign( fragMisc, vec4( ssAccum, 0.1 ) );
 
   } );
 } );

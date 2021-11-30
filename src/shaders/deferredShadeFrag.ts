@@ -1,5 +1,5 @@
 import { DIELECTRIC_SPECULAR, ONE_SUB_DIELECTRIC_SPECULAR, TAU } from '../utils/constants';
-import { GLSLExpression, GLSLFloatExpression, add, addAssign, assign, build, clamp, cos, def, defFn, defInNamed, defOut, defUniformArrayNamed, defUniformNamed, div, dot, eq, glFragDepth, gt, ifChain, ifThen, insert, length, main, max, mix, mul, mulAssign, normalize, num, pow, retFn, smoothstep, sq, sub, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { GLSLExpression, GLSLFloatExpression, abs, add, addAssign, assign, build, clamp, cos, def, defFn, defInNamed, defOut, defUniformArrayNamed, defUniformNamed, div, dot, eq, glFragDepth, gt, ifChain, ifThen, insert, length, main, max, mix, mul, mulAssign, normalize, num, pow, retFn, smoothstep, sq, step, sub, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { brdfSheen } from './modules/brdfSheen';
 import { calcAlbedoF0 } from './modules/calcAlbedoF0';
 import { calcL } from './modules/calcL';
@@ -24,6 +24,7 @@ export const MTL_PBR_ROUGHNESS_METALLIC = 2;
 
 /**
  * vec4( emissiveRGB, roughness )
+ * if roughness is negative, use full metallic
  */
 export const MTL_PBR_EMISSIVE3_ROUGHNESS = 3;
 
@@ -192,7 +193,7 @@ export const deferredShadeFrag = ( { withAO }: {
         addAssign( outColor, mul( sw( tex3, 'z' ), dotNV, color ) );
       } ],
       [ eq( mtlId, MTL_PBR_EMISSIVE3_ROUGHNESS ), () => {
-        assign( outColor, shadePBR( sw( tex3, 'w' ), 0.0 ) );
+        assign( outColor, shadePBR( abs( sw( tex3, 'w' ) ), step( sw( tex3, 'w' ), 0.0 ) ) );
         addAssign( outColor, sw( tex3, 'xyz' ) );
       } ],
       [ eq( mtlId, MTL_PBR_SHEEN ), () => {

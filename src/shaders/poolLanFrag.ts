@@ -138,7 +138,7 @@ export const poolLanFrag = ( tag: 'deferred' | 'depth' ): string => build( () =>
     const N = def( 'vec3', calcNormal( { rp, map } ) );
     const noise = mul( 0.2, smoothstep( -1.0, 1.0, sw( cyclicNoise( mul( 8.0, rp ) ), 'x' ) ) );
     const roughness = ternChain(
-      add( 0.2, noise ),
+      add( 0.3, noise ),
       [ eq( mtl, 1.0 ), 0.1 ],
     );
     const baseColor = tern(
