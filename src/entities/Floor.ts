@@ -20,6 +20,7 @@ import { zeroTexture } from '../globals/zeroTexture';
 // -- generate roughness map -------------------------------------------------------------------
 export const floorRoughnessTextureTarget = new ShaderRenderTarget(
   2048,
+  2048,
   floorRoughnessFrag,
   process.env.DEV && 'Floor/roughness',
 );

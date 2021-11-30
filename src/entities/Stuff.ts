@@ -1,6 +1,7 @@
 import { AdvantageCube } from './AdvantageCube';
 import { Asphalt } from './Asphalt';
 import { BoundingBox } from './BoundingBox';
+import { CRT } from './CRT';
 import { Cardboard } from './Cardboard';
 import { Crate } from './Crate';
 import { CubeRoot } from './CubeRoot';
@@ -19,7 +20,6 @@ import { Octree } from './Octree';
 import { Oscilloscope } from './Oscilloscope';
 import { ParkingSpace } from './ParkingSpace';
 import { Particles } from './Particles';
-import { PoolLAN } from './PoolLAN';
 import { RandomTextureCube } from './RandomTextureCube';
 import { RawVector3, quatFromAxisAngle, vecNormalize } from '@0b5vr/experimental';
 import { SSSBox } from './SSSBox';
@@ -29,6 +29,7 @@ import { SingleStep } from './SingleStep';
 import { Sp4ghet } from './Sp4ghet';
 import { Trails } from './Trails';
 import { Traveler } from './Traveler';
+import { UVGradientCube } from './UVGradientCube';
 import { WarningCube } from './WarningCube';
 import { WebpackCube } from './WebpackCube';
 import { auto } from '../globals/automaton';
@@ -58,7 +59,6 @@ export class Stuff extends SceneNode {
       new WarningCube(),
       new ParkingSpace(),
       new Octree(),
-      new PoolLAN(),
       new AdvantageCube(),
       new Crate(),
       new Cardboard(),
@@ -75,6 +75,8 @@ export class Stuff extends SceneNode {
       new Iridescent(),
       new Dice(),
       new Traveler(),
+      new CRT(),
+      new UVGradientCube(),
     ].map( ( node, i ) => {
       if ( process.env.DEV ) {
         const current = auto( 'stuff' );

@@ -7,6 +7,7 @@ import { quadVert } from '../shaders/quadVert';
 
 export const asphaltTextureTarget = new ShaderRenderTarget(
   1024,
+  1024,
   asphaltSurfaceFrag,
   process.env.DEV && 'Asphalt/voronoi',
 );

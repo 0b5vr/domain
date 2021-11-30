@@ -12,7 +12,7 @@ import { gl, glCat } from '../globals/canvas';
 import { objectVert } from '../shaders/objectVert';
 import { randomTexture } from '../globals/randomTexture';
 
-export const charCanvasTexture = new CharCanvasTexture();
+export const charCanvasTexture = new CharCanvasTexture( 2048, 2048 );
 
 const texts = [
   [ 'cube', 'an important, single step' ],
@@ -27,7 +27,6 @@ const texts = [
   [ 'warning', 'gl_invalid_operation' ],
   [ 'parking_space', 'beware of floating cubes' ],
   [ 'octree', 'does not look like a tree at all' ],
-  [ 'Pool-LAN', 'the descending bear' ],
   [ 'advantage_cube', 'press triangle to explode' ],
   [ 'crate', 'whoa' ],
   [ 'cardboard_box', 'trace 1,000,000 rays to get free global illumination' ],
@@ -44,6 +43,8 @@ const texts = [
   [ 'iridescent', 'it never quits changing its own color' ],
   [ 'dice', 'life is a series of gambling' ],
   [ 'traveler', 'it still travels through the raymarched labyrinth' ],
+  [ 'crt', '0b5vr <3 you' ],
+  [ 'uv_gradient', 'gl_fragcolor = vec4( uv, 0.5, 1.0 );' ],
 ];
 
 auto( 'FUI/yugopp', ( { progress } ) => {

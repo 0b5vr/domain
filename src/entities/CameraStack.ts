@@ -38,6 +38,7 @@ export interface CameraStackOptions extends ComponentOptions {
 export class CameraStack extends SceneNode {
   public deferredCamera: PerspectiveCamera;
   public forwardCamera: PerspectiveCamera;
+  public postStack?: PostStack;
 
   public constructor( options: CameraStackOptions ) {
     super( options );
@@ -230,10 +231,12 @@ export class CameraStack extends SceneNode {
     const floorComponents = floor ? [ new FloorCamera( this, floor ) ] : [];
 
     // -- post -------------------------------------------------------------------------------------
-    const postStack = withPost ? [ new PostStack( {
-      input: cameraTarget as BufferRenderTarget,
-      target,
-    } ) ] : [];
+    if ( withPost ) {
+      this.postStack = new PostStack( {
+        input: cameraTarget as BufferRenderTarget,
+        target,
+      } );
+    }
 
     // -- components -------------------------------------------------------------------------------
     this.children = [
@@ -246,7 +249,7 @@ export class CameraStack extends SceneNode {
       shadingQuad,
       lambdaUpdateLightShaftDeferredRenderTarget,
       forwardCamera,
-      ...postStack,
+      ...( this.postStack ? [ this.postStack ] : [] ),
     ];
   }
 }

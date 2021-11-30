@@ -11,10 +11,10 @@ export class ShaderRenderTarget extends BufferRenderTarget {
   public material: Material;
   public quad: Quad;
 
-  public constructor( resolution: number, frag: string, name?: string ) {
+  public constructor( width: number, height: number, frag: string, name?: string ) {
     super( {
-      width: resolution,
-      height: resolution,
+      width: width,
+      height: height,
       filter: gl.LINEAR,
       name,
     } );

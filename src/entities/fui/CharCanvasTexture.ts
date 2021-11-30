@@ -15,8 +15,8 @@ import { CanvasTexture } from '../utils/CanvasTexture';
  *   01 234 56
  */
 
-const charArray: ( string | undefined )[] = [];
-const widthArray: ( number | undefined )[] = [];
+const defaultCharArray: ( string | undefined )[] = [];
+const defaultWidthArray: ( number | undefined )[] = [];
 
 [
   '16 12,11 10', // !
@@ -34,12 +34,12 @@ const widthArray: ( number | undefined )[] = [];
   '03 43', // -
   '11 10', // .
   '66 65 01 00', // /
-  '10 50 61 65 56 16 05 01 10,05 61', // 0
+  '10 50 61 65 56 16 05 01 10,65 01', // 0
   '16 26 35 30,10 50', // 1
   '05 16 56 65 64 53 13 02 00 60', // 2
   '05 16 56 65 64 53 33,53 62 61 50 10 01', // 3
   '06 04 13 63,66 60', // 4
-  '06 66,06 03 53 62 61 50 10 01', // 5
+  '06 66,06 04 54 63 61 50 10 01', // 5
   '56 16 05 01 10 50 61 62 53 03', // 6
   '06 66 65 11 10', // 7
   '56 16 05 04 13 53 62 61 50 10 01 02 13 53 64 65 56', // 8
@@ -84,11 +84,11 @@ const widthArray: ( number | undefined )[] = [];
   '00 60', // _
   '06 15', // `
 ].map( ( str, i ) => {
-  charArray[ 33 + i ] = str;
+  defaultCharArray[ 33 + i ] = str;
 } );
 
 [ ...Array( 26 ) ].map( ( _, i ) => {
-  charArray[ 97 + i ] = charArray[ 65 + i ];
+  defaultCharArray[ 97 + i ] = defaultCharArray[ 65 + i ];
 } );
 
 [
@@ -97,30 +97,52 @@ const widthArray: ( number | undefined )[] = [];
   '06 15 11 00,13 23', // }
   '56 16 05 04 13 53 62 61 50 10 01 02 13 53 64 65 56,06 66 60 00 06,03 63,36 30', // ~ as a special
 ].map( ( str, i ) => {
-  charArray[ 123 + i ] = str;
+  defaultCharArray[ 123 + i ] = str;
 } );
 
-widthArray[ 32 ] = 6; // space
-[ ...'\'.,:;`|Ii' ].map( ( char ) => widthArray[ char.charCodeAt( 0 ) ] = 7 );
-[ ...'()[]{}' ].map( ( char ) => widthArray[ char.charCodeAt( 0 ) ] = 8 );
-[ ...'"-' ].map( ( char ) => widthArray[ char.charCodeAt( 0 ) ] = 9 );
+defaultWidthArray[ 32 ] = 6; // space
+[ ...'\'.,:;`|Ii' ].map( ( char ) => defaultWidthArray[ char.charCodeAt( 0 ) ] = 7 );
+[ ...'()[]{}' ].map( ( char ) => defaultWidthArray[ char.charCodeAt( 0 ) ] = 8 );
+[ ...'"-' ].map( ( char ) => defaultWidthArray[ char.charCodeAt( 0 ) ] = 9 );
 
 export class CharCanvasTexture extends CanvasTexture {
-  public constructor() {
-    super( 2048, 2048 );
+  public charArray: ( string | undefined )[];
+  public widthArray: ( number | undefined )[];
+  public defaultWidth: number;
+  public pointXMap: number[];
+  public pointYMap: number[];
+
+  public constructor( width: number, height: number ) {
+    super( width, height );
 
     this.context.lineCap = 'round';
     this.context.lineJoin = 'round';
     this.context.strokeStyle = '#fff';
+
+    this.charArray = defaultCharArray.concat();
+    this.widthArray = defaultWidthArray.concat();
+    this.defaultWidth = 12;
+    this.pointXMap = [ 0, 1.5, 2.5, 4, 5.5, 6.5, 8 ];
+    this.pointYMap = [ 0, 1.5, 4.5, 6, 7.5, 10.5, 12 ];
   }
 
-  public drawChars( x: number, y: number, scale: number, str: string ): void {
-    const { context } = this;
+  public drawChars( x: number, y: number, scale: number, str: string, align?: number ): void {
+    const { context, charArray, widthArray, defaultWidth, pointXMap, pointYMap } = this;
 
     context.lineWidth = 1.0;
     context.save();
     context.translate( x, y );
     context.scale( scale, scale );
+
+    let totalWidth = 0;
+    [ ...str ].map( ( char ) => {
+      const charCode = char.charCodeAt( 0 );
+      totalWidth += widthArray[ charCode ] ?? defaultWidth;
+    } );
+
+    if ( align != null ) {
+      context.translate( -align * totalWidth, 0 );
+    }
 
     [ ...str ].map( ( char ) => {
       const charCode = char.charCodeAt( 0 );
@@ -136,8 +158,8 @@ export class CharCanvasTexture extends CanvasTexture {
 
           segments.map( ( segment, i ) => {
             const point = [
-              [ 0, 1.5, 2.5, 4, 5.5, 6.5, 8 ][ parseInt( segment[ 0 ], 10 ) ],
-              [ 0, 1.5, 4.5, 6, 7.5, 10.5, 12 ][ parseInt( segment[ 1 ], 10 ) ],
+              pointXMap[ parseInt( segment[ 0 ], 10 ) ],
+              pointYMap[ parseInt( segment[ 1 ], 10 ) ],
             ] as [ number, number ];
 
             if ( i === 0 ) {
@@ -151,7 +173,7 @@ export class CharCanvasTexture extends CanvasTexture {
         } );
       }
 
-      const width = widthArray[ charCode ] ?? 12;
+      const width = widthArray[ charCode ] ?? defaultWidth;
       context.translate( width, 0 );
     } );
 

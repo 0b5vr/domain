@@ -34,6 +34,7 @@ geometry.mode = gl.TRIANGLE_STRIP;
 // -- generate texture -----------------------------------------------------------------------------
 export const wallTextureTarget = new ShaderRenderTarget(
   4096,
+  4096,
   wallTextureFrag,
   process.env.DEV && 'Wall/roughness',
 );

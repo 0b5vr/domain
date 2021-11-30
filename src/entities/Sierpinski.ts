@@ -7,6 +7,7 @@ import { sierpinskiPatternFrag } from '../shaders/sierpinskiPatternFrag';
 
 const sierpinskiPatternTextureTarget = new ShaderRenderTarget(
   64,
+  64,
   sierpinskiPatternFrag,
   process.env.DEV && 'Sierpinski/pattern',
 );

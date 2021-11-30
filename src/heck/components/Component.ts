@@ -38,6 +38,7 @@ export interface ComponentOptions {
   active?: boolean;
   visible?: boolean;
   name?: string;
+  tags?: symbol[];
   ignoreBreakpoints?: boolean;
 }
 
@@ -61,7 +62,7 @@ export class Component {
     this.active = options?.active ?? true;
     this.visible = options?.visible ?? true;
 
-    this.tags = [];
+    this.tags = options?.tags ?? [];
 
     if ( process.env.DEV ) {
       this.name = options?.name ?? ( this as any ).constructor.name;

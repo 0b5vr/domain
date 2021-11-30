@@ -12,6 +12,8 @@ export interface PostStackOptions extends ComponentOptions {
 }
 
 export class PostStack extends SceneNode {
+  public swap: Swap<BufferRenderTarget>;
+
   public constructor( options: PostStackOptions ) {
     super( options );
 
@@ -23,7 +25,7 @@ export class PostStack extends SceneNode {
       height: target.height,
     };
 
-    const postSwap = new Swap(
+    const postSwap = this.swap = new Swap(
       new BufferRenderTarget( {
         ...swapOptions,
         name: process.env.DEV && `${ this.name }/postSwap0`,

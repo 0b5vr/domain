@@ -18,6 +18,7 @@ export class AdvantageCube extends SceneNode {
     // -- target -----------------------------------------------------------------------------------
     const advantageCubeTextureTarget = new ShaderRenderTarget(
       32,
+      32,
       advantageCubeTextureFrag,
       process.env.DEV && 'AdvantageCube/texture',
     );

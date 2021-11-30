@@ -1,4 +1,4 @@
-import { assign, build, defInNamed, defOutNamed, insert, main, vec4 } from '../shader-builder/shaderBuilder';
+import { assign, build, defInNamed, defOutNamed, fract, insert, main, pow, vec4 } from '../shader-builder/shaderBuilder';
 
 export const uvFrag = build( () => {
   insert( 'precision highp float;' );
@@ -7,6 +7,6 @@ export const uvFrag = build( () => {
   const fragColor = defOutNamed( 'vec4', 'fragColor' );
 
   main( () => {
-    assign( fragColor, vec4( vUv, 0.0, 1.0 ) );
+    assign( fragColor, pow( fract( vec4( vUv, 0.5, 1.0 ) ), vec4( 2.2 ) ) );
   } );
 } );

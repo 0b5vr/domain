@@ -13,6 +13,7 @@ import { quadVert } from '../shaders/quadVert';
 
 const crateTextureTarget = new ShaderRenderTarget(
   32,
+  32,
   crateTextureFrag,
   process.env.DEV && 'Crate/texture',
 );

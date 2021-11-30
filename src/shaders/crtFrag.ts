@@ -4,7 +4,6 @@ import { calcDepth } from './modules/calcDepth';
 import { calcNormal } from './modules/calcNormal';
 import { cyclicNoise } from './modules/cyclicNoise';
 import { glslLinearstep } from './modules/glslLinearstep';
-import { glslLofi } from './modules/glslLofi';
 import { raymarch } from './modules/raymarch';
 import { sdbox } from './modules/sdbox';
 import { setupRoRd } from './modules/setupRoRd';
@@ -12,7 +11,7 @@ import { simplex4d } from './modules/simplex4d';
 import { smax } from './modules/smax';
 import { smin } from './modules/smin';
 
-export const poolLanFrag = ( tag: 'deferred' | 'depth' ): string => build( () => {
+export const crtFrag = ( tag: 'deferred' | 'depth' ): string => build( () => {
   insert( 'precision highp float;' );
 
   const vPositionWithoutModel = defInNamed( 'vec4', 'vPositionWithoutModel' );
@@ -30,6 +29,7 @@ export const poolLanFrag = ( tag: 'deferred' | 'depth' ): string => build( () =>
   const cameraNearFar = defUniformNamed( 'vec2', 'cameraNearFar' );
   const cameraPos = defUniformNamed( 'vec3', 'cameraPos' );
   const inversePVM = defUniformNamed( 'mat4', 'inversePVM' );
+  const sampler0 = defUniformNamed( 'sampler2D', 'sampler0' );
   const samplerText = defUniformNamed( 'sampler2D', 'samplerText' );
 
   const shouldUseNoise = def( 'bool', glslFalse );
@@ -152,11 +152,7 @@ export const poolLanFrag = ( tag: 'deferred' | 'depth' ): string => build( () =>
     );
 
     const uv = glslLinearstep( vec2( -0.4, -0.2 ), vec2( 0.4, 0.4 ), sw( rp, 'xy' ) );
-    const plasmauv = glslLofi( uv, vec2( 0.04, 0.02 ) );
-    const plasma = def( 'float', add( 0.5, mul( 0.5, sin(
-      mul( 15.0, simplex4d( vec4( plasmauv, mul( 0.4, time ), 0.0 ) ) )
-    ) ) ) );
-    const plasmac = add( 0.5, mul( 0.5, sin( add( mul( -3.0, plasma ), 5.0, vec3( 0, 2, 4 ) ) ) ) );
+    const tex = texture( sampler0, uv );
 
     const flickerPhase = add( mul( time, 100.0 ), mul( sw( rp, 'y' ), 10.0 ) );
     const emissive = mul(
@@ -164,9 +160,8 @@ export const poolLanFrag = ( tag: 'deferred' | 'depth' ): string => build( () =>
       smoothstep( 0.5, 0.45, abs( sub( sw( uv, 'x' ), 0.5 ) ) ),
       smoothstep( 0.5, 0.45, abs( sub( sw( uv, 'y' ), 0.5 ) ) ),
       add( 3.0, mul( 0.5, sin( flickerPhase ) ) ),
-      add( 0.5, mul( 0.5, sin( add( mul( 1000.0, sw( uv, 'x' ) ), vec3( 0, 2, 4 ) ) ) ) ),
-      sq( plasma ),
-      plasmac,
+      // add( 0.5, mul( 0.5, sin( add( mul( 1000.0, sw( uv, 'x' ) ), vec3( 0, 2, 4 ) ) ) ) ),
+      sq( sw( tex, 'xyz' ) ),
     );
 
     assign( fragColor, vec4( baseColor, 1.0 ) );

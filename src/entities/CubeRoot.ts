@@ -7,6 +7,7 @@ import { quadVert } from '../shaders/quadVert';
 
 const cubeRootTextureTarget = new ShaderRenderTarget(
   1024,
+  1024,
   cubeRootTextureFrag,
   process.env.DEV && 'CubeRoot/texture',
 );
