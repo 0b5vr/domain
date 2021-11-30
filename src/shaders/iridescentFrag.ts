@@ -1,9 +1,8 @@
 import { MTL_IRIDESCENT } from './deferredShadeFrag';
-import { abs, add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, discard, div, glFragCoord, glFragDepth, glslFalse, glslTrue, gt, ifThen, insert, length, main, mul, normalize, retFn, smoothstep, sub, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { abs, add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, discard, div, glFragCoord, glFragDepth, glslFalse, glslTrue, gt, ifThen, insert, length, main, mul, normalize, retFn, smoothstep, sub, sw, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcDepth } from './modules/calcDepth';
 import { calcNormal } from './modules/calcNormal';
 import { cyclicNoise } from './modules/cyclicNoise';
-import { glslDefRandom } from './modules/glslDefRandom';
 import { maxOfVec3 } from './modules/maxOfVec3';
 import { raymarch } from './modules/raymarch';
 import { sdbox } from './modules/sdbox';
@@ -28,9 +27,6 @@ export const iridescentFrag = ( tag: 'deferred' | 'depth' ): string => build( ()
   const cameraNearFar = defUniformNamed( 'vec2', 'cameraNearFar' );
   const cameraPos = defUniformNamed( 'vec3', 'cameraPos' );
   const inversePVM = defUniformNamed( 'mat4', 'inversePVM' );
-  const samplerRandom = defUniformNamed( 'sampler2D', 'samplerRandom' );
-
-  const { init } = glslDefRandom();
 
   const shouldUseNoise = def( 'bool', glslFalse );
 
@@ -60,7 +56,6 @@ export const iridescentFrag = ( tag: 'deferred' | 'depth' ): string => build( ()
       sub( mul( 2.0, sw( glFragCoord, 'xy' ) ), resolution ),
       sw( resolution, 'y' ),
     ) );
-    init( texture( samplerRandom, p ) );
 
     const { ro, rd } = setupRoRd( { inversePVM, p } );
 

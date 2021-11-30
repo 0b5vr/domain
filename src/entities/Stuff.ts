@@ -4,6 +4,7 @@ import { BoundingBox } from './BoundingBox';
 import { Cardboard } from './Cardboard';
 import { Crate } from './Crate';
 import { CubeRoot } from './CubeRoot';
+import { Dice } from './Dice';
 import { Esc } from './Esc';
 import { Fluid } from './Fluid';
 import { GridCube } from './GridCube';
@@ -71,6 +72,7 @@ export class Stuff extends SceneNode {
       new CubeRoot(),
       new IFSCube(),
       new Iridescent(),
+      new Dice(),
     ].map( ( node, i ) => {
       if ( process.env.DEV ) {
         const current = auto( 'stuff' );

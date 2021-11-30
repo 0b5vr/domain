@@ -42,6 +42,7 @@ const texts = [
   [ 'root', 'it\'s a real cube root!' ],
   [ 'ifs', 'the classic' ],
   [ 'iridescent', 'shoutouts to murasaqi' ],
+  [ 'dice', 'life is a series of gambling' ],
 ];
 
 auto( 'FUI/yugopp', ( { progress } ) => {
