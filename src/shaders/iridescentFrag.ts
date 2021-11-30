@@ -1,12 +1,14 @@
 import { MTL_IRIDESCENT } from './deferredShadeFrag';
-import { add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, discard, div, glFragCoord, glFragDepth, glslFalse, glslTrue, gt, ifThen, insert, length, main, mul, normalize, retFn, sub, subAssign, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { abs, add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, discard, div, glFragCoord, glFragDepth, glslFalse, glslTrue, gt, ifThen, insert, length, main, mul, normalize, retFn, smoothstep, sub, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcDepth } from './modules/calcDepth';
 import { calcNormal } from './modules/calcNormal';
 import { cyclicNoise } from './modules/cyclicNoise';
 import { glslDefRandom } from './modules/glslDefRandom';
+import { maxOfVec3 } from './modules/maxOfVec3';
 import { raymarch } from './modules/raymarch';
 import { sdbox } from './modules/sdbox';
 import { setupRoRd } from './modules/setupRoRd';
+import { simplex4d } from './modules/simplex4d';
 
 export const iridescentFrag = ( tag: 'deferred' | 'depth' ): string => build( () => {
   insert( 'precision highp float;' );
@@ -30,15 +32,25 @@ export const iridescentFrag = ( tag: 'deferred' | 'depth' ): string => build( ()
 
   const { init } = glslDefRandom();
 
-  const shouldCalcVoronoi = def( 'bool', glslFalse );
+  const shouldUseNoise = def( 'bool', glslFalse );
 
   const map = defFn( 'vec4', [ 'vec3' ], ( p ) => {
-    const noise = cyclicNoise( add( mul( p, 7.0 ), time ), {
+    const noise = cyclicNoise( add( mul( p, 5.0 ), time ), {
       freq: 1.2,
     } );
-    addAssign( p, mul( 0.04, noise ) );
-    const d = def( 'float', sdbox( p, vec3( 0.35 ) ) );
-    subAssign( d, 0.1 );
+    addAssign( p, mul( 0.06, noise ) );
+    const d = def( 'float', sub(
+      sdbox( p, vec3( 0.35 ) ),
+      0.1,
+    ) );
+
+    ifThen( shouldUseNoise, () => {
+      addAssign( d, mul(
+        0.0005,
+        smoothstep( 0.5, 0.4, maxOfVec3( abs( p ) ) ),
+        simplex4d( vec4( mul( 200.0, p ), 0.0 ) ),
+      ) );
+    } );
 
     retFn( vec4( d, 0, 0, 0 ) );
   } );
@@ -63,8 +75,7 @@ export const iridescentFrag = ( tag: 'deferred' | 'depth' ): string => build( ()
 
     ifThen( gt( sw( isect, 'x' ), 1E-2 ), () => discard() );
 
-    //  calc voronoi for finalizing map and normals
-    assign( shouldCalcVoronoi, glslTrue );
+    assign( shouldUseNoise, glslTrue );
     assign( isect, map( rp ) );
 
     const modelPos = def( 'vec4', mul( modelMatrix, vec4( rp, 1.0 ) ) );
@@ -75,9 +86,6 @@ export const iridescentFrag = ( tag: 'deferred' | 'depth' ): string => build( ()
 
     const N = def( 'vec3', calcNormal( { rp, map } ) );
 
-    // don't calc voronoi for ss
-    assign( shouldCalcVoronoi, glslFalse );
-
     if ( tag === 'depth' ) {
       const len = length( sub( cameraPos, sw( modelPos, 'xyz' ) ) );
       assign( fragColor, calcDepth( cameraNearFar, len ) );
@@ -85,13 +93,13 @@ export const iridescentFrag = ( tag: 'deferred' | 'depth' ): string => build( ()
 
     }
 
-    assign( fragColor, vec4( 0.04 ) );
+    assign( fragColor, vec4( 0.1 ) );
     assign( fragPosition, vec4( sw( modelPos, 'xyz' ), depth ) );
     assign( fragNormal, vec4(
       normalize( mul( normalMatrix, N ) ),
       MTL_IRIDESCENT,
     ) );
-    assign( fragMisc, vec4( 0.2, 0.0, 1.0, 0.0 ) );
+    assign( fragMisc, vec4( 0.2, 1.0, 0.8, 0.0 ) );
 
   } );
 } );

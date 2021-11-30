@@ -1,5 +1,5 @@
 import { DIELECTRIC_SPECULAR, ONE_SUB_DIELECTRIC_SPECULAR, TAU } from '../utils/constants';
-import { GLSLExpression, GLSLFloatExpression, add, addAssign, assign, build, clamp, cos, def, defFn, defInNamed, defOut, defUniformArrayNamed, defUniformNamed, div, dot, eq, glFragDepth, gt, ifChain, ifThen, insert, length, main, max, mix, mul, mulAssign, normalize, num, retFn, smoothstep, sq, sub, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { GLSLExpression, GLSLFloatExpression, add, addAssign, assign, build, clamp, cos, def, defFn, defInNamed, defOut, defUniformArrayNamed, defUniformNamed, div, dot, eq, glFragDepth, gt, ifChain, ifThen, insert, length, main, max, mix, mul, mulAssign, normalize, num, pow, retFn, smoothstep, sq, sub, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { brdfSheen } from './modules/brdfSheen';
 import { calcAlbedoF0 } from './modules/calcAlbedoF0';
 import { calcL } from './modules/calcL';
@@ -102,12 +102,12 @@ export const deferredShadeFrag = ( { withAO }: {
 
         ifThen( eq( mtlId, MTL_IRIDESCENT ), () => {
           const iri = def( 'vec3', add( // cringe
-            vec3( 0.6, 0.6, 1.0 ),
-            mul( vec3( 0.4, 0.4, 0.5 ), cos( mul(
+            vec3( 0.5, 0.6, 1.0 ),
+            mul( vec3( 0.4, 0.4, 0.6 ), cos( mul(
               TAU,
               add(
                 vec3( 0.0, 0.0, 0.25 ),
-                mul( vec3( 0.43, 0.75, 0.25 ), dotNV ),
+                mul( vec3( 0.43, 0.73, 0.25 ), pow( dotNV, 0.7 ) ),
               ),
             ) ) ),
           ) );
