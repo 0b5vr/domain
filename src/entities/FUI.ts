@@ -28,7 +28,7 @@ const texts = [
   [ 'parking_space', 'beware of floating cubes' ],
   [ 'octree', 'does not look like a tree at all' ],
   [ 'advantage_cube', 'press triangle to explode' ],
-  [ 'crate', 'whoa' ],
+  [ 'crate', 'woah' ],
   [ 'cardboard_box', 'trace 1,000,000 rays to get free global illumination' ],
   [ 'particles', '65,536 cube pickles' ],
   [ 'trails', 'spaghetti made of spaghetti code' ],
@@ -45,6 +45,7 @@ const texts = [
   [ 'traveler', 'it still travels through the raymarched labyrinth' ],
   [ 'crt', '0b5vr <3 you' ],
   [ 'uv_gradient', 'gl_fragcolor = vec4( uv, 0.5, 1.0 );' ],
+  [ 'sky', 'we cannot reach the sky' ],
 ];
 
 auto( 'FUI/yugopp', ( { progress } ) => {

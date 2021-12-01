@@ -262,9 +262,14 @@ export class Fluid extends SceneNode {
       materials: { forward, cubemap: forward },
       name: process.env.DEV && 'mesh',
     } );
-    this.transform.scale = [ 1.0, 1.0, 1.0 ];
     mesh.depthTest = false;
     mesh.depthWrite = false;
+
+    if ( process.env.DEV ) {
+      module.hot?.accept( '../shaders/fluidRenderFrag', () => {
+        forward.replaceShader( objectVert, fluidRenderFrag( GRID_RESO_SQRT, GRID_RESO ) );
+      } );
+    }
 
     // -- shell ------------------------------------------------------------------------------------
     const shell = new TransparentShell( {

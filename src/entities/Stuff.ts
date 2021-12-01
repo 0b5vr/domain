@@ -26,6 +26,7 @@ import { SSSBox } from './SSSBox';
 import { SceneNode } from '../heck/components/SceneNode';
 import { Sierpinski } from './Sierpinski';
 import { SingleStep } from './SingleStep';
+import { Sky } from './Sky';
 import { Sp4ghet } from './Sp4ghet';
 import { Trails } from './Trails';
 import { Traveler } from './Traveler';
@@ -77,6 +78,7 @@ export class Stuff extends SceneNode {
       new Traveler(),
       new CRT(),
       new UVGradientCube(),
+      new Sky(),
     ].map( ( node, i ) => {
       if ( process.env.DEV ) {
         const current = auto( 'stuff' );

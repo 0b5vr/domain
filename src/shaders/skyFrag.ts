@@ -1,56 +1,54 @@
-import { GLSLExpression, abs, add, addAssign, assign, build, def, defConst, defFn, defInNamed, defOut, defUniformNamed, div, eq, exp, forBreak, forLoop, glFragCoord, gt, ifThen, insert, length, lt, main, max, mix, mul, mulAssign, retFn, sq, sub, subAssign, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, div, exp, floor, forBreak, forLoop, fract, glFragCoord, glFragDepth, GLSLExpression, gt, ifThen, insert, length, lt, main, mix, mul, mulAssign, neg, retFn, sq, sub, subAssign, sw, texture, unrollLoop, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcL } from './modules/calcL';
-import { defFluidSampleLinear3D } from './modules/defFluidSampleLinear3D';
 import { forEachLights } from './modules/forEachLights';
 import { glslDefRandom } from './modules/glslDefRandom';
 import { glslSaturate } from './modules/glslSaturate';
+import { sdbox } from './modules/sdbox';
 import { setupRoRd } from './modules/setupRoRd';
+import { simplex4d } from './modules/simplex4d';
 
-const MARCH_ITER = 30;
-const SHADOW_ITER = 10;
+const MARCH_ITER = 50;
+const SHADOW_ITER = 5;
 const INV_SHADOW_ITER = 1.0 / SHADOW_ITER;
-const MARCH_STEP_LENGTH = 0.2;
+const MARCH_STEP_LENGTH = 0.1;
 const SHADOW_STEP_LENGTH = 0.04;
 
-export const fluidRenderFrag = (
-  fGridResoSqrt: number,
-  fGridReso: number,
-): string => build( () => {
+export const skyFrag = build( () => {
   insert( 'precision highp float;' );
 
   const vPositionWithoutModel = defInNamed( 'vec4', 'vPositionWithoutModel' );
 
   const fragColor = defOut( 'vec4' );
 
+  const time = defUniformNamed( 'float', 'time' );
   const resolution = defUniformNamed( 'vec2', 'resolution' );
-  const cameraNearFar = defUniformNamed( 'vec2', 'cameraNearFar' );
   const modelMatrixT3 = defUniformNamed( 'mat3', 'modelMatrixT3' );
   const inversePVM = defUniformNamed( 'mat4', 'inversePVM' );
-  const samplerDensity = defUniformNamed( 'sampler2D', 'samplerDensity' );
   const samplerRandom = defUniformNamed( 'sampler2D', 'samplerRandom' );
-
-  const { init, random } = glslDefRandom();
-
-  const sampleLinear3D = defFluidSampleLinear3D( fGridResoSqrt, fGridReso );
 
   const stepLenRandom = ( len: number ): GLSLExpression<'float'> => (
     mul( len, mix( 0.8, 1.0, random() ) )
   );
 
   const getDensity = defFn( 'float', [ 'vec3' ], ( p ) => {
-    const bound = defConst( 'vec3', vec3( 0.5 - 0.5 / fGridReso ) );
-    ifThen( eq( max( abs( p ), bound ), bound ), () => {
-      retFn( glslSaturate( mul( 0.04, sw( sampleLinear3D( samplerDensity, p ), 'x' ) ) ) );
-    }, () => {
-      retFn( 0.0 );
-    } );
+    // const d = def( 'float', sub( length( p ), 0.1 ) );
+    const d = def( 'float', mul( -1.0, sdbox( p, vec3( 0.3 ) ) ) );
+
+    addAssign( d, mul( 1.5, simplex4d( vec4( add( mul( 1.0, p ), mul( time, 0.1 ) ), 0.0 ) ) ) );
+    addAssign( d, mul( 0.5, simplex4d( vec4( add( mul( 3.0, p ), mul( time, 0.1 ) ), 0.0 ) ) ) );
+    addAssign( d, mul( 0.2, simplex4d( vec4( add( mul( 6.0, p ), mul( time, 0.1 ) ), 0.0 ) ) ) );
+
+    retFn( glslSaturate( d ) );
   } );
+
+  const { init, random } = glslDefRandom();
 
   main( () => {
     const p = def( 'vec2', div(
       sub( mul( 2.0, sw( glFragCoord, 'xy' ) ), resolution ),
       sw( resolution, 'y' ),
     ) );
+
     init( texture( samplerRandom, p ) );
 
     const { ro, rd } = setupRoRd( { inversePVM, p } );
@@ -68,7 +66,7 @@ export const fluidRenderFrag = (
 
       const density = getDensity( rp );
 
-      ifThen( gt( density, 1E-3 ), () => {
+      ifThen( gt( density, 1E-2 ), () => {
         forEachLights( ( { lightPos, lightColor } ) => {
           const [ L, lenL ] = calcL(
             mul( modelMatrixT3, lightPos ),
@@ -88,13 +86,12 @@ export const fluidRenderFrag = (
           } );
 
           const shadowDecay = exp( mul( -1.0, shadow, INV_SHADOW_ITER ) );
-          const col = mix( vec3( 1.1, 0.1, 0.25 ), vec3( 0.1, 0.8, 4.0 ), density );
           addAssign( accumRGB, mul(
             shadowDecay,
             div( 1.0, sq( lenL ) ),
             lightColor,
             density,
-            col,
+            vec3( 1.0 ),
             accumA,
           ) );
         } );
@@ -102,12 +99,16 @@ export const fluidRenderFrag = (
         mulAssign( accumA, sub( 1.0, density ) );
       } );
 
-      addAssign( rl, stepLenRandom( MARCH_STEP_LENGTH ) );
+      addAssign( rl, mix( 0.8, 1.0, stepLenRandom( MARCH_STEP_LENGTH ) ) );
       assign( rp, add( ro, mul( rd, rl ) ) );
 
-      ifThen( gt( rl, sw( cameraNearFar, 'y' ) ), () => forBreak() );
     } );
 
-    assign( fragColor, vec4( accumRGB, 1.0 ) );
+    assign( fragColor, vec4( mix(
+      accumRGB,
+      mix( vec3( 0.02, 0.2, 0.7 ), vec3( 0.04, 0.3, 0.8 ), sw( rd, 'y' ) ),
+      accumA,
+    ), 1.0 ) );
+
   } );
 } );
