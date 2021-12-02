@@ -22,7 +22,7 @@ export const crtDecodeFrag = build( () => {
 
   main( () => {
     const y = def( 'float', 0.0 );
-    const cbcr = def( 'vec2', vec2( 0.0 ) );
+    const cbcr = def( 'vec2', vec2( 0.0, -0.01 ) );
 
     const sampleOffset = vec2( DECODE_PERIOD / CHROMA_FREQ / DECODE_ITER, 0.0 );
 

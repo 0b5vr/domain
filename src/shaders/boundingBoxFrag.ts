@@ -1,7 +1,7 @@
-import { add, assign, build, def, defInNamed, defOut, defUniformNamed, discard, fract, ifThen, insert, length, lt, main, mul, sub, sw, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { add, assign, build, defInNamed, defOut, defUniformNamed, discard, fract, ifThen, insert, length, lt, main, mul, sub, sw, vec4 } from '../shader-builder/shaderBuilder';
 import { calcDepth } from './modules/calcDepth';
 
-export const boundingBoxFrag = ( tag: 'forward' | 'shadow' ): string => build( () => {
+export const boundingBoxFrag = ( tag: 'forward' | 'depth' ): string => build( () => {
   insert( 'precision highp float;' );
 
   const vPositionWithoutModel = defInNamed( 'vec4', 'vPositionWithoutModel' );
@@ -11,6 +11,7 @@ export const boundingBoxFrag = ( tag: 'forward' | 'shadow' ): string => build( (
 
   const dashRatio = defUniformNamed( 'float', 'dashRatio' );
   const time = defUniformNamed( 'float', 'time' );
+  const opacity = defUniformNamed( 'float', 'opacity' );
   const cameraNearFar = defUniformNamed( 'vec2', 'cameraNearFar' );
   const cameraPos = defUniformNamed( 'vec3', 'cameraPos' );
 
@@ -25,10 +26,10 @@ export const boundingBoxFrag = ( tag: 'forward' | 'shadow' ): string => build( (
     ifThen( lt( pattern, dashRatio ), () => discard() );
 
     if ( tag === 'forward' ) {
-      const color = def( 'vec3', vec3( 1.0 ) );
-      assign( fragColor, vec4( color, 1.0 ) );
+      assign( fragColor, vec4( opacity ) );
 
-    } else if ( tag === 'shadow' ) {
+    } else if ( tag === 'depth' ) {
+      ifThen( lt( opacity, 0.5 ), () => discard() );
       const distance = length( sub( cameraPos, sw( vPosition, 'xyz' ) ) );
       assign( fragColor, calcDepth( cameraNearFar, distance ) );
 

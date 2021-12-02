@@ -123,6 +123,13 @@ if ( process.env.DEV ) {
       }
     } );
   } );
+} else {
+  window.addEventListener( 'keydown', ( event ) => {
+    if ( event.code === 'Escape' ) {
+      dog.root.active = false;
+    }
+  } );
+
 }
 
 // == entities =====================================================================================
@@ -181,7 +188,7 @@ const cameraStack = new CameraStack( {
   target: canvasRenderTarget,
 } );
 
-cameraStack.children.push( new Lambda( {
+const cameraLambda = new Lambda( {
   onUpdate: ( { time } ) => {
     const shake = auto( 'camera/shake' );
 
@@ -223,7 +230,7 @@ cameraStack.children.push( new Lambda( {
 
     cameraStack.transform.lookAt( pos, tar, [ 0.0, 1.0, 0.0 ], roll );
   },
-} ) );
+} );
 
 if ( process.env.DEV ) {
   cameraStack.name = 'cameraStack';
@@ -280,6 +287,7 @@ dog.root.children.push(
   lights,
   cubemapNode,
   // plane,
+  cameraLambda,
   cameraStack,
   crtVideoSender,
 );

@@ -15,7 +15,7 @@ export const wallFrag = ( tag: 'deferred' | 'depth' ): string => build( () => {
   const fragNormal = defOut( 'vec4', 2 );
   const fragMisc = defOut( 'vec4', 3 );
 
-  const time = defUniformNamed( 'float', 'time' );
+  // const time = defUniformNamed( 'float', 'time' );
   const resolution = defUniformNamed( 'vec2', 'resolution' );
   const cameraNearFar = defUniformNamed( 'vec2', 'cameraNearFar' );
   const cameraPos = defUniformNamed( 'vec3', 'cameraPos' );

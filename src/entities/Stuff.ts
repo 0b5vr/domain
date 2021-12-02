@@ -1,6 +1,7 @@
 import { AdvantageCube } from './AdvantageCube';
 import { Asphalt } from './Asphalt';
 import { BoundingBox } from './BoundingBox';
+import { BumpBlock } from './BumpBlock';
 import { CRT } from './CRT';
 import { Cardboard } from './Cardboard';
 import { Crate } from './Crate';
@@ -28,6 +29,7 @@ import { Sierpinski } from './Sierpinski';
 import { SingleStep } from './SingleStep';
 import { Sky } from './Sky';
 import { Sp4ghet } from './Sp4ghet';
+import { TAU } from '../utils/constants';
 import { Trails } from './Trails';
 import { Traveler } from './Traveler';
 import { UVGradientCube } from './UVGradientCube';
@@ -46,12 +48,32 @@ export class Stuff extends SceneNode {
     this.transform.position = [ 0.0, 3.0, 0.0 ];
     this.transform.scale = [ 3.0, 3.0, 3.0 ];
 
+    // -- speen ------------------------------------------------------------------------------------
+    const speenAxis = vecNormalize( [ 1.0, 1.0, 1.0 ] ) as RawVector3;
+
+    const lambdaSpeen = new Lambda( {
+      onUpdate: ( { time } ) => {
+        this.transform.rotation = quatFromAxisAngle(
+          speenAxis,
+          0.1 * time + auto( 'stuff/rotOffset' ) * TAU / 3.0,
+        );
+      },
+      name: process.env.DEV && 'speen',
+    } );
+    this.children.push( lambdaSpeen );
+
+    // -- bounding box -----------------------------------------------------------------------------
+    const boundingBox = new BoundingBox();
+    boundingBox.transform.scale = [ 0.55, 0.55, 0.55 ];
+    this.children.push( boundingBox );
+
     // -- children ---------------------------------------------------------------------------------
-    this.children = [
+    this.children.push( ...[
       new SingleStep(),
       new SSSBox(),
       new MengerSponge(),
       new Asphalt(),
+      new ObsvrCube(),
       new Sp4ghet(),
       new Fluid(),
       new RandomTextureCube(),
@@ -65,20 +87,20 @@ export class Stuff extends SceneNode {
       new Cardboard(),
       new Particles(),
       new Trails(),
-      new Esc(),
       new GridCube(),
       new Sierpinski(),
       new NotchyStuff(),
       new Oscilloscope(),
-      new ObsvrCube(),
       new CubeRoot(),
       new IFSCube(),
       new Iridescent(),
       new Dice(),
+      new Esc(),
       new Traveler(),
       new CRT(),
       new UVGradientCube(),
       new Sky(),
+      new BumpBlock(),
     ].map( ( node, i ) => {
       if ( process.env.DEV ) {
         const current = auto( 'stuff' );
@@ -104,22 +126,6 @@ export class Stuff extends SceneNode {
       } );
 
       return node;
-    } );
-
-    // -- speen ------------------------------------------------------------------------------------
-    const speenAxis = vecNormalize( [ 1.0, 1.0, 1.0 ] ) as RawVector3;
-
-    const lambdaSpeen = new Lambda( {
-      onUpdate: ( { time } ) => {
-        this.transform.rotation = quatFromAxisAngle( speenAxis, 0.1 * time );
-      },
-      name: process.env.DEV && 'speen',
-    } );
-    this.children.push( lambdaSpeen );
-
-    // -- bounding box -----------------------------------------------------------------------------
-    const boundingBox = new BoundingBox();
-    boundingBox.transform.scale = [ 0.55, 0.55, 0.55 ];
-    this.children.push( boundingBox );
+    } ) );
   }
 }

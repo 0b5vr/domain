@@ -19,6 +19,7 @@ const texts = [
   [ 'sss_box', 'subsurface scatter-brain' ],
   [ 'menger_sponge', 'fractal dimension = 2.7268...' ],
   [ 'asphalt', 'high-octane flavored' ],
+  [ '0b5vr', 'live coding and tax saving vtuber' ],
   [ 'sp4ghet', 'angura girl with a torus-knot' ],
   [ 'fluid', 'the incomprehensible flow' ],
   [ 'xorshit', 'shut up my brain' ],
@@ -32,20 +33,20 @@ const texts = [
   [ 'cardboard_box', 'trace 1,000,000 rays to get free global illumination' ],
   [ 'particles', '65,536 cube pickles' ],
   [ 'trails', 'spaghetti made of spaghetti code' ],
-  [ 'esc', 'press esc to end the experience' ],
   [ 'infinity_grid', 'the suffer never ends' ],
   [ 'sierpinski', 'wanna lay here?' ],
   [ 'instancer', 'speen' ],
   [ 'lissajous', 'oscillates like my mental condition' ],
-  [ '0b5vr', 'live coding and tax saving vtuber' ],
   [ 'root', 'it\'s a real cube root!' ],
   [ 'ifs', 'the classic' ],
   [ 'iridescent', 'it never quits changing its own color' ],
   [ 'dice', 'life is a series of gambling' ],
+  [ 'esc', 'press esc to end the experience' ],
   [ 'traveler', 'it still travels through the raymarched labyrinth' ],
   [ 'crt', '0b5vr <3 you' ],
   [ 'uv_gradient', 'gl_fragcolor = vec4( uv, 0.5, 1.0 );' ],
   [ 'sky', 'we cannot reach the sky' ],
+  [ 'bump_block', 'keep clear' ],
 ];
 
 auto( 'FUI/yugopp', ( { progress } ) => {
@@ -53,7 +54,7 @@ auto( 'FUI/yugopp', ( { progress } ) => {
   const t = texts[ stuffIndex ];
 
   if ( t != null ) {
-    const indexText = ( '0' + stuffIndex ).slice( -2 );
+    const indexText = ( '0' + ( stuffIndex + 1 ) ).slice( -2 );
 
     charCanvasTexture.clear();
     charCanvasTexture.drawChars( 24, 68, 11, getYugoppText( indexText, progress * 4.0 ) );
@@ -111,6 +112,11 @@ export class FUI extends SceneNode {
     depth.addUniform( 'color', '4f', 1.0, 1.0, 1.0, 1.0 );
     depth.addUniformTextures( 'samplerRandom', randomTexture.texture );
     depth.addUniformTextures( 'samplerChar', charCanvasTexture.texture );
+
+    auto( 'fui/opacity', ( { value } ) => {
+      forward.addUniform( 'opacity', '1f', value );
+      depth.addUniform( 'opacity', '1f', value );
+    } );
 
     const materials = { forward, cubemap: forward, depth };
 

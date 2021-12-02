@@ -1,5 +1,5 @@
 import { MTL_PBR_ROUGHNESS_METALLIC } from './deferredShadeFrag';
-import { abs, add, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, discard, div, floor, forLoop, glFragCoord, glFragDepth, gt, ifThen, insert, length, main, max, min, mix, mul, mulAssign, normalize, retFn, step, sub, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { abs, add, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, discard, div, floor, forLoop, glFragCoord, glFragDepth, gt, ifThen, insert, length, main, max, min, mix, mul, mulAssign, neg, normalize, retFn, step, sub, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcDepth } from './modules/calcDepth';
 import { calcNormal } from './modules/calcNormal';
 import { cyclicNoise } from './modules/cyclicNoise';
@@ -52,12 +52,15 @@ export const ifsCubeFrag = ( tag: 'deferred' | 'depth' ): string => build( () =>
 
     assign( p, ifs(
       p,
-      mul( 1.0, pcg3df( mul( vec3( 1E1 ), add( 3.0, floor( seed ) ) ) ) ),
-      mul( 0.8, pcg3df( mul( vec3( 1E1 ), add( 1.0, floor( seed ) ) ) ) ),
+      mul( 3.0, pcg3df( mul( vec3( 1E2 ), add( 2.0, floor( seed ) ) ) ) ),
+      add( 0.4, mul( 0.4, pcg3df( mul( vec3( 1E2 ), add( 1.0, floor( seed ) ) ) ) ) ),
     ) );
 
-    const d = def( 'float', sdbox( p, vec3( 0.02, 0.03, 0.08 ) ) );
-    const d2 = def( 'float', sdbox( sub( p, vec3( 0.0, 0.02, 0.03 ) ), vec3( 0.01, 0.01, 0.06 ) ) );
+    const d = def( 'float', max(
+      sdbox( p, vec3( 0.04, 0.05, 0.04 ) ),
+      neg( sdbox( p, vec3( 0.004, 0.02, 0.1 ) ) ),
+    ) );
+    const d2 = def( 'float', sdbox( sub( p, vec3( 0.0, 0.02, 0.03 ) ), vec3( 0.01, 0.01, 0.04 ) ) );
     const mtl = def( 'float', step( d, d2 ) );
     assign( d, max( dClip, min( d, d2 ) ) );
 

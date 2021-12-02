@@ -57,7 +57,7 @@ export const crtEncodeFrag = build( () => {
       dot( vec2( sw( ycbcr, 'y' ) ), vec2( cos( phase ), sin( phase ) ) ),
     ) );
 
-    addAssign( signal, mul( 0.03, random() ) );
+    addAssign( signal, mul( 0.05, random() ) );
 
     assign( fragColor, vec4( signal, 0.0, 0.0, 1.0 ) );
   } );

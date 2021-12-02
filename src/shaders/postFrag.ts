@@ -5,9 +5,12 @@ import { glslLofi } from './modules/glslLofi';
 import { glslSaturate } from './modules/glslSaturate';
 
 const BARREL_ITER = 10;
-const BARREL_OFFSET = 0.05;
-const BARREL_AMP = 0.05;
+const BARREL_OFFSET = 0.03;
+const BARREL_AMP = 0.03;
 
+const LIFT = vec4( -0.03, 0.01, 0.05, 0.0 );
+const GAMMA = vec4( -0.02, 0.02, -0.01, 0.0 );
+const GAIN = vec4( 1.04, 0.98, 1.02, 1.0 );
 const LUMA = vec3( 0.2126, 0.7152, 0.0722 );
 
 export const postFrag = build( () => {
@@ -19,9 +22,6 @@ export const postFrag = build( () => {
 
   const mosaicAmp = defUniformNamed( 'float', 'mosaicAmp' );
   const mixInvert = defUniformNamed( 'float', 'mixInvert' );
-  const colorLift = defUniformNamed( 'vec4', 'colorLift' );
-  const colorGamma = defUniformNamed( 'vec4', 'colorGamma' );
-  const colorGain = defUniformNamed( 'vec4', 'colorGain' );
   const resolution = defUniformNamed( 'vec2', 'resolution' );
   const sampler0 = defUniformNamed( 'sampler2D', 'sampler0' );
   const samplerRandom = defUniformNamed( 'sampler2D', 'samplerRandom' );
@@ -131,7 +131,7 @@ export const postFrag = build( () => {
     assign( col, glslSaturate( col ) as GLSLExpression<'vec3'> );
     assign( col, sRGBOETL( col ) );
     assign( col, mix( col, sub( 1.0, col ), mixInvert ) );
-    assign( col, liftGammaGain( col, colorLift, colorGamma, colorGain ) );
+    assign( col, liftGammaGain( col, LIFT, GAMMA, GAIN ) );
 
     assign( fragColor, vec4( col, 1.0 ) );
   } );

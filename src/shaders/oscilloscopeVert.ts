@@ -43,8 +43,7 @@ export const oscilloscopeVert = build( () => {
 
     assign( glPointSize, mul(
       sw( resolution, 'y' ),
-      div( sw( glPosition, 'z' ), sw( glPosition, 'w' ) ),
-      0.004,
+      div( 0.04, sw( glPosition, 'w' ) ),
     ) );
   } );
 } );

@@ -144,6 +144,7 @@ export class LightShaft extends SceneNode {
       geometry,
       materials: { deferred: materialBody },
     } );
+    meshBody.cull = MeshCull.None;
     nodeBody.children = [ meshBody ];
 
     // -- components -------------------------------------------------------------------------------

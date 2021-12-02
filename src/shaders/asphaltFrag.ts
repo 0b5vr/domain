@@ -33,13 +33,13 @@ export const asphaltFrag = ( tag: 'deferred' | 'depth' ): string => build( () =>
   const { init } = glslDefRandom();
 
   const map = defFn( 'vec4', [ 'vec3' ], ( p ) => {
-    addAssign( p, mul( 0.02, cyclicNoise( p ) ) );
+    const phase = add( dot( p, vec3( 10.0 ) ), time );
+    const line = def( 'float', smoothstep( 0.1, 0.3, sin( phase ) ) );
+
+    addAssign( p, mul( 0.02, cyclicNoise( p, { pump: mix( 2.0, 4.0, line ) } ) ) );
 
     const d = def( 'float', sdbox( p, vec3( 0.45 ) ) );
     subAssign( d, 0.05 );
-
-    const phase = add( dot( p, vec3( 10.0 ) ), time );
-    const line = def( 'float', smoothstep( 0.1, 0.3, sin( phase ) ) );
 
     if ( tag !== 'depth' ) {
       const N = normalize( max( sub( abs( p ), 0.45 ), 0.0 ) );

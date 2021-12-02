@@ -14,20 +14,25 @@ import { randomTextureStatic } from '../globals/randomTexture';
 
 const discardFrag = '#version 300 es\nvoid main(){discard;}';
 
-const sectionResets = [
-  0.0,
-  16.0,
-  80.0,
-  144.0,
-  208.0,
-  272.0,
-  336.0,
-  400.0,
-  464.0,
-  528.0,
-  560.0,
+const sectionLengths = [
+  4.0,
+  64.0,
+  64.0,
+  64.0,
+  64.0,
+  64.0,
+  64.0,
+  64.0,
   1E9,
 ].map( ( v ) => v * 60.0 / MUSIC_BPM );
+
+let sectionHead = 0.0;
+const sectionResets = sectionLengths.map( ( v ) => {
+  const b = sectionHead;
+  sectionHead += v;
+  return b;
+} );
+sectionResets.push( 1E9 );
 
 export abstract class Music {
   public isPlaying: boolean;
@@ -184,12 +189,13 @@ export abstract class Music {
 
     const sectionReset = binarySearch( sectionResets, time );
     const sectionBegin = sectionResets[ sectionReset - 1 ];
-    const sectionLength = sectionResets[ sectionReset ] - sectionBegin;
+    const sectionLength = sectionLengths[ sectionReset - 1 ];
 
     program.attribute( 'off', this.__bufferOff, 1 );
     program.uniform( 'bpm', '1f', MUSIC_BPM );
     program.uniform( 'bufferLength', '1f', this.bufferLength );
     program.uniform( '_deltaSample', '1f', 1.0 / audio.sampleRate );
+    program.uniform( '_sectionHead', '1f', sectionReset - 1 );
     program.uniform(
       'timeLength',
       '4f',

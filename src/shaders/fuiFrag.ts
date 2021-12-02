@@ -12,6 +12,7 @@ export const fuiFrag = ( tag: 'forward' | 'depth' ): string => build( () => {
   const fragColor = defOutNamed( 'vec4', 'fragColor' );
 
   const time = defUniformNamed( 'float', 'time' );
+  const opacity = defUniformNamed( 'float', 'opacity' );
   const samplerChar = defUniformNamed( 'sampler2D', 'samplerChar' );
   const cameraNearFar = defUniformNamed( 'vec2', 'cameraNearFar' );
   const cameraPos = defUniformNamed( 'vec3', 'cameraPos' );
@@ -75,6 +76,9 @@ export const fuiFrag = ( tag: 'forward' | 'depth' ): string => build( () => {
     // chars
     const tex = texture( samplerChar, vUv );
     assign( haha, max( haha, sw( tex, 'x' ) ) );
+
+    // opacity
+    mulAssign( haha, opacity );
 
     if ( tag === 'forward' ) {
       ifThen( lt( haha, 0.1 ), () => discard() );

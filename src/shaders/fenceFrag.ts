@@ -70,8 +70,8 @@ export const fenceFrag = ( tag: 'deferred' | 'depth' ): string => build( () => {
 
     const N = def( 'vec3', calcNormal( { rp, map } ) );
     const roughness = mix(
-      0.2,
-      0.3,
+      0.5,
+      0.6,
       smoothstep( -1.0, 1.0, sw( cyclicNoise( mul( 10.0, rp ) ), 'x' ) )
     );
     const metallic = 1.0;

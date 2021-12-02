@@ -8,7 +8,7 @@ export class ParkingSpace extends RaymarcherNode {
   public constructor() {
     super( parkingSpaceFrag );
 
-    const shell = new TransparentShell();
+    const shell = new TransparentShell( { roughness: 0.3, roughnessNoise: 0.04 } );
     shell.transform.scale = [ 0.95, 0.95, 0.95 ];
     this.children.push( shell );
 

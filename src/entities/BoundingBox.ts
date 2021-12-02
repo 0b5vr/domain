@@ -2,6 +2,7 @@ import { Geometry } from '../heck/Geometry';
 import { Material } from '../heck/Material';
 import { Mesh } from '../heck/components/Mesh';
 import { SceneNode, SceneNodeOptions } from '../heck/components/SceneNode';
+import { auto } from '../globals/automaton';
 import { boundingBoxFrag } from '../shaders/boundingBoxFrag';
 import { dummyRenderTarget } from '../globals/dummyRenderTarget';
 import { gl, glCat } from '../globals/canvas';
@@ -65,12 +66,13 @@ export class BoundingBox extends SceneNode {
       boundingBoxFrag( 'forward' ),
       {
         initOptions: { geometry, target: dummyRenderTarget },
+        blend: [ gl.ONE, gl.ONE ],
       },
     );
 
     const depth = new Material(
       objectVert,
-      boundingBoxFrag( 'shadow' ),
+      boundingBoxFrag( 'depth' ),
       {
         initOptions: { geometry, target: dummyRenderTarget },
       },
@@ -81,6 +83,11 @@ export class BoundingBox extends SceneNode {
     forward.addUniform( 'dashRatio', '1f', dashRatio );
     depth.addUniform( 'dashRatio', '1f', dashRatio );
 
+    auto( 'boundingBox/opacity', ( { value } ) => {
+      forward.addUniform( 'opacity', '1f', value );
+      depth.addUniform( 'opacity', '1f', value );
+    } );
+
     if ( process.env.DEV ) {
       if ( module.hot ) {
         module.hot.accept(
@@ -90,7 +97,7 @@ export class BoundingBox extends SceneNode {
           ],
           () => {
             forward.replaceShader( objectVert, boundingBoxFrag( 'forward' ) );
-            depth.replaceShader( objectVert, boundingBoxFrag( 'shadow' ) );
+            depth.replaceShader( objectVert, boundingBoxFrag( 'depth' ) );
           },
         );
       }

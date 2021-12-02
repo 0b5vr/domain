@@ -41,6 +41,7 @@ export class SceneNode extends Component {
   }
 
   public __drawImpl( event: ComponentDrawEvent ): void {
+    this.globalTransformCache = event.globalTransform.multiply( this.transform );
     const ancestors = [ this, ...event.ancestors ];
 
     let path: string | undefined;
