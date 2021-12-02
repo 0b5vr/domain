@@ -123,13 +123,6 @@ if ( process.env.DEV ) {
       }
     } );
   } );
-} else {
-  window.addEventListener( 'keydown', ( event ) => {
-    if ( event.code === 'Escape' ) {
-      dog.root.active = false;
-    }
-  } );
-
 }
 
 // == entities =====================================================================================
@@ -228,6 +221,7 @@ const cameraLambda = new Lambda( {
 
     const roll = auto( 'camera/roll' ) + 0.01 * shake * Math.sin( time * 1.1 );
 
+    cameraStack.fov = auto( 'camera/fov' );
     cameraStack.transform.lookAt( pos, tar, [ 0.0, 1.0, 0.0 ], roll );
   },
 } );

@@ -65,7 +65,7 @@ export const bumpBlockFrag = ( tag: 'deferred' | 'depth' ): string => build( () 
 
       // subAssign( d, clamp( sw( uv, 'x' ), 0.0, 0.02 ) );
       const bumpHeight = sub( 0.04, length( uv ) );
-      subAssign( d, mul( 0.5, clamp( bumpHeight, 0.0, 0.02 ) ) );
+      subAssign( d, clamp( bumpHeight, 0.0, 0.02 ) );
       addAssign( dirt, mul(
         0.5,
         glslLinearstep( 0.04, 0.0, abs( bumpHeight ) ),
@@ -144,6 +144,7 @@ export const bumpBlockFrag = ( tag: 'deferred' | 'depth' ): string => build( () 
       ), 0.0 ) ),
       sw( isect, 'z' ),
       mix( 0.0, -0.2, mtl ),
+      mix( 0.0, 1.0, smoothstep( 0.2, -0.5, sw( rp, 'z' ) ) ),
     ) ) );
 
     const baseColor = mix(

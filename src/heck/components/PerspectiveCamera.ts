@@ -1,6 +1,5 @@
 import { Camera } from './Camera';
 import { ComponentOptions } from './Component';
-import { FOV } from '../../config';
 import { MaterialTag } from '../Material';
 import { RenderTarget } from '../RenderTarget';
 import { SceneNode } from './SceneNode';
@@ -46,7 +45,7 @@ export class PerspectiveCamera extends Camera {
   private __far: number;
 
   public constructor( options: PerspectiveCameraOptions ) {
-    const fov = options.fov ?? FOV;
+    const fov = options.fov ?? 45.0;
     const near = options.near ?? 0.01;
     const far = options.far ?? 100.0;
 

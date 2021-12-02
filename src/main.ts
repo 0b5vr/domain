@@ -76,5 +76,16 @@ if ( !process.env.DEV ) {
 
       music.isPlaying = true;
     };
+
+    if ( !process.env.DEV ) {
+      window.addEventListener( 'keydown', ( event ) => {
+        if ( event.code === 'Escape' ) {
+          music.isPlaying = false;
+          music.update();
+          dog.root.active = false;
+        }
+      } );
+
+    }
   } );
 }

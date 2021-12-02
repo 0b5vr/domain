@@ -398,7 +398,7 @@ export const musicVert = build( () => {
 
     // fadeout
     ifThen( eq( sectionIndex, 7.0 ), () => (
-      mulAssign( dest, smoothstep( 1.0, 0.0, sectionPhase ) )
+      mulAssign( dest, smoothstep( 0.5, 0.0, sectionPhase ) )
     ) );
 
     // mute

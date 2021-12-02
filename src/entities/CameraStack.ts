@@ -40,6 +40,15 @@ export class CameraStack extends SceneNode {
   public forwardCamera: PerspectiveCamera;
   public postStack?: PostStack;
 
+  public get fov(): number {
+    return this.deferredCamera.fov;
+  }
+
+  public set fov( value: number ) {
+    this.deferredCamera.fov = value;
+    this.forwardCamera.fov = value;
+  }
+
   public constructor( options: CameraStackOptions ) {
     super( options );
 
