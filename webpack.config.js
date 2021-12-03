@@ -3,7 +3,6 @@
 
 const TerserPlugin = require( 'terser-webpack-plugin' );
 const HtmlWebpackPlugin = require( 'html-webpack-plugin' );
-const packageJson = require( './package.json' );
 const path = require( 'path' );
 const webpack = require( 'webpack' );
 
@@ -29,7 +28,6 @@ const terserOptions = {
         // material tags
         'forward',
         'deferred',
-        'cubemap',
         'depth',
       ]
     },
@@ -43,7 +41,6 @@ const terserOptions = {
 };
 
 module.exports = ( env, argv ) => {
-  const VERSION = packageJson.version;
   const DEV = argv.mode === 'development';
 
   return {
@@ -108,7 +105,6 @@ module.exports = ( env, argv ) => {
       new webpack.DefinePlugin( {
         'process.env': {
           DEV,
-          VERSION: `"${ VERSION }"`
         },
       } ),
       new HtmlWebpackPlugin(),

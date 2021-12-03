@@ -10,6 +10,7 @@ import { Quad } from '../heck/components/Quad';
 import { RawQuaternion, Swap } from '@0b5vr/experimental';
 import { SceneNode } from '../heck/components/SceneNode';
 import { StuffTag } from './Stuff';
+import { auto } from '../globals/automaton';
 import { cubemapBlurFrag } from '../shaders/cubemapBlurFrag';
 import { cubemapMergeFrag } from '../shaders/cubemapMergeFrag';
 import { cubemapSampleFrag } from '../shaders/cubemapSampleFrag';
@@ -114,6 +115,10 @@ export class CubemapNode extends SceneNode {
       { initOptions: { geometry: quadGeometry, target: dummyRenderTarget } },
     );
     materialSample.addUniformTextures( 'samplerCubemap', targetCompiled.texture );
+
+    auto( 'cubemap/accumMix', ( { value } ) => {
+      materialSample.addUniform( 'accumMix', '1f', value );
+    } );
 
     if ( process.env.DEV ) {
       module.hot?.accept( '../shaders/cubemapSampleFrag', () => {

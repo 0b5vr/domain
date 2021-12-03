@@ -14,17 +14,21 @@ export function cyclicNoise( p: GLSLExpression<'vec3'>, {
   freq?: GLSLFloatExpression,
   warp?: GLSLFloatExpression,
 } = {} ): GLSLExpression<'vec3'> {
-  const f = cache( symbol, () => defFn( 'vec3', [ 'vec3', 'vec3', 'float' ], ( p, rot, pump ) => {
-    const b = def( 'mat3', orthBas( rot ) );
-    const accum = def( 'vec4', vec4( 0.0 ) );
-    unrollLoop( 6, () => {
-      mulAssign( p, mul( b, freq ) );
-      addAssign( p, mul( warp, sin( sw( p, 'zxy' ) ) ) );
-      addAssign( accum, vec4( cross( cos( p ), sin( sw( p, 'yzx' ) ) ), 1.0 ) );
-      mulAssign( accum, pump );
-    } );
-    retFn( div( sw( accum, 'xyz' ), sw( accum, 'w' ) ) );
-  } ) );
+  const f = cache( symbol, () => defFn(
+    'vec3',
+    [ 'vec3', 'vec3', 'float', 'float', 'float' ],
+    ( p, rot, pump, freq, warp ) => {
+      const b = def( 'mat3', orthBas( rot ) );
+      const accum = def( 'vec4', vec4( 0.0 ) );
+      unrollLoop( 6, () => {
+        mulAssign( p, mul( b, freq ) );
+        addAssign( p, mul( warp, sin( sw( p, 'zxy' ) ) ) );
+        addAssign( accum, vec4( cross( cos( p ), sin( sw( p, 'yzx' ) ) ), 1.0 ) );
+        mulAssign( accum, pump );
+      } );
+      retFn( div( sw( accum, 'xyz' ), sw( accum, 'w' ) ) );
+    },
+  ) );
 
-  return f( p, rot, num( pump ) );
+  return f( p, rot, num( pump ), num( freq ), num( warp ) );
 }

@@ -9,6 +9,7 @@ import { sdbox } from './modules/sdbox';
 import { setupRoRd } from './modules/setupRoRd';
 import { simplex4d } from './modules/simplex4d';
 import { smax } from './modules/smax';
+import { smin } from './modules/smin';
 
 export const escFrag = ( tag: 'deferred' | 'depth' ): string => build( () => {
   insert( 'precision highp float;' );
@@ -36,7 +37,7 @@ export const escFrag = ( tag: 'deferred' | 'depth' ): string => build( () => {
     subAssign( sw( pt, 'z' ), mul(
       0.5,
       smax( 0.0, sw( pt, 'z' ), 0.1 ),
-      sq( min( 0.5, length( sw( pt, 'xy' ) ) ) ),
+      sq( smin( 0.5, length( sw( pt, 'xy' ) ), 0.1 ) ),
     ) );
     addAssign( sw( pt, 'xy' ), mul(
       0.15,
@@ -66,7 +67,7 @@ export const escFrag = ( tag: 'deferred' | 'depth' ): string => build( () => {
       const noise = simplex4d( vec4( mul( add( 2.0, p ), 50.0 ), 1.0 ) );
       addAssign( d, mul( 0.0001, noise ) );
 
-      ifThen( gt( sw( pt, 'z' ), 0.0 ), () => {
+      ifThen( gt( sw( pt, 'z' ), 0.40 ), () => {
         const uv = glslLinearstep( vec2( -0.7, 0.3 ), vec2( 0.5, -0.08 ), sw( p, 'xy' ) );
         assign( text, sw( texture( samplerText, uv ), 'w' ) );
         subAssign( d, mul( 0.01, text ) );

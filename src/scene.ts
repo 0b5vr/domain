@@ -11,6 +11,7 @@ import { Lambda } from './heck/components/Lambda';
 import { Lights } from './entities/Lights';
 import { NodeReplacer } from './utils/NodeReplacer';
 // import { Plane } from './entities/Plane';
+import { Dust } from './entities/Dust';
 import { RawVector3, vecAdd } from '@0b5vr/experimental';
 import { Stuff } from './entities/Stuff';
 import { VRCameraStack } from './entities/VRCameraStack';
@@ -159,6 +160,14 @@ if ( process.env.DEV && module.hot ) {
   } );
 }
 
+const dust = new Dust();
+if ( process.env.DEV && module.hot ) {
+  const replacer = new NodeReplacer( dust, () => new Dust() );
+  module.hot.accept( './entities/Dust', () => {
+    replacer.replace( dog.root );
+  } );
+}
+
 const cubemapNode = new CubemapNode( {
   scene: dog.root,
   textureIBLLUT: iblLutCalc.texture,
@@ -279,6 +288,7 @@ dog.root.children.push(
   floor,
   stuff,
   lights,
+  dust,
   cubemapNode,
   // plane,
   cameraLambda,

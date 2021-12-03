@@ -3,12 +3,15 @@ import { MTL_PBR_ROUGHNESS_METALLIC } from '../shaders/deferredShadeFrag';
 import { Material } from '../heck/Material';
 import { Mesh } from '../heck/components/Mesh';
 import { SceneNode } from '../heck/components/SceneNode';
+import { TAU } from '../utils/constants';
 import { TransparentShell } from './TransparentShell';
+import { auto } from '../globals/automaton';
 import { deferredColorFrag } from '../shaders/deferredColorFrag';
 import { depthFrag } from '../shaders/depthFrag';
 import { dummyRenderTarget, dummyRenderTargetFourDrawBuffers } from '../globals/dummyRenderTarget';
 import { genCube } from '../geometries/genCube';
 import { objectVert } from '../shaders/objectVert';
+import { quatFromAxisAngle } from '@0b5vr/experimental';
 
 export class WebpackCube extends SceneNode {
   public constructor() {
@@ -57,15 +60,22 @@ export class WebpackCube extends SceneNode {
     strokeShell.transform.scale = [ 0.5, 0.5, 0.5 ];
 
     // -- components -------------------------------------------------------------------------------
+    const nodeCore = new SceneNode();
+    nodeCore.children = [ meshCore, strokeCore ];
+
+    auto( 'webpackCube/coreRot', ( { value } ) => {
+      nodeCore.transform.rotation = quatFromAxisAngle( [ 0, 1, 0 ], TAU * value );
+    } );
+
     this.children = [
-      meshCore,
+      nodeCore,
       shell,
-      strokeCore,
       strokeShell,
     ];
 
     if ( process.env.DEV ) {
       meshCore.name = 'meshCore';
+      nodeCore.name = 'nodeCore';
       shell.name = 'shell';
       strokeCore.name = 'strokeCore';
       strokeShell.name = 'strokeShell';

@@ -1,15 +1,21 @@
+import { BufferRenderTarget } from '../heck/BufferRenderTarget';
 import { CanvasTexture } from './utils/CanvasTexture';
 import { CharCanvasTexture } from './fui/CharCanvasTexture';
 import { GLCatTexture } from '@fms-cat/glcat-ts';
 import { Lambda } from '../heck/components/Lambda';
+import { Material } from '../heck/Material';
+import { Quad } from '../heck/components/Quad';
 import { RaymarcherNode } from './utils/RaymarcherNode';
 import { ShaderRenderTarget } from './utils/ShaderRenderTarget';
+import { Swap } from '@0b5vr/experimental';
 import { auto } from '../globals/automaton';
 import { crtDecodeFrag } from '../shaders/crtDecodeFrag';
 import { crtEffectFrag } from '../shaders/crtEffectFrag';
 import { crtEncodeFrag } from '../shaders/crtEncodeFrag';
 import { crtFrag } from '../shaders/crtFrag';
+import { dummyRenderTarget } from '../globals/dummyRenderTarget';
 import { objectVert } from '../shaders/objectVert';
+import { quadGeometry } from '../globals/quadGeometry';
 import { quadVert } from '../shaders/quadVert';
 
 export const tagCRT = Symbol();
@@ -32,7 +38,7 @@ export class CRT extends RaymarcherNode {
     textCanvas.updateTexture();
 
     // -- char and effect --------------------------------------------------------------------------
-    const charCanvasTexture = new CharCanvasTexture( 640, 480 );
+    const charCanvasTexture = new CharCanvasTexture( 320, 240 );
     charCanvasTexture.charArray[ 49 ] = '15 36 30,10 50'; // 1
     charCanvasTexture.charArray[ 52 ] = '56 03 02 62,56 50'; // 4
     charCanvasTexture.charArray[ 54 ] = '65 56 16 05 01 10 50 61 62 53 03'; // 6
@@ -84,12 +90,13 @@ export class CRT extends RaymarcherNode {
         'kaneta',
         'lexaloffle',
         'limp ninja',
-        'lj',
+        'lj & virgill',
         'logicoma',
         'marcan',
         'mercury',
         'mfx',
         'mrdoob',
+        'murasaqi',
         'nerumae',
         'niko_14',
         'nikq::club',
@@ -116,50 +123,54 @@ export class CRT extends RaymarcherNode {
         'titan',
         'tpolm',
         'tomohiro',
-        'umalut design',
         'wrighter',
       ][ Math.floor( value ) ] ?? '' ).split( '/' );
 
       charCanvasTexture.clear();
       str.map( ( s, i ) => (
-        charCanvasTexture.drawChars( 320, 170 - i * 80 + str.length * 40, 8, s, 0.5 )
+        charCanvasTexture.drawChars( 160, 90 - i * 40 + str.length * 20, 4, s, 0.5 )
       ) );
       charCanvasTexture.updateTexture();
     } );
 
-    const targetEffect = new ShaderRenderTarget(
-      640,
-      480,
-      crtEffectFrag,
-      process.env.DEV && 'crtEffect',
+    const swapTargetEffect = new Swap(
+      new BufferRenderTarget( {
+        width: 320,
+        height: 240,
+        name: process.env.DEV && 'crtEffectSwap0',
+      } ),
+      new BufferRenderTarget( {
+        width: 320,
+        height: 240,
+        name: process.env.DEV && 'crtEffectSwap0',
+      } ),
     );
-    targetEffect.material.addUniformTextures( 'sampler1', charCanvasTexture.texture );
 
-    const lambdaUpdateInput = new Lambda( {
-      onUpdate: () => {
-        if ( this.input ) {
-          targetEffect.material.addUniformTextures( 'sampler0', this.input );
-        }
-      },
+    const materialEffect = new Material(
+      quadVert,
+      crtEffectFrag,
+      { initOptions: { geometry: quadGeometry, target: dummyRenderTarget } },
+    );
+    materialEffect.addUniformTextures( 'sampler1', charCanvasTexture.texture );
+
+    const quadEffect = new Quad( {
+      material: materialEffect,
+      name: process.env.DEV && 'quadEffect',
     } );
-
-    const lambdaUpdateTargetEffect = targetEffect.createUpdateLambda();
 
     if ( process.env.DEV ) {
       module.hot?.accept( '../shaders/crtEffectFrag', () => {
-        targetEffect.material.replaceShader( quadVert, crtEffectFrag );
-        targetEffect.quad.drawImmediate();
+        materialEffect.replaceShader( quadVert, crtEffectFrag );
       } );
     }
 
     // -- signals ----------------------------------------------------------------------------------
     const targetEncode = new ShaderRenderTarget(
-      640,
-      480,
+      320,
+      240,
       crtEncodeFrag,
       process.env.DEV && 'crtEncode',
     );
-    targetEncode.material.addUniformTextures( 'sampler0', targetEffect.texture );
 
     const lambdaUpdateTargetEncode = targetEncode.createUpdateLambda();
 
@@ -171,8 +182,8 @@ export class CRT extends RaymarcherNode {
     }
 
     const targetDecode = new ShaderRenderTarget(
-      640,
-      480,
+      320,
+      240,
       crtDecodeFrag,
       process.env.DEV && 'crtDecode',
     );
@@ -186,6 +197,39 @@ export class CRT extends RaymarcherNode {
         targetDecode.quad.drawImmediate();
       } );
     }
+
+    // -- 60i --------------------------------------------------------------------------------------
+    let remain = 0.0;
+    let lace = 0;
+
+    const lambdaInterlace = new Lambda( {
+      onUpdate: ( { deltaTime } ) => {
+        remain -= deltaTime;
+        const shouldUpdate = remain < 0.0;
+        if ( shouldUpdate ) {
+          remain += 60.0 / 1000.0;
+        }
+
+        quadEffect.active = shouldUpdate;
+        lambdaUpdateTargetEncode.active = shouldUpdate;
+        lambdaUpdateTargetDecode.active = shouldUpdate;
+
+        if ( shouldUpdate ) {
+          if ( this.input ) {
+            materialEffect.addUniformTextures( 'sampler0', this.input );
+          }
+
+          swapTargetEffect.swap();
+          lace = 1.0 - lace;
+
+          materialEffect.addUniformTextures( 'samplerPrev', swapTargetEffect.o.texture );
+          materialEffect.addUniform( 'lace', '1f', lace );
+
+          quadEffect.target = swapTargetEffect.i;
+          targetEncode.material.addUniformTextures( 'sampler0', swapTargetEffect.i.texture );
+        }
+      },
+    } );
 
     // -- raymarch ---------------------------------------------------------------------------------
     super( crtFrag );
@@ -217,8 +261,8 @@ export class CRT extends RaymarcherNode {
     this.tags.push( tagCRT );
 
     this.children.unshift(
-      lambdaUpdateInput,
-      lambdaUpdateTargetEffect,
+      lambdaInterlace,
+      quadEffect,
       lambdaUpdateTargetEncode,
       lambdaUpdateTargetDecode,
     );

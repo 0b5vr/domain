@@ -139,7 +139,7 @@ export const crtFrag = ( tag: 'deferred' | 'depth' ): string => build( () => {
     const noise = mul( 0.2, smoothstep( -1.0, 1.0, sw( cyclicNoise( mul( 8.0, rp ) ), 'x' ) ) );
     const roughness = ternChain(
       add( 0.3, noise ),
-      [ eq( mtl, 1.0 ), 0.5 ],
+      [ eq( mtl, 1.0 ), 0.1 ],
     );
     const baseColor = tern(
       eq( mtl, 0.0 ),
@@ -159,8 +159,8 @@ export const crtFrag = ( tag: 'deferred' | 'depth' ): string => build( () => {
       step( 0.5, mtl ),
       smoothstep( 0.5, 0.45, abs( sub( sw( uv, 'x' ), 0.5 ) ) ),
       smoothstep( 0.5, 0.45, abs( sub( sw( uv, 'y' ), 0.5 ) ) ),
-      add( 1.5, mul( 0.5, sin( flickerPhase ) ) ),
-      // add( 0.5, mul( 0.5, sin( add( mul( 1000.0, sw( uv, 'x' ) ), vec3( 0, 2, 4 ) ) ) ) ),
+      add( 2.5, mul( 0.5, sin( flickerPhase ) ) ),
+      add( 0.5, mul( 0.5, sin( add( mul( 1000.0, sw( uv, 'x' ) ), vec3( 0, 2, 4 ) ) ) ) ),
       sq( sw( tex, 'xyz' ) ),
     );
 

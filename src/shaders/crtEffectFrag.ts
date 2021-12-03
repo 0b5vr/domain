@@ -1,5 +1,4 @@
-import { add, assign, build, defInNamed, defOut, defUniformNamed, insert, main, mix, sub, sw, texture, vec2, vec3, vec4 } from '../shader-builder/shaderBuilder';
-import { glslLofi } from './modules/glslLofi';
+import { addAssign, assign, build, def, defInNamed, defOut, defUniformNamed, eq, floor, glFragCoord, ifThen, insert, main, mix, mod, mul, sub, sw, texture, vec2, vec4 } from '../shader-builder/shaderBuilder';
 
 export const crtEffectFrag = build( () => {
   insert( 'precision highp float;' );
@@ -8,24 +7,34 @@ export const crtEffectFrag = build( () => {
 
   const fragColor = defOut( 'vec4' );
 
+  const lace = defUniformNamed( 'float', 'lace' );
   const sampler0 = defUniformNamed( 'sampler2D', 'sampler0' );
+  const samplerPrev = defUniformNamed( 'sampler2D', 'samplerPrev' );
   const sampler1 = defUniformNamed( 'sampler2D', 'sampler1' );
 
   // const { init, random } = glslDefRandom();
 
   main( () => {
-    const tex0 = sw( texture( sampler0, vUv ), 'xyz' );
+    ifThen( eq( lace, floor( mod( sw( glFragCoord, 'y' ), 2.0 ) ) ), () => {
+      assign( fragColor, texture( samplerPrev, vUv ) );
 
-    const tex1uv = add( glslLofi(
-      add( vUv, vec2( 1.0 / 320.0, 1.0 / 240.0 ) ),
-      vec2( 1.0 / 160.0, 1.0 / 120.0 ),
-    ), vec2( 0.0 / 320.0, 1.0 / 240.0 ) );
-    const tex1 = texture( sampler1, tex1uv );
+    }, () => {
+      const tex = def( 'vec4', texture( sampler0, vUv ) );
 
-    assign( fragColor, vec4( mix(
-      tex0,
-      sub( vec3( 1.0 ), tex0 ),
-      sw( tex1, 'x' ),
-    ), 1.0 ) );
+      const zoomuv = mix( vec2( 0.5 ), vec2( 1.0 ), mix( vec2( -0.95 ), vec2( 0.95 ), vUv ) );
+      addAssign( tex, mul(
+        vec4( 0.9, 0.7, 0.5, 1.0 ),
+        sub( 0.5, texture( samplerPrev, zoomuv ) ),
+      ) );
+
+      assign( tex, mix(
+        tex,
+        vec4( 0.0 ),
+        sw( texture( sampler1, vUv ), 'x' ),
+      ) );
+
+      assign( fragColor, vec4( sw( tex, 'xyz' ), 1.0 ) );
+
+    } );
   } );
 } );

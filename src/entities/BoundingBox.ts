@@ -70,22 +70,23 @@ export class BoundingBox extends SceneNode {
       },
     );
 
-    const depth = new Material(
-      objectVert,
-      boundingBoxFrag( 'depth' ),
-      {
-        initOptions: { geometry, target: dummyRenderTarget },
-      },
-    );
+    // const depth = new Material(
+    //   objectVert,
+    //   boundingBoxFrag( 'depth' ),
+    //   {
+    //     initOptions: { geometry, target: dummyRenderTarget },
+    //   },
+    // );
 
-    const materials = { forward, cubemap: forward, depth };
+    // const materials = { forward, depth };
+    const materials = { forward };
 
     forward.addUniform( 'dashRatio', '1f', dashRatio );
-    depth.addUniform( 'dashRatio', '1f', dashRatio );
+    // depth.addUniform( 'dashRatio', '1f', dashRatio );
 
     auto( 'boundingBox/opacity', ( { value } ) => {
       forward.addUniform( 'opacity', '1f', value );
-      depth.addUniform( 'opacity', '1f', value );
+      // depth.addUniform( 'opacity', '1f', value );
     } );
 
     if ( process.env.DEV ) {
@@ -97,7 +98,7 @@ export class BoundingBox extends SceneNode {
           ],
           () => {
             forward.replaceShader( objectVert, boundingBoxFrag( 'forward' ) );
-            depth.replaceShader( objectVert, boundingBoxFrag( 'depth' ) );
+            // depth.replaceShader( objectVert, boundingBoxFrag( 'depth' ) );
           },
         );
       }

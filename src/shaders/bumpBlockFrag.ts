@@ -1,5 +1,5 @@
 import { MTL_PBR_ROUGHNESS_METALLIC } from './deferredShadeFrag';
-import { abs, add, addAssign, assign, build, clamp, def, defFn, defInNamed, defOut, defUniformNamed, discard, div, eq, glFragCoord, glFragDepth, glslFalse, glslTrue, gt, ifThen, insert, length, main, mix, mod, mul, normalize, pow, retFn, smoothstep, step, sub, subAssign, sw, vec2, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { abs, add, addAssign, assign, build, clamp, def, defFn, defInNamed, defOut, defUniformNamed, discard, div, eq, glFragCoord, glFragDepth, glslFalse, glslTrue, gt, ifThen, insert, length, main, max, mix, mod, mul, normalize, pow, retFn, smoothstep, sq, step, sub, subAssign, sw, texture, vec2, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcDepth } from './modules/calcDepth';
 import { calcNormal } from './modules/calcNormal';
 import { cyclicNoise } from './modules/cyclicNoise';
@@ -10,6 +10,7 @@ import { maxOfVec3 } from './modules/maxOfVec3';
 import { raymarch } from './modules/raymarch';
 import { sdbox } from './modules/sdbox';
 import { setupRoRd } from './modules/setupRoRd';
+import { triplanarMapping } from './modules/triplanarMapping';
 
 export const bumpBlockFrag = ( tag: 'deferred' | 'depth' ): string => build( () => {
   insert( 'precision highp float;' );
@@ -28,13 +29,14 @@ export const bumpBlockFrag = ( tag: 'deferred' | 'depth' ): string => build( () 
   const cameraNearFar = defUniformNamed( 'vec2', 'cameraNearFar' );
   const cameraPos = defUniformNamed( 'vec3', 'cameraPos' );
   const inversePVM = defUniformNamed( 'mat4', 'inversePVM' );
+  const textureSurface = defUniformNamed( 'sampler2D', 'textureSurface' );
 
   const shouldCalcNoise = def( 'bool', glslFalse );
 
   const fbm = defSimplexFBM4d();
 
   const map = defFn( 'vec4', [ 'vec3' ], ( p ) => {
-    const d = def( 'float', sdbox( p, vec3( 0.47 ) ) );
+    const d = def( 'float', sub( sdbox( p, vec3( 0.47 ) ), 0.01 ) );
     const dirt = def( 'float', 0.0 );
 
     // addAssign( d, (
@@ -44,19 +46,26 @@ export const bumpBlockFrag = ( tag: 'deferred' | 'depth' ): string => build( () 
     const mtl = step( 0.42, sw( p, 'z' ) );
 
     ifThen( eq( mtl, 0.0 ), () => {
-      const uv = clamp( vec2( -0.5 ), vec2( 0.5 ), sw( p, 'xy' ) );
-      addAssign( p, mul(
-        vec3( 0.0, 0.0, -0.2 ),
-        mix( 0.5, 1.0, fbm( vec4( uv, 0.0, 0.0 ) ) ),
+      const pt = def( 'vec3', p );
+      subAssign( sw( pt, 'z' ), add(
+        mul( 0.3, sw( texture( textureSurface, add( 0.5, sw( pt, 'xy' ) ) ), 'y' ) ),
+        sq( length( sw( pt, 'xy' ) ) ),
       ) );
 
-      assign( d, sdbox( p, vec3( 0.47 ) ) );
+      assign( d, sdbox( pt, vec3( 0.47 ) ) );
 
       ifThen( shouldCalcNoise, () => {
+        const N = normalize( max( sub( abs( p ), 0.43 ), 0.0 ) );
         addAssign( d, mul(
-          0.01,
+          0.004,
           smoothstep( 0.6, 0.5, maxOfVec3( abs( p ) ) ),
-          mix( 0.5, 1.0, fbm( vec4( p, 3.0 ) ) ),
+          mix(
+            0.5,
+            1.0,
+            triplanarMapping( p, N, 1.0, ( uv ) => (
+              sw( texture( textureSurface, add( 0.5, uv ) ), 'z' )
+            ) )
+          ),
         ) );
       } );
 

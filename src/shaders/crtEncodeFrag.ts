@@ -4,7 +4,7 @@ import { glslDefRandom } from './modules/glslDefRandom';
 import { glslSaturate } from './modules/glslSaturate';
 
 const CHROMA_AMP = 0.4;
-const CHROMA_FREQ = 227.5;
+const CHROMA_FREQ = 97.5;
 const CHROMA_SCANLINE_OFFSET = 120.0;
 const LPF_WIDTH = 0.04;
 const LPF_ITER = 10;

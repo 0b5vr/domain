@@ -247,8 +247,15 @@ export const musicVert = build( () => {
 
       const index = int( mod( mul( beatZ, 2 ), 16 ) );
       const wave = sample( arrayIndex( pattern, index ), div( t, mul( 0.5, beatLength ) ) );
-      const satwave = clamp( mul( 2.0, wave ), -1.0, 1.0 );
-      const amp = mul( 0.3, zcross( t, len ) );
+      const satwave = clamp( mul(
+        2.0,
+        tern( lt( sectionIndex, 3.0 ), exp( mul( -5.0, t ) ), 1.0 ),
+        wave,
+      ), -1.0, 1.0 );
+      const amp = mul(
+        0.3,
+        zcross( t, len ),
+      );
       addAssign( dest, mul( amp, satwave ) );
     } );
 

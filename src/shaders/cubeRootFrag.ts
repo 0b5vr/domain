@@ -24,7 +24,7 @@ export const cubeRootFrag = ( tag: 'deferred' | 'depth' ): string => build( () =
   const fragNormal = defOut( 'vec4', 2 );
   const fragMisc = defOut( 'vec4', 3 );
 
-  const time = defUniformNamed( 'float', 'time' );
+  const level = defUniformNamed( 'float', 'level' );
   const resolution = defUniformNamed( 'vec2', 'resolution' );
   const cameraNearFar = defUniformNamed( 'vec2', 'cameraNearFar' );
   const cameraPos = defUniformNamed( 'vec3', 'cameraPos' );
@@ -55,8 +55,8 @@ export const cubeRootFrag = ( tag: 'deferred' | 'depth' ): string => build( () =
     assign( tex, mapSurface );
 
     ifThen( shouldUseNoise, () => {
-      addAssign( p, mul( 0.002, cyclicNoise( add( mul( 20.0, p ), mul( 0.01, time ) ) ) ) );
-      const dwater  = sub( sdbox( p, vec3( 0.427 ) ), 0.05 );
+      addAssign( p, mul( 0.002, cyclicNoise( add( mul( 20.0, p ), 0.0 ) ) ) );
+      const dwater  = sub( sdbox( p, vec3( level ) ), 0.05 );
       assign( d, min( d, dwater ) );
       assign( sw( tex, 'w' ), glslLinearstep( 0.01, 0.0, dwater ) );
     } );

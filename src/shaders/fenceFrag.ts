@@ -1,5 +1,5 @@
 import { MTL_PBR_ROUGHNESS_METALLIC } from './deferredShadeFrag';
-import { add, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, discard, div, glFragCoord, glFragDepth, gt, ifThen, insert, length, main, max, min, mix, mod, mul, normalize, retFn, smoothstep, sub, subAssign, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { add, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, discard, div, glFragCoord, glFragDepth, gt, ifThen, insert, length, main, max, min, mix, mod, mul, normalize, retFn, smoothstep, sub, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcDepth } from './modules/calcDepth';
 import { calcNormal } from './modules/calcNormal';
 import { cyclicNoise } from './modules/cyclicNoise';
@@ -31,7 +31,6 @@ export const fenceFrag = ( tag: 'deferred' | 'depth' ): string => build( () => {
 
   const map = defFn( 'vec4', [ 'vec3' ], ( p ) => {
     const d = def( 'float', sdbox( sub( p, vec3( 0.0, 0.5, 0.0 ) ), vec3( 10.0, 0.01, 0.1 ) ) );
-    subAssign( d, 0.004 );
     const pt = def( 'vec3', p );
     assign( sw( pt, 'x' ), sub( mod( sw( pt, 'x' ), 2.0 ), 1.0 ) );
     assign( d, min( d, max(

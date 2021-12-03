@@ -12,11 +12,13 @@ export const cubemapSampleFrag = build( () => {
   insert( 'precision highp float;' );
 
   const vUv = defInNamed( 'vec2', 'vUv' );
+
   const fragColor = defOutNamed( 'vec4', 'fragColor' );
-  const samplerPrev = defUniformNamed( 'sampler2D', 'samplerPrev' );
-  const samplerCubemap = defUniformNamed( 'sampler2D', 'samplerCubemap' );
 
   const frameCount = defUniformNamed( 'float', 'frameCount' );
+  const accumMix = defUniformNamed( 'float', 'accumMix' );
+  const samplerPrev = defUniformNamed( 'sampler2D', 'samplerPrev' );
+  const samplerCubemap = defUniformNamed( 'sampler2D', 'samplerCubemap' );
 
   const { init, random } = glslDefRandom();
 
@@ -64,7 +66,7 @@ export const cubemapSampleFrag = build( () => {
     assign( fragColor, mix(
       texture( samplerPrev, vUv ),
       accum,
-      0.2
+      accumMix,
     ) );
   } );
 } );

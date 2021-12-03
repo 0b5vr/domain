@@ -9,7 +9,6 @@ import { sleep } from '../utils/sleep';
 export type MaterialTag =
   | 'deferred'
   | 'forward'
-  | 'cubemap'
   | 'depth';
 
 export type MaterialMap = { [ tag in MaterialTag ]?: Material };

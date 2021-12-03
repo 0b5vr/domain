@@ -1,16 +1,15 @@
 import { GPUParticles } from './utils/GPUParticles';
+import { Geometry } from '../heck/Geometry';
 import { Material } from '../heck/Material';
-import { TransparentShell } from './TransparentShell';
-import { depthFrag } from '../shaders/depthFrag';
-import { dummyRenderTarget, dummyRenderTargetFourDrawBuffers, dummyRenderTargetTwoDrawBuffers } from '../globals/dummyRenderTarget';
-import { genCube } from '../geometries/genCube';
-import { glCat } from '../globals/canvas';
-import { particlesComputeFrag } from '../shaders/particlesComputeFrag';
-import { particlesRenderFrag } from '../shaders/particlesRenderFrag';
-import { particlesRenderVert } from '../shaders/particlesRenderVert';
+import { createLightUniformsLambda } from './utils/createLightUniformsLambda';
+import { dummyRenderTarget, dummyRenderTargetTwoDrawBuffers } from '../globals/dummyRenderTarget';
+import { dustComputeFrag } from '../shaders/dustComputeFrag';
+import { dustRenderFrag } from '../shaders/dustRenderFrag';
+import { dustRenderVert } from '../shaders/dustRenderVert';
+import { gl, glCat } from '../globals/canvas';
 import { quadGeometry } from '../globals/quadGeometry';
 import { quadVert } from '../shaders/quadVert';
-import { randomTexture, randomTextureStatic } from '../globals/randomTexture';
+import { randomTexture } from '../globals/randomTexture';
 
 const particlesSqrt = 256;
 const particles = particlesSqrt * particlesSqrt;
@@ -19,12 +18,12 @@ const particleSpawnLength = 4.0;
 
 const materialOptions = { particlesSqrt, particleSpawnLength };
 
-export class Particles extends GPUParticles {
+export class Dust extends GPUParticles {
   public constructor() {
     // -- material compute -------------------------------------------------------------------------
     const materialCompute = new Material(
       quadVert,
-      particlesComputeFrag( materialOptions ),
+      dustComputeFrag( materialOptions ),
       { initOptions: { geometry: quadGeometry, target: dummyRenderTargetTwoDrawBuffers } },
     );
 
@@ -32,17 +31,17 @@ export class Particles extends GPUParticles {
 
     if ( process.env.DEV ) {
       if ( module.hot ) {
-        module.hot.accept( '../shaders/particlesComputeFrag', () => {
+        module.hot.accept( '../shaders/dustComputeFrag', () => {
           materialCompute.replaceShader(
             quadVert,
-            particlesComputeFrag( materialOptions ),
+            dustComputeFrag( materialOptions ),
           );
         } );
       }
     }
 
     // -- geometry render --------------------------------------------------------------------------
-    const { geometry } = genCube();
+    const geometry = new Geometry();
 
     const bufferComputeUV = glCat.createBuffer();
     bufferComputeUV.setVertexbuffer( ( () => {
@@ -59,38 +58,32 @@ export class Particles extends GPUParticles {
       return ret;
     } )() );
 
-    geometry.vao.bindVertexbuffer( bufferComputeUV, 3, 2, 1 );
+    geometry.vao.bindVertexbuffer( bufferComputeUV, 0, 2 );
 
-    geometry.primcount = particles;
+    geometry.count = particles;
+    geometry.mode = gl.POINTS;
 
     // -- material render --------------------------------------------------------------------------
-    const deferred = new Material(
-      particlesRenderVert,
-      particlesRenderFrag,
+    const forward = new Material(
+      dustRenderVert,
+      dustRenderFrag,
       {
-        initOptions: { geometry, target: dummyRenderTargetFourDrawBuffers },
+        initOptions: { geometry, target: dummyRenderTarget },
+        blend: [ gl.ONE, gl.ONE ],
       },
     );
 
-    const depth = new Material(
-      particlesRenderVert,
-      depthFrag,
-      { initOptions: { geometry, target: dummyRenderTarget } },
-    );
-
-    deferred.addUniformTextures( 'samplerRandomStatic', randomTextureStatic.texture );
-    depth.addUniformTextures( 'samplerRandomStatic', randomTextureStatic.texture );
+    const lambdaLightUniforms = createLightUniformsLambda( [ forward ] );
 
     if ( process.env.DEV ) {
       if ( module.hot ) {
         module.hot.accept(
           [
-            '../shaders/particlesRenderVert',
-            '../shaders/particlesRenderFrag',
+            '../shaders/dustRenderVert',
+            '../shaders/dustRenderFrag',
           ],
           () => {
-            deferred.replaceShader( particlesRenderVert, particlesRenderFrag );
-            depth.replaceShader( particlesRenderVert, depthFrag );
+            forward.replaceShader( dustRenderVert, dustRenderFrag );
           },
         );
       }
@@ -100,13 +93,13 @@ export class Particles extends GPUParticles {
     super( {
       materialCompute,
       geometryRender: geometry,
-      materialsRender: { deferred, depth },
+      materialsRender: { forward },
       computeWidth: particlesSqrt,
       computeHeight: particlesSqrt,
       computeNumBuffers: 2,
     } );
 
-    // -- shell ------------------------------------------------------------------------------------
-    this.children.push( new TransparentShell() );
+    this.children.unshift( lambdaLightUniforms );
+    this.meshRender.depthWrite = false;
   }
 }

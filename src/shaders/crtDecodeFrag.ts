@@ -4,7 +4,7 @@ import { glslLinearstep } from './modules/glslLinearstep';
 import { glslSaturate } from './modules/glslSaturate';
 
 const CHROMA_AMP = 0.4;
-const CHROMA_FREQ = 227.5;
+const CHROMA_FREQ = 97.5;
 const DECODE_PERIOD = 2.0;
 const DECODE_ITER = 10.0;
 const CHROMA_SCANLINE_OFFSET = 120.0;
@@ -22,7 +22,7 @@ export const crtDecodeFrag = build( () => {
 
   main( () => {
     const y = def( 'float', 0.0 );
-    const cbcr = def( 'vec2', vec2( 0.0, -0.01 ) );
+    const cbcr = def( 'vec2', vec2( 0.0, 0.0 ) );
 
     const sampleOffset = vec2( DECODE_PERIOD / CHROMA_FREQ / DECODE_ITER, 0.0 );
 
@@ -46,7 +46,7 @@ export const crtDecodeFrag = build( () => {
       glslSaturate( add( 0.5, (
         add( glslLinearstep( CHROMA_AMP, 1.0 - CHROMA_AMP, y ), -0.5 )
       ) ) ),
-      mul( PI / CHROMA_AMP, cbcr ),
+      mul( 2.0, PI / CHROMA_AMP, cbcr ),
     ) );
 
     assign( fragColor, vec4(

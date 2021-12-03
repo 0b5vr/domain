@@ -9,7 +9,7 @@ export const warningCubeTextureTarget = new ShaderRenderTarget(
   1024,
   1024,
   warningCubeSurfaceFrag,
-  process.env.DEV && 'Asphalt/voronoi',
+  process.env.DEV && 'warning/voronoi',
 );
 
 if ( process.env.DEV ) {

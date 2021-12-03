@@ -20,6 +20,11 @@ export const asphaltSurfaceFrag = build( () => {
     const fbm = def( 'float', simplexFBM4d( vec4( mul( vUv, 20.0 ), 0.0, 0.0 ) ) );
     addAssign( height, mul( fbm, 0.007 ) );
 
-    assign( fragColor, vec4( height, 0.0, 0.0, 1.0 ) );
+    assign( fragColor, vec4(
+      height,
+      simplexFBM4d( vec4( mul( vUv, 1.0 ), 1.0, 1.0 ) ),
+      simplexFBM4d( vec4( mul( vUv, 6.0 ), 2.0, 2.0 ) ),
+      simplexFBM4d( vec4( mul( vUv, 40.0 ), 3.0, 3.0 ) ),
+    ) );
   } );
 } );

@@ -259,7 +259,7 @@ export class Fluid extends SceneNode {
 
     const mesh = new Mesh( {
       geometry,
-      materials: { forward, cubemap: forward },
+      materials: { forward },
       name: process.env.DEV && 'mesh',
     } );
     mesh.depthTest = false;

@@ -24,7 +24,7 @@ export const oscilloscopeVert = build( () => {
     // -- compute size -----------------------------------------------------------------------------
     const off = mul( 0.5, mix(
       sin( add(
-        mul( 5.0, vec3( 3.01, 4.01, 5.03 ), vec3( add( mul( 40.0, time ), instanceId ) ) ),
+        mul( 5.0, vec3( 3.01, 4.01, 5.03 ), vec3( add( mul( 60.0, time ), instanceId ) ) ),
       ) ),
       mul(
         uniformSphere(),

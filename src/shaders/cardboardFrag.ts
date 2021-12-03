@@ -1,15 +1,15 @@
 import { MTL_PBR_ROUGHNESS_METALLIC } from './deferredShadeFrag';
-import { abs, add, addAssign, and, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, discard, div, dot, eq, glFragCoord, glFragDepth, glslFalse, glslTrue, gt, ifThen, insert, length, lt, main, max, mix, mul, mulAssign, normalize, or, retFn, sin, smoothstep, sub, subAssign, sw, ternChain, texture, vec2, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { abs, add, addAssign, and, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, discard, div, dot, eq, glFragCoord, glFragDepth, glslFalse, glslTrue, gt, ifThen, insert, length, lt, main, max, mix, mul, normalize, or, retFn, sin, smoothstep, sub, subAssign, sw, ternChain, texture, vec2, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcDepth } from './modules/calcDepth';
 import { calcNormal } from './modules/calcNormal';
 import { cyclicNoise } from './modules/cyclicNoise';
-import { defSimplexFBM4d } from './modules/simplexFBM4d';
 import { pcg3df } from './modules/pcg3df';
 import { raymarch } from './modules/raymarch';
 import { sdbox } from './modules/sdbox';
 import { sdbox2 } from './modules/sdbox2';
 import { setupRoRd } from './modules/setupRoRd';
 import { simplex4d } from './modules/simplex4d';
+import { triplanarMapping } from './modules/triplanarMapping';
 
 export const cardboardFrag = ( tag: 'deferred' | 'depth' ): string => build( () => {
   insert( 'precision highp float;' );
@@ -30,10 +30,9 @@ export const cardboardFrag = ( tag: 'deferred' | 'depth' ): string => build( () 
   const cameraPos = defUniformNamed( 'vec3', 'cameraPos' );
   const inversePVM = defUniformNamed( 'mat4', 'inversePVM' );
   const samplerTexture = defUniformNamed( 'sampler2D', 'samplerTexture' );
+  const samplerSurface = defUniformNamed( 'sampler2D', 'samplerSurface' );
 
   const shouldUseNoise = def( 'bool', glslFalse );
-
-  const fbm = defSimplexFBM4d();
 
   const map = defFn( 'vec4', [ 'vec3' ], ( p ) => {
     addAssign( p, mul( 0.02, cyclicNoise( add( p, 2.0 ), { freq: 1.7, pump: 2.0 } ) ) );
@@ -70,11 +69,15 @@ export const cardboardFrag = ( tag: 'deferred' | 'depth' ): string => build( () 
         );
         addAssign( d, mul( 0.0001, wave ) );
 
-        const pt = add( p, mul( cyclicNoise( mul( p, 3.0 ) ) ) );
-
         const noise = mul(
-          smoothstep( -0.3, 1.0, fbm( vec4( pt, 0.0 ) ) ),
-          0.002,
+          smoothstep( -0.3, 1.0, triplanarMapping( p, N, 1.0, ( uv ) => (
+            sw( texture( samplerSurface, add(
+              0.5,
+              mul( 0.2, sw( cyclicNoise( mul( p, 3.0 ) ), 'xy' ) ),
+              mul( 0.2, uv ),
+            ) ), 'z' )
+          ) ) ),
+          0.001,
         );
         addAssign( d, noise );
       } );
@@ -140,12 +143,13 @@ export const cardboardFrag = ( tag: 'deferred' | 'depth' ): string => build( () 
       assign( mtl, 2.0 );
     } );
 
-    const dirt = def( 'float', smoothstep(
-      -1.0,
-      1.0,
-      fbm( mul( 2.0, vec4( rp, 4.0 ) ) ),
-    ) );
-    mulAssign( dirt, mix( 0.3, 0.6, smoothstep( 0.7, 1.0, length( rp ) ) ) );
+    const dirt = def( 'float', triplanarMapping( rp, N, 1.0, ( uv ) => (
+      sw( texture( samplerSurface, add(
+        0.5,
+        sw( mul( 0.1, cyclicNoise( vec3( uv, 0.0 ) ) ), 'xy' ),
+        mul( 0.4, uv ),
+      ) ), 'z' )
+    ) ) );
 
     const roughness = ternChain(
       add( 0.6, mul( 0.3, dirt ) ),

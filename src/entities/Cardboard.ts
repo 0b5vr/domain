@@ -1,5 +1,6 @@
 import { CanvasTexture } from './utils/CanvasTexture';
 import { RaymarcherNode } from './utils/RaymarcherNode';
+import { asphaltTextureTarget } from './Asphalt';
 import { cardboardFrag } from '../shaders/cardboardFrag';
 import { objectVert } from '../shaders/objectVert';
 
@@ -52,6 +53,7 @@ export class Cardboard extends RaymarcherNode {
     super( cardboardFrag );
 
     this.materials.deferred.addUniformTextures( 'samplerTexture', texture );
+    this.materials.deferred.addUniformTextures( 'samplerSurface', asphaltTextureTarget.texture );
 
     if ( process.env.DEV ) {
       if ( module.hot ) {

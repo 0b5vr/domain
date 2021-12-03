@@ -1,5 +1,6 @@
 import { RaymarcherNode } from './utils/RaymarcherNode';
 import { ShaderRenderTarget } from './utils/ShaderRenderTarget';
+import { auto } from '../globals/automaton';
 import { cubeRootFrag } from '../shaders/cubeRootFrag';
 import { cubeRootTextureFrag } from '../shaders/cubeRootTextureFrag';
 import { objectVert } from '../shaders/objectVert';
@@ -36,6 +37,11 @@ export class CubeRoot extends RaymarcherNode {
 
     this.forEachMaterials( ( material ) => {
       material.addUniformTextures( 'samplerSurface', cubeRootTextureTarget.texture );
+    } );
+
+    auto( 'cubeRoot/level', ( { value } ) => {
+      this.materials.deferred.addUniform( 'level', '1f', value );
+      this.materials.depth.addUniform( 'level', '1f', value );
     } );
 
     if ( process.env.DEV ) {
