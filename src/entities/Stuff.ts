@@ -119,12 +119,6 @@ export class Stuff extends SceneNode {
         }
       } );
 
-      auto( 'stuff/prewarm2', ( { value } ) => {
-        if ( value === i ) {
-          node.active = true;
-        }
-      } );
-
       return node;
     } ) );
   }
