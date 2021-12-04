@@ -49,17 +49,21 @@ if ( process.env.DEV ) {
 
 // == prod kickstarter =============================================================================
 if ( !process.env.DEV ) {
-  document.write( '<a></a><a></a><a></a><style>a{display:block}canvas{position:fixed;left:0;top:0;width:100%;height:100%}</style>' );
+  document.write( '<a>fullscreen</a><a>wait a moment</a><a></a><a></a><style>a{display:block}canvas{position:fixed;left:0;top:0;width:100%;height:100%;cursor:none}</style>' );
 
   const anchors = document.querySelectorAll( 'a' );
-  const mainAnchor = anchors[ 0 ];
-  mainAnchor.textContent = 'wait a moment';
+  const fsAnchor = anchors[ 0 ];
+  const mainAnchor = anchors[ 1 ];
+
+  fsAnchor.onclick = () => {
+    document.documentElement.requestFullscreen();
+  };
 
   Promise.all( [
     Material.d3dSucks(),
     music.prepare(),
   ].map( ( task, i ) => {
-    const a = anchors[ i + 1 ];
+    const a = anchors[ i + 2 ];
     const taskname = [ 'shaders', 'music' ][ i ];
     a.textContent = `${ taskname }: 0%`;
     task.onProgress = ( progress ) => (
@@ -72,20 +76,16 @@ if ( !process.env.DEV ) {
     mainAnchor.onclick = () => {
       document.body.appendChild( canvas );
 
-      document.documentElement.requestFullscreen();
-
       music.isPlaying = true;
     };
 
-    if ( !process.env.DEV ) {
-      window.addEventListener( 'keydown', ( event ) => {
-        if ( event.code === 'Escape' ) {
-          music.isPlaying = false;
-          music.update();
-          dog.root.active = false;
-        }
-      } );
+    window.addEventListener( 'keydown', ( event ) => {
+      if ( event.code === 'Escape' ) {
+        music.isPlaying = false;
+        music.update();
+        dog.root.active = false;
+      }
+    } );
 
-    }
   } );
 }
