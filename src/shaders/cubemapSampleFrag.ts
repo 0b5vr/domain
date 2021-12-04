@@ -64,7 +64,7 @@ export const cubemapSampleFrag = build( () => {
     ifThen( isDiffuse, () => mulAssign( sw( accum, 'xyz' ), PI ) );
 
     assign( fragColor, mix(
-      texture( samplerPrev, vUv ),
+      max( vec4( 0.0 ), texture( samplerPrev, vUv ) ),
       accum,
       accumMix,
     ) );
