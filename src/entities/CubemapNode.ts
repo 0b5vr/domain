@@ -2,6 +2,7 @@ import { Blit } from '../heck/components/Blit';
 import { BufferRenderTarget } from '../heck/BufferRenderTarget';
 import { CameraStack } from './CameraStack';
 import { ComponentOptions } from '../heck/components/Component';
+import { DustTag } from './Dust';
 import { GLCatTexture } from '@fms-cat/glcat-ts';
 import { Lambda } from '../heck/components/Lambda';
 import { Material } from '../heck/Material';
@@ -61,7 +62,7 @@ export class CubemapNode extends SceneNode {
     const cameras = targets.map( ( target, i ) => {
       const cameraStack = new CameraStack( {
         scene,
-        exclusionTags: [ StuffTag, PointLightTag ],
+        exclusionTags: [ StuffTag, PointLightTag, DustTag ],
         target,
         near: 2.9,
         fov: 90.0,

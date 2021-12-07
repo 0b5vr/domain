@@ -18,6 +18,8 @@ const particleSpawnLength = 4.0;
 
 const materialOptions = { particlesSqrt, particleSpawnLength };
 
+export const DustTag = Symbol();
+
 export class Dust extends GPUParticles {
   public constructor() {
     // -- material compute -------------------------------------------------------------------------
@@ -97,6 +99,7 @@ export class Dust extends GPUParticles {
       computeWidth: particlesSqrt,
       computeHeight: particlesSqrt,
       computeNumBuffers: 2,
+      tags: [ DustTag ],
     } );
 
     this.children.unshift( lambdaLightUniforms );
