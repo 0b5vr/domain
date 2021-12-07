@@ -188,14 +188,15 @@ export abstract class Music {
     const barLength = 240.0 / MUSIC_BPM;
 
     const sectionReset = binarySearch( sectionResets, time );
-    const sectionBegin = sectionResets[ sectionReset - 1 ];
-    const sectionLength = sectionLengths[ sectionReset - 1 ];
+    const sectionHead = sectionReset - 1;
+    const sectionBegin = sectionResets[ sectionHead ];
+    const sectionLength = sectionLengths[ sectionHead ];
 
     program.attribute( 'off', this.__bufferOff, 1 );
     program.uniform( 'bpm', '1f', MUSIC_BPM );
     program.uniform( 'bufferLength', '1f', this.bufferLength );
     program.uniform( '_deltaSample', '1f', 1.0 / audio.sampleRate );
-    program.uniform( '_sectionHead', '1f', sectionReset - 1 );
+    program.uniform( '_sectionHead', '1f', sectionHead );
     program.uniform(
       'timeLength',
       '4f',

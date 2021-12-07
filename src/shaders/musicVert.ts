@@ -400,7 +400,7 @@ export const musicVert = build( () => {
 
     // fadein
     ifThen( eq( sectionIndex, 1.0 ), () => (
-      mulAssign( dest, smoothstep( 0.0, 0.5, sectionPhase ) )
+      mulAssign( dest, smoothstep( 0.03, 0.5, sectionPhase ) )
     ) );
 
     // fadeout
