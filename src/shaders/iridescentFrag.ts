@@ -42,9 +42,9 @@ export const iridescentFrag = ( tag: 'deferred' | 'depth' ): string => build( ()
 
     ifThen( shouldUseNoise, () => {
       addAssign( d, mul(
-        0.0005,
+        0.0003,
         smoothstep( 0.5, 0.4, maxOfVec3( abs( p ) ) ),
-        simplex3d( mul( 200.0, p ) ),
+        simplex3d( mul( 150.0, p ) ),
       ) );
     } );
 
