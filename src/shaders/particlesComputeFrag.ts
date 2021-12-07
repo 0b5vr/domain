@@ -68,13 +68,13 @@ export const particlesComputeFrag = (
       mul( 4.0, pos ),
       sin( mul( 0.1, time ) ),
     );
-    addAssign( vel, mul( 1.0, dt, cyclicNoise( cyclicV ) ) );
+    addAssign( vel, mul( 0.5, dt, cyclicNoise( cyclicV ) ) );
 
     // resistance
     mulAssign( vel, exp( mul( -0.5, dt ) ) );
 
     // succ
-    addAssign( vel, mul( dt, -1.0, pos ) );
+    addAssign( vel, mul( dt, -0.5, pos ) );
 
     // usual update stuff
     addAssign( pos, mul( vel, dt ) );
