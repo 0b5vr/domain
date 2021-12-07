@@ -4,22 +4,10 @@
  */
 
 import { GLSLExpression, abs, add, addAssign, assign, cache, def, defConst, defFn, dot, floor, fract, max, mul, mulAssign, retFn, sq, step, sub, sw, vec2, vec3, vec4 } from '../../shader-builder/shaderBuilder';
-import { glslLofi } from './glslLofi';
 import { glslSaturate } from './glslSaturate';
-
-const mod289: {
-  ( x: GLSLExpression<'float'> ): GLSLExpression<'float'>;
-  ( x: GLSLExpression<'vec4'> ): GLSLExpression<'vec4'>;
-} = ( x: any ): any => (
-  sub( x, glslLofi( x, 289.0 ) )
-);
-
-const permute: {
-  ( x: GLSLExpression<'float'> ): GLSLExpression<'float'>;
-  ( x: GLSLExpression<'vec4'> ): GLSLExpression<'vec4'>;
-} = ( x: any ): any => (
-  mod289( mul( add( mul( x, 34.0 ), 1.0 ), x ) )
-);
+import { mod289 } from './mod289';
+import { permute } from './simplexPermute';
+import { taylorInvSqrt } from './taylorInvSqrt';
 
 const symbolPermute1 = Symbol();
 
@@ -42,13 +30,6 @@ function permute4( x: GLSLExpression<'vec4'> ): GLSLExpression<'vec4'> {
 
   return f( x );
 }
-
-const taylorInvSqrt: {
-  ( r: GLSLExpression<'float'> ): GLSLExpression<'float'>;
-  ( r: GLSLExpression<'vec4'> ): GLSLExpression<'vec4'>;
-} = ( r: any ): any => (
-  sub( 1.79284291400159, mul( 0.85373472095314, r ) )
-);
 
 const symbolGrad4 = Symbol();
 

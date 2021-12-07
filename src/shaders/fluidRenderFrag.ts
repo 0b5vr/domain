@@ -1,16 +1,11 @@
-import { GLSLExpression, abs, add, addAssign, assign, build, def, defConst, defFn, defInNamed, defOut, defUniformNamed, div, eq, exp, forBreak, forLoop, glFragCoord, gt, ifThen, insert, length, lt, main, max, mix, mul, mulAssign, retFn, sq, sub, subAssign, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { abs, add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, div, eq, forBreak, forLoop, glFragCoord, gt, ifThen, insert, length, lt, main, mix, mul, mulAssign, retFn, smoothstep, sq, sub, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcL } from './modules/calcL';
 import { defFluidSampleLinear3D } from './modules/defFluidSampleLinear3D';
 import { forEachLights } from './modules/forEachLights';
 import { glslDefRandom } from './modules/glslDefRandom';
 import { glslSaturate } from './modules/glslSaturate';
+import { maxOfVec3 } from './modules/maxOfVec3';
 import { setupRoRd } from './modules/setupRoRd';
-
-const MARCH_ITER = 30;
-const SHADOW_ITER = 10;
-const INV_SHADOW_ITER = 1.0 / SHADOW_ITER;
-const MARCH_STEP_LENGTH = 0.2;
-const SHADOW_STEP_LENGTH = 0.04;
 
 export const fluidRenderFrag = (
   fGridResoSqrt: number,
@@ -23,7 +18,6 @@ export const fluidRenderFrag = (
   const fragColor = defOut( 'vec4' );
 
   const resolution = defUniformNamed( 'vec2', 'resolution' );
-  const cameraNearFar = defUniformNamed( 'vec2', 'cameraNearFar' );
   const modelMatrixT3 = defUniformNamed( 'mat3', 'modelMatrixT3' );
   const inversePVM = defUniformNamed( 'mat4', 'inversePVM' );
   const samplerDensity = defUniformNamed( 'sampler2D', 'samplerDensity' );
@@ -33,17 +27,14 @@ export const fluidRenderFrag = (
 
   const sampleLinear3D = defFluidSampleLinear3D( fGridResoSqrt, fGridReso );
 
-  const stepLenRandom = ( len: number ): GLSLExpression<'float'> => (
-    mul( len, mix( 0.8, 1.0, random() ) )
-  );
-
   const getDensity = defFn( 'float', [ 'vec3' ], ( p ) => {
-    const bound = defConst( 'vec3', vec3( 0.5 - 0.5 / fGridReso ) );
-    ifThen( eq( max( abs( p ), bound ), bound ), () => {
-      retFn( glslSaturate( mul( 0.04, sw( sampleLinear3D( samplerDensity, p ), 'x' ) ) ) );
-    }, () => {
-      retFn( 0.0 );
-    } );
+    const edgedecay = smoothstep( 0.5, 0.45, add( 0.5 / fGridReso, maxOfVec3( abs( p ) ) ) );
+    ifThen( eq( edgedecay, 0.0 ), () => retFn( 0.0 ) );
+
+    retFn( mul(
+      edgedecay,
+      glslSaturate( mul( 0.1, sq( sw( sampleLinear3D( samplerDensity, p ), 'x' ) ) ) ),
+    ) );
   } );
 
   main( () => {
@@ -55,15 +46,17 @@ export const fluidRenderFrag = (
 
     const { ro, rd } = setupRoRd( { inversePVM, p } );
 
-    const rl = def( 'float', length( sub( sw( vPositionWithoutModel, 'xyz' ), ro ) ) );
-    subAssign( rl, mul( MARCH_STEP_LENGTH, random() ) );
-    const rp = def( 'vec3', add( ro, mul( rd, rl ) ) );
+    const rl0 = def( 'float', sub(
+      length( sub( sw( vPositionWithoutModel, 'xyz' ), ro ) ),
+      mul( 0.05, random() ),
+    ) );
+    const rp = def( 'vec3', add( ro, mul( rd, rl0 ) ) );
 
     const accum = def( 'vec4', vec4( 0.0, 0.0, 0.0, 1.0 ) );
     const accumRGB = sw( accum, 'rgb' );
     const accumA = sw( accum, 'a' );
 
-    forLoop( MARCH_ITER, () => {
+    forLoop( 50, () => {
       ifThen( lt( accumA, 0.1 ), () => forBreak() );
 
       const density = getDensity( rp );
@@ -75,22 +68,11 @@ export const fluidRenderFrag = (
             rp,
           );
 
-          const lrl = def( 'float', stepLenRandom( SHADOW_STEP_LENGTH ) );
-          const lrp = def( 'vec3', add( rp, mul( L, lrl ) ) );
-          const shadow = def( 'float', 0.0 );
+          const shadow = getDensity( add( rp, mul( L, 0.03 ) ) );
 
-          forLoop( SHADOW_ITER, () => {
-            const lsample = getDensity( lrp );
-            addAssign( shadow, lsample );
-
-            addAssign( lrl, stepLenRandom( SHADOW_STEP_LENGTH ) );
-            assign( lrp, add( rp, mul( L, lrl ) ) );
-          } );
-
-          const shadowDecay = exp( mul( -1.0, shadow, INV_SHADOW_ITER ) );
           const col = mix( vec3( 1.1, 0.1, 0.25 ), vec3( 0.1, 0.8, 4.0 ), density );
           addAssign( accumRGB, mul(
-            shadowDecay,
+            glslSaturate( mix( 1.0, -2.0, shadow ) ),
             div( 1.0, sq( lenL ) ),
             lightColor,
             density,
@@ -102,10 +84,8 @@ export const fluidRenderFrag = (
         mulAssign( accumA, sub( 1.0, density ) );
       } );
 
-      addAssign( rl, stepLenRandom( MARCH_STEP_LENGTH ) );
-      assign( rp, add( ro, mul( rd, rl ) ) );
+      addAssign( rp, mul( rd, mix( 0.02, 0.03, random() ) ) );
 
-      ifThen( gt( rl, sw( cameraNearFar, 'y' ) ), () => forBreak() );
     } );
 
     assign( fragColor, vec4( accumRGB, 1.0 ) );

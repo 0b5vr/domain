@@ -25,7 +25,7 @@ export const fluidPokeDensityFrag = (
     const density = def( 'vec4', sampleNearest3D( samplerDensity, pos ) );
 
     const l = def( 'float', (
-      length( add( pos, mul( 0.4, sin( mul( time, vec3( 0.7, 1.1, 1.5 ) ) ) ) ) )
+      length( add( pos, mul( 0.3, sin( mul( time, vec3( 0.7, 1.1, 1.5 ) ) ) ) ) )
     ) );
     const poke = def( 'float', smoothstep( 0.2, 0.0, l ) );
     mulAssign( poke, exp( mul( -5.0, l ) ) );
