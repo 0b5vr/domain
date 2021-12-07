@@ -95,13 +95,13 @@ export const trailsComputeFrag = (
           mul( 1.0, pos ),
           sin( mul( 0.1, time ) ),
         );
-        addAssign( vel, mul( 2.0, dt, cyclicNoise( cyclicV, { freq: 1.3 } ) ) );
+        addAssign( vel, mul( 4.0, dt, cyclicNoise( cyclicV, { freq: 1.3 } ) ) );
 
         // rotate
         addAssign( vel, mul(
           dt,
           sw( pos, 'xzy' ),
-          vec3( -0.5, -2.0, 2.0 ),
+          vec3( -1.0, -4.0, 4.0 ),
         ) );
 
         // usual update stuff

@@ -1,8 +1,8 @@
 import { add, assign, build, def, defInNamed, defOut, dot, fract, insert, main, mix, mul, smoothstep, sq, sub, sw, vec2, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { cyclicNoise } from './modules/cyclicNoise';
-import { defSimplexFBM4d } from './modules/simplexFBM4d';
+import { defSimplexFBM2d } from './modules/simplexFBM2d';
 import { glslTri } from './modules/glslTri';
-import { simplex4d } from './modules/simplex4d';
+import { simplex3d } from './modules/simplex3d';
 
 export const wallTextureFrag = build( () => {
   insert( 'precision highp float;' );
@@ -11,16 +11,16 @@ export const wallTextureFrag = build( () => {
 
   const fragColor = defOut( 'vec4' );
 
-  const simplexFBM4d = defSimplexFBM4d();
+  const fbm2 = defSimplexFBM2d();
 
   main( () => {
-    const cloud = def( 'float', simplexFBM4d( vec4( mul( 10.0, vUv ), 0.0, 0.0 ) ) );
+    const cloud = def( 'float', fbm2( mul( 6.0, vUv ) ) );
 
     const crackUv = def( 'vec2', mul( 10.0, vUv ) );
     const crackP = def( 'vec3', cyclicNoise( vec3( crackUv, 0.0 ), { pump: 1.1 } ) );
     const crack = sw( cyclicNoise( mul( 0.1, crackP ), { pump: 1.1 } ), 'x' );
 
-    const holepre = simplex4d( vec4( mix( vec3( mul( vUv, 80.0 ), 0.0 ), crackP, 0.3 ), 0.0 ) );
+    const holepre = simplex3d( mix( vec3( mul( vUv, 80.0 ), 0.0 ), crackP, 0.3 ) );
     const hole = smoothstep( 0.9, 1.0, add( holepre, cloud ) );
 
     const gapptn = add(
@@ -30,8 +30,8 @@ export const wallTextureFrag = build( () => {
     const gap = dot( vec2( 1.0 ), smoothstep( 0.97, 1.0, gapptn ) );
 
     const dirtCyclic = sw( cyclicNoise( mul( 12.0, vec3( vUv, 8.0 ) ), { pump: 1.4 } ), 'x' );
-    const dirtSimplexH = simplexFBM4d( vec4( mul( vec2( 4.0, 20.0 ), vUv ), 0.0, 20.0 ) );
-    const dirtSimplexV = simplexFBM4d( vec4( mul( vec2( 20.0, 4.0 ), vUv ), 0.0, 40.0 ) );
+    const dirtSimplexH = fbm2( mul( vec2( 2.0, 10.0 ), vUv ) );
+    const dirtSimplexV = fbm2( mul( vec2( 10.0, 2.0 ), vUv ) );
     const dirtGap = dot( vec2( 1.0 ), smoothstep( 0.9, 1.0, gapptn ) );
     const dirtDrip = sq( fract( mul( 6.0, sw( vUv, 'y' ) ) ) );
     const dirt = smoothstep(

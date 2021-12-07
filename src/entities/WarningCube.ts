@@ -16,7 +16,7 @@ if ( process.env.DEV ) {
   if ( module.hot ) {
     module.hot.accept(
       [
-        '../shaders/asphaltSurfaceFrag',
+        '../shaders/warningCubeSurfaceFrag',
       ],
       () => {
         warningCubeTextureTarget.material.replaceShader(

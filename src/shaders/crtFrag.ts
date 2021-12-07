@@ -7,7 +7,7 @@ import { glslLinearstep } from './modules/glslLinearstep';
 import { raymarch } from './modules/raymarch';
 import { sdbox } from './modules/sdbox';
 import { setupRoRd } from './modules/setupRoRd';
-import { simplex4d } from './modules/simplex4d';
+import { simplex3d } from './modules/simplex3d';
 import { smax } from './modules/smax';
 import { smin } from './modules/smin';
 
@@ -72,7 +72,7 @@ export const crtFrag = ( tag: 'deferred' | 'depth' ): string => build( () => {
     ) );
 
     ifThen( shouldUseNoise, () => {
-      const noise = simplex4d( vec4( mul( add( 2.0, p ), 100.0 ), 1.0 ) );
+      const noise = simplex3d( mul( 100.0, p ) );
       addAssign( d, mul( 0.0001, noise ) );
 
       const uv = glslLinearstep( vec2( -0.25, -0.22 ), vec2( 0.25, -0.32 ), sw( p, 'xy' ) );

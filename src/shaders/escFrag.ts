@@ -7,7 +7,7 @@ import { glslLinearstep } from './modules/glslLinearstep';
 import { raymarch } from './modules/raymarch';
 import { sdbox } from './modules/sdbox';
 import { setupRoRd } from './modules/setupRoRd';
-import { simplex4d } from './modules/simplex4d';
+import { simplex3d } from './modules/simplex3d';
 import { smax } from './modules/smax';
 import { smin } from './modules/smin';
 
@@ -64,7 +64,7 @@ export const escFrag = ( tag: 'deferred' | 'depth' ): string => build( () => {
     const text = def( 'float', 0.0 );
 
     ifThen( shouldUseNoise, () => {
-      const noise = simplex4d( vec4( mul( add( 2.0, p ), 50.0 ), 1.0 ) );
+      const noise = simplex3d( mul( 50.0, p ) );
       addAssign( d, mul( 0.0001, noise ) );
 
       ifThen( gt( sw( pt, 'z' ), 0.40 ), () => {

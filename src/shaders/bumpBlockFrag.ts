@@ -3,7 +3,7 @@ import { abs, add, addAssign, assign, build, clamp, def, defFn, defInNamed, defO
 import { calcDepth } from './modules/calcDepth';
 import { calcNormal } from './modules/calcNormal';
 import { cyclicNoise } from './modules/cyclicNoise';
-import { defSimplexFBM4d } from './modules/simplexFBM4d';
+import { defSimplexFBM3d } from './modules/simplexFBM3d';
 import { glslLinearstep } from './modules/glslLinearstep';
 import { glslSaturate } from './modules/glslSaturate';
 import { maxOfVec3 } from './modules/maxOfVec3';
@@ -33,7 +33,7 @@ export const bumpBlockFrag = ( tag: 'deferred' | 'depth' ): string => build( () 
 
   const shouldCalcNoise = def( 'bool', glslFalse );
 
-  const fbm = defSimplexFBM4d();
+  const fbm3 = defSimplexFBM3d();
 
   const map = defFn( 'vec4', [ 'vec3' ], ( p ) => {
     const d = def( 'float', sub( sdbox( p, vec3( 0.47 ) ), 0.01 ) );
@@ -147,10 +147,10 @@ export const bumpBlockFrag = ( tag: 'deferred' | 'depth' ): string => build( () 
     const cyc = cyclicNoise( mul( rp, 2.0 ) );
 
     const dirt = def( 'float', glslSaturate( add(
-      fbm( vec4( add(
-        mul( mix( 2.0, 4.0, mtl ), rp ),
-        mul( mix( 0.1, 0.5, mtl ), cyc ),
-      ), 0.0 ) ),
+      fbm3( add(
+        mul( mix( 1.0, 2.0, mtl ), rp ),
+        mul( mix( 0.1, 0.3, mtl ), cyc ),
+      ) ),
       sw( isect, 'z' ),
       mix( 0.0, -0.2, mtl ),
       mix( 0.0, 1.0, smoothstep( 0.2, -0.5, sw( rp, 'z' ) ) ),
@@ -159,7 +159,7 @@ export const bumpBlockFrag = ( tag: 'deferred' | 'depth' ): string => build( () 
     const baseColor = mix(
       mix(
         vec3( 0.4 ),
-        vec3( 0.8, 0.6, 0.1 ),
+        vec3( 0.8, 0.5, 0.1 ),
         mtl,
       ),
       vec3( 0.1 ),
@@ -169,8 +169,8 @@ export const bumpBlockFrag = ( tag: 'deferred' | 'depth' ): string => build( () 
       mix(
         0.9,
         mix(
-          0.4,
           0.5,
+          0.6,
           add( sw( isect, 'w' ), sw( cyc, 'x' ) ),
         ),
         mtl,

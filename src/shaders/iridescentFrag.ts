@@ -7,7 +7,7 @@ import { maxOfVec3 } from './modules/maxOfVec3';
 import { raymarch } from './modules/raymarch';
 import { sdbox } from './modules/sdbox';
 import { setupRoRd } from './modules/setupRoRd';
-import { simplex4d } from './modules/simplex4d';
+import { simplex3d } from './modules/simplex3d';
 
 export const iridescentFrag = ( tag: 'deferred' | 'depth' ): string => build( () => {
   insert( 'precision highp float;' );
@@ -44,7 +44,7 @@ export const iridescentFrag = ( tag: 'deferred' | 'depth' ): string => build( ()
       addAssign( d, mul(
         0.0005,
         smoothstep( 0.5, 0.4, maxOfVec3( abs( p ) ) ),
-        simplex4d( vec4( mul( 200.0, p ), 0.0 ) ),
+        simplex3d( mul( 200.0, p ) ),
       ) );
     } );
 

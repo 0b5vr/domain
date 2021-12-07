@@ -1,12 +1,12 @@
 import { PI } from '../utils/constants';
 import { add, addAssign, assign, atan, build, clamp, def, defInNamed, defOut, divAssign, exp, forLoop, ifThen, insert, length, lt, main, min, mix, mul, mulAssign, neg, subAssign, sw, vec2, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { cyclicNoise } from './modules/cyclicNoise';
-import { defSimplexFBM4d } from './modules/simplexFBM4d';
+import { defSimplexFBM2d } from './modules/simplexFBM2d';
 import { glslLinearstep } from './modules/glslLinearstep';
 import { glslLofi } from './modules/glslLofi';
 import { rotate2D } from './modules/rotate2D';
 import { sdcapsule } from './modules/sdcapsule';
-import { simplex4d } from './modules/simplex4d';
+import { simplex2d } from './modules/simplex2d';
 
 export const cubeRootTextureFrag = build( () => {
   insert( 'precision highp float;' );
@@ -15,13 +15,13 @@ export const cubeRootTextureFrag = build( () => {
 
   const fragColor = defOut( 'vec4' );
 
-  const fbm = defSimplexFBM4d();
+  const fbm2 = defSimplexFBM2d();
 
   main( () => {
     const d = def( 'float', 1.0 );
 
     const dirt = def( 'float', (
-      fbm( vec4( mul( 40.0, vUv ), 5.0, 5.0 ) )
+      fbm2( mul( 40.0, vUv ) )
     ) );
 
     const p = def( 'vec2', mix( vec2( -1.0 ), vec2( 1.0 ), vUv ) );
@@ -43,7 +43,7 @@ export const cubeRootTextureFrag = build( () => {
 
       assign( d, min( d, sdcapsule( proot, v ) ) );
       subAssign( proot, v );
-      divAssign( v, add( 1.0, simplex4d( vec4( mul( 2.0, proot ), 2.0, 2.0 ) ) ) );
+      divAssign( v, add( 1.0, simplex2d( add( 25.0, mul( 2.0, proot ) ) ) ) );
       divAssign( pmodangle, 1.8 );
     } );
 

@@ -8,7 +8,7 @@ import { raymarch } from './modules/raymarch';
 import { sdbox } from './modules/sdbox';
 import { sdbox2 } from './modules/sdbox2';
 import { setupRoRd } from './modules/setupRoRd';
-import { simplex4d } from './modules/simplex4d';
+import { simplex3d } from './modules/simplex3d';
 import { triplanarMapping } from './modules/triplanarMapping';
 
 export const cardboardFrag = ( tag: 'deferred' | 'depth' ): string => build( () => {
@@ -131,7 +131,7 @@ export const cardboardFrag = ( tag: 'deferred' | 'depth' ): string => build( () 
       or(
         lt( max(
           sdbox2( sub( uv, vec2( -0.296, -0.25 ) ), vec2( 0.06, 0.1 ) ),
-          simplex4d( vec4(
+          simplex3d( vec3(
             mul( 50.0, add( sw( uv, 'y' ), sw( pcg3df( vec3( mul( 500.0, time ) ) ), 'x' ) ) )
           ) ),
         ), 0.0 ), // barcode
@@ -146,8 +146,8 @@ export const cardboardFrag = ( tag: 'deferred' | 'depth' ): string => build( () 
     const dirt = def( 'float', triplanarMapping( rp, N, 1.0, ( uv ) => (
       sw( texture( samplerSurface, add(
         0.5,
-        sw( mul( 0.1, cyclicNoise( vec3( uv, 0.0 ) ) ), 'xy' ),
-        mul( 0.4, uv ),
+        sw( mul( 0.06, cyclicNoise( vec3( uv, 0.0 ) ) ), 'xy' ),
+        mul( 0.2, uv ),
       ) ), 'z' )
     ) ) );
 
@@ -160,7 +160,7 @@ export const cardboardFrag = ( tag: 'deferred' | 'depth' ): string => build( () 
       mix(
         mul(
           vec3( 0.34, 0.28, 0.18 ),
-          mix( 0.8, 1.0, simplex4d( vec4( mul( 120.0, rp ), 1.0 ) ) ),
+          mix( 0.8, 1.0, simplex3d( mul( 120.0, rp ) ) ),
         ),
         vec3( 0.04, 0.04, 0.04 ),
         dirt,

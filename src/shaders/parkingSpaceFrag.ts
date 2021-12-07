@@ -7,7 +7,7 @@ import { raymarch } from './modules/raymarch';
 import { sdbox } from './modules/sdbox';
 import { sdbox2 } from './modules/sdbox2';
 import { setupRoRd } from './modules/setupRoRd';
-import { simplex4d } from './modules/simplex4d';
+import { simplex3d } from './modules/simplex3d';
 
 export const parkingSpaceFrag = ( tag: 'deferred' | 'depth' ): string => build( () => {
   insert( 'precision highp float;' );
@@ -36,7 +36,7 @@ export const parkingSpaceFrag = ( tag: 'deferred' | 'depth' ): string => build( 
     subAssign( d, 0.02 );
 
     ifThen( shouldUseNoise, () => {
-      const noise = simplex4d( vec4( mul( add( 2.0, p ), 50.0 ), 1.0 ) );
+      const noise = simplex3d( mul( 50.0, p ) );
       addAssign( d, mul( 0.0003, noise ) );
     } );
 

@@ -2,7 +2,7 @@ import { MTL_PBR_ROUGHNESS_METALLIC } from './deferredShadeFrag';
 import { TAU } from '../utils/constants';
 import { add, assign, build, cos, defInNamed, defOut, div, insert, main, max, min, mix, mul, normalize, sw, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { glslLinearstep } from './modules/glslLinearstep';
-import { simplex4d } from './modules/simplex4d';
+import { simplex3d } from './modules/simplex3d';
 
 export const oscilloscopeMeasureFrag = build( () => {
   insert( 'precision highp float;' );
@@ -23,7 +23,7 @@ export const oscilloscopeMeasureFrag = build( () => {
 
     const color = add(
       vec3( 0.03, 0.05, 0.04 ),
-      mix( 0.0, 0.03, simplex4d( vec4( mul( 200.0, vPositionWithoutModel ) ) ) ),
+      mix( 0.0, 0.03, simplex3d( mul( 200.0, sw( vPositionWithoutModel, 'xyz' ) ) ) ),
     );
 
     const measureBigGrid = glslLinearstep( 0.98, 0.99, cos( mul( TAU, 10.0, vUv ) ) );

@@ -1,7 +1,7 @@
 import { add, assign, build, def, defFn, defInNamed, defOut, insert, length, main, mix, mul, mulAssign, num, pow, retFn, sin, smoothstep, sub, sw, vec2, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { glslLinearstep } from './modules/glslLinearstep';
 import { sdcapsule } from './modules/sdcapsule';
-import { simplex4d } from './modules/simplex4d';
+import { simplex3d } from './modules/simplex3d';
 
 export const crateTextureFrag = build( () => {
   insert( 'precision highp float;' );
@@ -11,8 +11,8 @@ export const crateTextureFrag = build( () => {
   const fragColor = defOut( 'vec4' );
 
   const woodTexture = defFn( 'vec3', [ 'float' ], ( s ) => {
-    const noise = simplex4d(
-      vec4( mul( vec2( 8.0, 32.0 ), vUv ), s, 0.0 )
+    const noise = simplex3d(
+      vec3( mul( vec2( 8.0, 32.0 ), vUv ), s )
     );
     retFn( mix(
       vec3( 0.8, 0.4, 0.0 ),

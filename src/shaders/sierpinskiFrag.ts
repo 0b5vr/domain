@@ -4,7 +4,7 @@ import { abs, add, addAssign, assign, build, def, defFn, defInNamed, defOut, def
 import { calcDepth } from './modules/calcDepth';
 import { calcNormal } from './modules/calcNormal';
 import { cyclicNoise } from './modules/cyclicNoise';
-import { defSimplexFBM4d } from './modules/simplexFBM4d';
+import { defSimplexFBM3d } from './modules/simplexFBM3d';
 import { raymarch } from './modules/raymarch';
 import { sdbox } from './modules/sdbox';
 import { setupRoRd } from './modules/setupRoRd';
@@ -32,7 +32,7 @@ export const sierpinskiFrag = ( tag: 'deferred' | 'depth' ): string => build( ()
 
   const shouldUseNoise = def( 'bool', glslFalse );
 
-  const fbm = defSimplexFBM4d();
+  const fbm3 = defSimplexFBM3d();
 
   const map = defFn( 'vec4', [ 'vec3' ], ( p ) => {
     addAssign( p, mul(
@@ -52,8 +52,8 @@ export const sierpinskiFrag = ( tag: 'deferred' | 'depth' ): string => build( ()
           return mul( 0.001, sw( pp, 'x' ), sw( pp, 'y' ) );
         },
       ) );
-      subAssign( d, mul( 0.003, fbm(
-        vec4( mul( 20.0, p ), 0.0 )
+      subAssign( d, mul( 0.004, fbm3(
+        mul( 10.0, p )
       ) ) );
     } );
 

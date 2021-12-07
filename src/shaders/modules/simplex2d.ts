@@ -44,7 +44,7 @@ export function simplex2d( v: GLSLExpression<'vec2'> ): GLSLExpression<'float'> 
 
     // Permutations
     assign( i, mod289( i ) );
-    const p = def( 'float', permute3(
+    const p = def( 'vec3', permute3(
       add( permute3(
         add(
           sw( i, 'y' ),

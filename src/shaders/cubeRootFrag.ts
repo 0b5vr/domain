@@ -8,7 +8,7 @@ import { glslSaturate } from './modules/glslSaturate';
 import { raymarch } from './modules/raymarch';
 import { sdbox } from './modules/sdbox';
 import { setupRoRd } from './modules/setupRoRd';
-import { simplex4d } from './modules/simplex4d';
+import { simplex3d } from './modules/simplex3d';
 import { triplanarMapping } from './modules/triplanarMapping';
 
 export const cubeRootFrag = ( tag: 'deferred' | 'depth' ): string => build( () => {
@@ -49,7 +49,7 @@ export const cubeRootFrag = ( tag: 'deferred' | 'depth' ): string => build( () =
     subAssign( d, sw( mapSurface, 'x' ) );
     subAssign( d, mul(
       0.01,
-      simplex4d( mul( 5.0, vec4( clamp( p, -0.5, 0.5 ), 8.0 ) ) ),
+      simplex3d( mul( 5.0, clamp( p, -0.5, 0.5 ) ) ),
     ) );
 
     assign( tex, mapSurface );
@@ -121,7 +121,7 @@ export const cubeRootFrag = ( tag: 'deferred' | 'depth' ): string => build( () =
         ),
         add(
           vec3( 0.2, 0.13, 0.1 ),
-          mul( 0.1, simplex4d( vec4( mul( 4.0, rp ), mul( 30.0, rootd ) ) ) ),
+          mul( 0.1, simplex3d( add( mul( 4.0, rp ), mul( 15.0, rootd ) ) ) ),
         ),
         root,
       ) ),
