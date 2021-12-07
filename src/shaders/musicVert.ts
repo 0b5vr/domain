@@ -157,7 +157,7 @@ export const musicVert = build( () => {
       const wave = glslTri( phase );
       const amp = mul(
         0.2,
-        zcross( t, num( 9.0 ) ),
+        zcross( t, len ),
         tern( eq( sectionIndex, 3.0 ), smoothstep( 1.0, 0.75, sectionPhase ), 1.0 ),
       );
       addAssign( dest, mul( amp, wave ) );
