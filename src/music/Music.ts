@@ -188,7 +188,7 @@ export abstract class Music {
     const barLength = 240.0 / MUSIC_BPM;
 
     const sectionReset = binarySearch( sectionResets, time );
-    const sectionHead = sectionReset - 1;
+    const sectionHead = Math.max( 0.0, sectionReset - 1 );
     const sectionBegin = sectionResets[ sectionHead ];
     const sectionLength = sectionLengths[ sectionHead ];
 

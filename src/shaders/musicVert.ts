@@ -127,10 +127,12 @@ export const musicVert = build( () => {
     const timeX = sw( time, 'x' );
     const timeY = sw( time, 'y' );
     const timeZ = sw( time, 'z' );
+    const timeW = sw( time, 'w' );
     const barPhase = div( timeY, sw( timeLength, 'y' ) );
     const sectionPhase = div( timeZ, sw( timeLength, 'z' ) );
     // const beatY = div( timeY, beatLength );
     const beatZ = div( timeZ, beatLength );
+    const beatW = div( timeW, beatLength );
     // const phaseY = div( timeY, sw( timeLength, 'y' ) );
 
     const chordHead = mul(
@@ -399,9 +401,7 @@ export const musicVert = build( () => {
     } );
 
     // fadein
-    ifThen( eq( sectionIndex, 1.0 ), () => (
-      mulAssign( dest, smoothstep( 0.03, 0.5, sectionPhase ) )
-    ) );
+    mulAssign( dest, smoothstep( 4.0, 36.0, beatW ) );
 
     // fadeout
     ifThen( eq( sectionIndex, 7.0 ), () => (
@@ -409,9 +409,6 @@ export const musicVert = build( () => {
     ) );
 
     // mute
-    ifThen( lt( sectionIndex, 1.0 ), () => (
-      mulAssign( dest, 0.0 )
-    ) );
     ifThen( gte( sectionIndex, 8.0 ), () => (
       mulAssign( dest, 0.0 )
     ) );

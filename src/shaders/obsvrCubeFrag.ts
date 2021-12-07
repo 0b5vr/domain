@@ -1,5 +1,5 @@
 import { MTL_PBR_ROUGHNESS_METALLIC } from './deferredShadeFrag';
-import { abs, assign, build, def, defInNamed, defOut, div, insert, lt, main, min, mix, normalize, step, sub, sw, tern, vec2, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { abs, assign, build, def, defInNamed, defOut, defUniformNamed, div, insert, lt, main, min, mix, mul, normalize, step, sub, sw, tern, vec2, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { sdbox2 } from './modules/sdbox2';
 
 export const obsvrCubeFrag = build( () => {
@@ -14,6 +14,8 @@ export const obsvrCubeFrag = build( () => {
   const fragPosition = defOut( 'vec4', 1 );
   const fragNormal = defOut( 'vec4', 2 );
   const fragMisc = defOut( 'vec4', 3 );
+
+  const glow = defUniformNamed( 'float', 'glow' );
 
   main( () => {
     const depth = div( sw( vProjPosition, 'z' ), sw( vProjPosition, 'w' ) );
@@ -35,7 +37,7 @@ export const obsvrCubeFrag = build( () => {
     ), 1.0 ) );
     assign( fragPosition, vec4( sw( vPosition, 'xyz' ), depth ) );
     assign( fragNormal, vec4( normalize( vNormal ), MTL_PBR_ROUGHNESS_METALLIC ) );
-    assign( fragMisc, vec4( roughness, 1.0, 0.0, 0.0 ) );
+    assign( fragMisc, vec4( roughness, 1.0, mul( glow, step( d, 0.0 ) ), 0.0 ) );
     return;
   } );
 } );

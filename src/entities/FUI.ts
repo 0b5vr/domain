@@ -16,7 +16,7 @@ export const charCanvasTexture = new CharCanvasTexture( 2048, 2048 );
 
 const texts = [
   [ 'cube', 'an important, single step' ],
-  [ 'sss_box', 'subsurface scatter-brain' ],
+  [ 'sss', 'subsurface scatter-brain' ],
   [ 'menger_sponge', 'fractal dimension = 2.7268...' ],
   [ 'asphalt', 'high-octane flavored' ],
   [ '0b5vr', 'live coding and tax saving vtuber' ],

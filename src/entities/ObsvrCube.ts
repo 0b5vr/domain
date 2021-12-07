@@ -1,6 +1,7 @@
 import { Material } from '../heck/Material';
 import { Mesh } from '../heck/components/Mesh';
 import { SceneNode } from '../heck/components/SceneNode';
+import { auto } from '../globals/automaton';
 import { depthFrag } from '../shaders/depthFrag';
 import { dummyRenderTarget, dummyRenderTargetFourDrawBuffers } from '../globals/dummyRenderTarget';
 import { genCube } from '../geometries/genCube';
@@ -52,6 +53,10 @@ export class ObsvrCube extends SceneNode {
         initOptions: { geometry, target: dummyRenderTarget },
       },
     );
+
+    auto( '0b5vr/glow', ( { value } ) => (
+      deferred.addUniform( 'glow', '1f', value )
+    ) );
 
     if ( process.env.DEV ) {
       module.hot?.accept(

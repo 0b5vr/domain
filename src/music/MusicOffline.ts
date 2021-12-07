@@ -31,22 +31,24 @@ export class MusicOffline extends Music {
         const render = (): void => {
           setProgress( head / numBuffer );
 
-          if ( numBuffer <= head ) {
-            resolve();
-            return;
-          }
+          [ ...Array( 5 ) ].map( () => {
+            if ( numBuffer <= head ) {
+              resolve();
+              return;
+            }
 
-          this.__render( head / audio.sampleRate, ( i ) => {
-            gl.getBufferSubData(
-              gl.ARRAY_BUFFER,
-              0,
-              this.__buffer.getChannelData( i ),
-              head,
-              BUFFER_LENGTH,
-            );
+            this.__render( head / audio.sampleRate, ( i ) => {
+              gl.getBufferSubData(
+                gl.ARRAY_BUFFER,
+                0,
+                this.__buffer.getChannelData( i ),
+                head,
+                BUFFER_LENGTH,
+              );
+            } );
+
+            head += BUFFER_LENGTH;
           } );
-
-          head += BUFFER_LENGTH;
 
           setTimeout( render, 1 );
         };
