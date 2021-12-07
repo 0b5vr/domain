@@ -34,7 +34,7 @@ export const asphaltFrag = ( tag: 'deferred' | 'depth' ): string => build( () =>
 
   const map = defFn( 'vec4', [ 'vec3' ], ( p ) => {
     const phase = add( dot( p, vec3( 10.0 ) ), time );
-    const line = def( 'float', smoothstep( 0.1, 0.3, sin( phase ) ) );
+    const line = def( 'float', smoothstep( 0.1, 0.2, sin( phase ) ) );
 
     addAssign( p, mul( 0.02, cyclicNoise( p, { pump: mix( 2.0, 4.0, line ) } ) ) );
 
