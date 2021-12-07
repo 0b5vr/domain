@@ -1,4 +1,4 @@
-import { add, assign, build, def, defInNamed, defOut, dot, fract, insert, main, mix, mul, smoothstep, sq, sub, sw, vec2, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { abs, add, assign, build, def, defInNamed, defOut, dot, fract, insert, length, main, mix, mod, mul, smoothstep, sq, step, sub, sw, vec2, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { cyclicNoise } from './modules/cyclicNoise';
 import { defSimplexFBM2d } from './modules/simplexFBM2d';
 import { glslTri } from './modules/glslTri';
@@ -23,6 +23,12 @@ export const wallTextureFrag = build( () => {
     const holepre = simplex3d( mix( vec3( mul( vUv, 80.0 ), 0.0 ), crackP, 0.3 ) );
     const hole = smoothstep( 0.9, 1.0, add( holepre, cloud ) );
 
+    const uvHole2 = sub( abs( sub(
+      mod( vUv, vec2( 1.0 / 8.0, 1.0 / 6.0 ) ),
+      vec2( 1.0 / 16.0, 1.0 / 12.0 ),
+    ) ), vec2( 1.0 / 16.0 - 0.03, 1.0 / 12.0 - 0.03 ) );
+    const hole2 = step( length( uvHole2 ), 0.003 );
+
     const gapptn = add(
       glslTri( add( 0.25, mul( vec2( 8.0, 6.0 ), vUv ) ) ),
       mul( 0.1, crack ),
@@ -43,6 +49,7 @@ export const wallTextureFrag = build( () => {
         mul( 0.5, dirtSimplexV ),
         mul( 0.5, dirtGap ),
         mul( 0.5, dirtDrip ),
+        hole2,
       )
     );
 
@@ -53,9 +60,10 @@ export const wallTextureFrag = build( () => {
     ) );
     const height = def( 'float', sub(
       mul( 0.1, cloud ),
-      hole,
+      mul( 0.3, hole ),
       gap,
-      mul( 0.1, roughness )
+      mul( 1.0, hole2 ),
+      mul( 0.1, roughness ),
     ) );
     assign( fragColor, vec4( height, roughness, hole, dirt ) );
   } );
