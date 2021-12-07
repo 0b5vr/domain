@@ -41,7 +41,7 @@ export const fluidPressureFrag = (
     ) );
 
     const l = def( 'float', (
-      length( add( pos, mul( 0.3, sin( mul( time, vec3( 0.7, 1.1, 1.5 ) ) ) ) ) )
+      length( add( pos, mul( 0.3, sin( mul( time, vec3( 0.8, 1.2, 1.7 ) ) ) ) ) )
     ) );
     addAssign( pressure, mul(
       40.0,

@@ -33,7 +33,7 @@ export const fluidRenderFrag = (
 
     retFn( mul(
       edgedecay,
-      glslSaturate( mul( 0.1, sq( sw( sampleLinear3D( samplerDensity, p ), 'x' ) ) ) ),
+      glslSaturate( mul( 0.05, sq( sw( sampleLinear3D( samplerDensity, p ), 'x' ) ) ) ),
     ) );
   } );
 

@@ -2,6 +2,7 @@ import { add, addAssign, and, assign, build, def, defInNamed, defOut, defUniform
 import { cyclicNoise } from './modules/cyclicNoise';
 import { glslDefRandom } from './modules/glslDefRandom';
 import { glslLofi } from './modules/glslLofi';
+import { uniformSphere } from './modules/uniformSphere';
 
 export const trailsComputeFrag = (
   { trails, trailLength, trailSpawnLength }: {
@@ -25,7 +26,7 @@ export const trailsComputeFrag = (
   const samplerCompute1 = defUniformNamed( 'sampler2D', 'samplerCompute1' );
   const samplerRandom = defUniformNamed( 'sampler2D', 'samplerRandom' );
 
-  const { init, random } = glslDefRandom();
+  const { init } = glslDefRandom();
 
   main( () => {
     const uv = def( 'vec2', vUv );
@@ -74,7 +75,10 @@ export const trailsComputeFrag = (
         ifThen( and( lt( sub( time, deltaTime ), spawnTime ), lte( spawnTime, time ) ), () => {
           assign( dt, sub( time, spawnTime ) );
 
-          assign( pos, mix( vec3( -0.4 ), vec3( 0.4 ), vec3( random(), random(), random() ) ) );
+          assign( pos, add(
+            mul( 0.1, uniformSphere() ),
+            mul( 0.3, sin( add( vec3( 1.0, 2.0, 3.0 ), mul( time, vec3( 1.4, 2.5, 3.6 ) ) ) ) ),
+          ) );
           assign( vel, vec3( 0.0 ) );
           assign( life, 1.0 );
           assign( jumpFlag, 1.0 );
@@ -83,15 +87,22 @@ export const trailsComputeFrag = (
         } );
 
         // -- update particles ---------------------------------------------------------------------
+        // resistance
+        mulAssign( vel, exp( mul( -2.0, dt ) ) );
+
         // noise field
         const cyclicV = add(
-          mul( 3.0, pos ),
+          mul( 1.0, pos ),
           sin( mul( 0.1, time ) ),
         );
-        addAssign( vel, mul( 4.0, dt, cyclicNoise( cyclicV, { freq: 1.3 } ) ) );
+        addAssign( vel, mul( 2.0, dt, cyclicNoise( cyclicV, { freq: 1.3 } ) ) );
 
-        // resistance
-        mulAssign( vel, exp( mul( -5.0, dt ) ) );
+        // rotate
+        addAssign( vel, mul(
+          dt,
+          sw( pos, 'xzy' ),
+          vec3( -0.5, -2.0, 2.0 ),
+        ) );
 
         // usual update stuff
         addAssign( pos, mul( vel, dt ) );
@@ -101,7 +112,7 @@ export const trailsComputeFrag = (
     } );
 
     // -- almost done ------------------------------------------------------------------------------
-    ifThen( shouldInit, () => assign( life, 0.0 ) );
+    ifThen( shouldInit, () => assign( jumpFlag, 1.0 ) );
 
     assign( fragCompute0, tex0 );
     assign( fragCompute1, tex1 );

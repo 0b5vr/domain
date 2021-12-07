@@ -3,6 +3,7 @@ import { Lambda } from '../heck/components/Lambda';
 import { MTL_PBR_ROUGHNESS_METALLIC } from '../shaders/deferredShadeFrag';
 import { Material } from '../heck/Material';
 import { TransparentShell } from './TransparentShell';
+import { auto } from '../globals/automaton';
 import { dummyRenderTarget, dummyRenderTargetFourDrawBuffers, dummyRenderTargetTwoDrawBuffers } from '../globals/dummyRenderTarget';
 import { genCylinder } from '../geometries/genCylinder';
 import { glCat } from '../globals/canvas';
@@ -118,11 +119,20 @@ export class Trails extends GPUParticles {
     } );
 
     // -- lambda to say update ---------------------------------------------------------------------
+    let shouldInit = 0;
+
+    auto( 'trails/init', () => {
+      shouldInit = 1;
+    } );
+
     this.children.push( new Lambda( {
       onUpdate: ( { time, deltaTime } ) => {
         const shouldUpdate
           = Math.floor( 60.0 * time ) !== Math.floor( 60.0 * ( time - deltaTime ) );
         materialCompute.addUniform( 'shouldUpdate', '1i', shouldUpdate ? 1 : 0 );
+
+        materialCompute.addUniform( 'shouldInit', '1i', shouldInit );
+        shouldInit = 0;
       },
       name: process.env.DEV && 'updateShouldUpdate',
     } ) );

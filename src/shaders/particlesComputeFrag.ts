@@ -2,7 +2,6 @@ import { add, addAssign, and, assign, build, def, defInNamed, defOut, defUniform
 import { cyclicNoise } from './modules/cyclicNoise';
 import { glslDefRandom } from './modules/glslDefRandom';
 import { glslLofi } from './modules/glslLofi';
-import { uniformSphere } from './modules/uniformSphere';
 
 export const particlesComputeFrag = (
   { particlesSqrt, particleSpawnLength }: {
@@ -59,23 +58,23 @@ export const particlesComputeFrag = (
       assign( dt, sub( time, spawnTime ) );
 
       assign( pos, mix( vec3( -0.5 ), vec3( 0.5 ), vec3( random(), random(), random() ) ) );
-      assign( vel, mul( 1.0, uniformSphere() ) );
+      assign( vel, vec3( 0.0 ) );
       assign( life, 1.0 );
     } );
 
     // -- update particles -------------------------------------------------------------------------
     // noise field
     const cyclicV = add(
-      mul( 2.0, pos ),
+      mul( 4.0, pos ),
       sin( mul( 0.1, time ) ),
     );
-    addAssign( vel, mul( 2.0, dt, cyclicNoise( cyclicV ) ) );
+    addAssign( vel, mul( 1.0, dt, cyclicNoise( cyclicV ) ) );
 
     // resistance
-    mulAssign( vel, exp( mul( -10.0, dt ) ) );
+    mulAssign( vel, exp( mul( -0.5, dt ) ) );
 
     // succ
-    // addAssign( vel, mul( dt, -10.0, pos ) );
+    addAssign( vel, mul( dt, -1.0, pos ) );
 
     // usual update stuff
     addAssign( pos, mul( vel, dt ) );
