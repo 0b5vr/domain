@@ -1,5 +1,5 @@
 import { AutomatonManager } from './AutomatonManager';
-import { GLCatBuffer, GLCatProgram, GLCatTransformFeedback } from '@fms-cat/glcat-ts';
+import { GLCatBuffer, GLCatProgram, GLCatTransformFeedback } from '@0b5vr/glcat-ts';
 import { MUSIC_BPM } from '../config';
 import { SamplesManager } from './SamplesManager';
 import { TaskProgress } from '../utils/TaskProgress';

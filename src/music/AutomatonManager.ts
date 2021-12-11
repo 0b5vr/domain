@@ -1,5 +1,5 @@
 import { Channel } from '@0b5vr/automaton';
-import { GLCatTexture } from '@fms-cat/glcat-ts';
+import { GLCatTexture } from '@0b5vr/glcat-ts';
 import { MUSIC_AUTOMATON_TEXTURE_HEIGHT } from '../config';
 import { Music } from './Music';
 import { audio } from '../globals/music';

@@ -1,4 +1,4 @@
-import { GLCatFramebuffer, GLCatTexture } from '@fms-cat/glcat-ts';
+import { GLCatFramebuffer, GLCatTexture } from '@0b5vr/glcat-ts';
 import { RenderTarget } from './RenderTarget';
 import { createMipmapFramebuffers } from '../utils/createMipmapFramebuffers';
 import { gl, glCat } from '../globals/canvas';

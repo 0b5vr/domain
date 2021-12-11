@@ -1,4 +1,4 @@
-import { GLCatProgram, GLCatProgramLinkOptions } from '@fms-cat/glcat-ts';
+import { GLCatProgram, GLCatProgramLinkOptions } from '@0b5vr/glcat-ts';
 import { Material } from './Material';
 import { glCat } from '../globals/canvas';
 

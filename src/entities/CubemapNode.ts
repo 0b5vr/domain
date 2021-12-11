@@ -3,7 +3,7 @@ import { BufferRenderTarget } from '../heck/BufferRenderTarget';
 import { CameraStack } from './CameraStack';
 import { ComponentOptions } from '../heck/components/Component';
 import { DustTag } from './Dust';
-import { GLCatTexture } from '@fms-cat/glcat-ts';
+import { GLCatTexture } from '@0b5vr/glcat-ts';
 import { Lambda } from '../heck/components/Lambda';
 import { Material } from '../heck/Material';
 import { PointLightTag } from './PointLightNode';

@@ -1,7 +1,7 @@
 import { BufferRenderTarget } from '../heck/BufferRenderTarget';
 import { CanvasTexture } from './utils/CanvasTexture';
 import { CharCanvasTexture } from './fui/CharCanvasTexture';
-import { GLCatTexture } from '@fms-cat/glcat-ts';
+import { GLCatTexture } from '@0b5vr/glcat-ts';
 import { Lambda } from '../heck/components/Lambda';
 import { Material } from '../heck/Material';
 import { Quad } from '../heck/components/Quad';

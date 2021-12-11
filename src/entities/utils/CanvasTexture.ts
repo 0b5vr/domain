@@ -1,4 +1,4 @@
-import { GLCatTexture } from '@fms-cat/glcat-ts';
+import { GLCatTexture } from '@0b5vr/glcat-ts';
 import { glCat } from '../../globals/canvas';
 
 export class CanvasTexture {

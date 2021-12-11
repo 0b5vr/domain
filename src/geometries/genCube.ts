@@ -1,4 +1,4 @@
-import { GLCatBuffer } from '@fms-cat/glcat-ts';
+import { GLCatBuffer } from '@0b5vr/glcat-ts';
 import { Geometry } from '../heck/Geometry';
 import { HALF_PI, PI } from '../utils/constants';
 import { gl, glCat } from '../globals/canvas';

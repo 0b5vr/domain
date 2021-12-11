@@ -1,4 +1,4 @@
-import { GLCatTransformFeedback, GLCatVertexArray } from '@fms-cat/glcat-ts';
+import { GLCatTransformFeedback, GLCatVertexArray } from '@0b5vr/glcat-ts';
 import { gl, glCat } from '../globals/canvas';
 
 export class Geometry {

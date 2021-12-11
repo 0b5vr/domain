@@ -1,5 +1,5 @@
 import { BufferRenderTarget } from '../heck/BufferRenderTarget';
-import { GLCatTexture } from '@fms-cat/glcat-ts';
+import { GLCatTexture } from '@0b5vr/glcat-ts';
 import { IBLLUT_ITER, IBLLUT_SIZE } from '../config';
 import { Lambda } from '../heck/components/Lambda';
 import { Material } from '../heck/Material';

@@ -1,4 +1,4 @@
-import { GLCatProgram, GLCatProgramLinkOptions, GLCatProgramUniformMatrixVectorType, GLCatProgramUniformType, GLCatProgramUniformVectorType, GLCatTexture } from '@fms-cat/glcat-ts';
+import { GLCatProgram, GLCatProgramLinkOptions, GLCatProgramUniformMatrixVectorType, GLCatProgramUniformType, GLCatProgramUniformVectorType, GLCatTexture } from '@0b5vr/glcat-ts';
 import { Geometry } from './Geometry';
 import { RenderTarget } from './RenderTarget';
 import { SHADERPOOL } from './ShaderPool';

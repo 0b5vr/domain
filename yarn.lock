@@ -19,6 +19,11 @@
   resolved "https://registry.yarnpkg.com/@0b5vr/experimental/-/experimental-0.7.1.tgz#87594a6fa2e03f0e9fb96f41ea65480258e24f69"
   integrity sha512-nXfuNWXL2sIy7VMYJ6k3ybP7TaRs5ni6vXF5Qt823NhTUR56nnmSVxV8yywH/yhV1MhpP9+DM6emtSrTcepbkg==
 
+"@0b5vr/glcat-ts@^0.15.0":
+  version "0.15.1"
+  resolved "https://registry.yarnpkg.com/@0b5vr/glcat-ts/-/glcat-ts-0.15.1.tgz#c56103e931a83b243eae1d205cc7c6d3902256bb"
+  integrity sha512-xacrQkzRFEtJUvMzgmuPXlmPmCuotQ3vOoiSAFMu4UeRv2BcCzl6Vc6kG4a4AvvapK/4v7ag8HLA0demoHwncg==
+
 "@0b5vr/imtweakpane@^0.1.3":
   version "0.1.3"
   resolved "https://registry.yarnpkg.com/@0b5vr/imtweakpane/-/imtweakpane-0.1.3.tgz#101f4ed43ae2d782f817b078d981c08a1ed7ddcd"
@@ -69,11 +74,6 @@
     js-yaml "^3.13.1"
     minimatch "^3.0.4"
     strip-json-comments "^3.1.1"
-
-"@fms-cat/glcat-ts@^0.15.0":
-  version "0.15.0"
-  resolved "https://registry.yarnpkg.com/@fms-cat/glcat-ts/-/glcat-ts-0.15.0.tgz#6540ea16d6c5e36dea1a87bc1ccc7c4f7a5a21ac"
-  integrity sha512-qdBgZfDLJWomZewadhhdZ1Aq81quYQSVSy6cim/czhbfAzf+468dqt9q1mV0v71J3B29Qyxg1omu+i12BLseeA==
 
 "@humanwhocodes/config-array@^0.5.0":
   version "0.5.0"

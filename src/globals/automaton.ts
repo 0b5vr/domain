@@ -8,7 +8,7 @@ import automatonData from '../automaton.json';
 export const automaton = ( () => {
   if ( process.env.DEV ) {
     // this cast smells so bad
-    // https://github.com/FMS-Cat/automaton/issues/121
+    // https://github.com/0b5vr/automaton/issues/121
     const automatonWithGUI = new AutomatonWithGUI(
       automatonData,
       {

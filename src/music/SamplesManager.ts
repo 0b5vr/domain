@@ -1,4 +1,4 @@
-import { GLCatTexture } from '@fms-cat/glcat-ts';
+import { GLCatTexture } from '@0b5vr/glcat-ts';
 import { Music } from './Music';
 import { gl, glCat } from '../globals/canvas';
 import samplesOpus from './samples.opus';

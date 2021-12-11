@@ -1,5 +1,5 @@
 import { Component } from '../../heck/components/Component';
-import { GLCatTexture } from '@fms-cat/glcat-ts';
+import { GLCatTexture } from '@0b5vr/glcat-ts';
 import { Lambda } from '../../heck/components/Lambda';
 import { MapOfSet } from '../../utils/MapOfSet';
 import { Material } from '../../heck/Material';

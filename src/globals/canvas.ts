@@ -1,5 +1,5 @@
 // import 'webgl-memory';
-import { GLCat } from '@fms-cat/glcat-ts';
+import { GLCat } from '@0b5vr/glcat-ts';
 
 export const canvas = document.createElement( 'canvas' );
 
