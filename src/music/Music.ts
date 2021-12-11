@@ -155,6 +155,12 @@ export abstract class Music {
     }
   }
 
+  public rewindAndPlay(): void {
+    this.__prevAudioTime = audio.currentTime;
+    this.time = 0.0;
+    this.isPlaying = true;
+  }
+
   public update(): void {
     const now = audio.currentTime;
 

@@ -6,23 +6,26 @@ import { Lambda } from '../heck/components/Lambda';
 import { Material } from '../heck/Material';
 import { ONE_SUB_ONE_POINT_FIVE_POW_I } from '../utils/constants';
 import { Quad } from '../heck/components/Quad';
-import { RESOLUTION } from '../config';
 import { RawMatrix4, Swap, mat4Inverse, mat4Multiply } from '@0b5vr/experimental';
-import { SceneNode } from '../heck/components/SceneNode';
+import { SceneNode, SceneNodeOptions } from '../heck/components/SceneNode';
 import { bloomDownFrag } from '../shaders/bloomDownFrag';
 import { dummyRenderTarget } from '../globals/dummyRenderTarget';
 import { quadGeometry } from '../globals/quadGeometry';
 import { quadVert } from '../shaders/quadVert';
+
+export interface FloorCameraOptions extends SceneNodeOptions {
+  width: number;
+  height: number;
+  primaryCamera: CameraStack;
+  floor: Floor;
+}
 
 export class FloorCamera extends SceneNode {
   public mirrorCamera: CameraStack;
   public mirrorTarget: BufferRenderTarget;
   public mipmapMirrorTarget: BufferRenderTarget;
 
-  public constructor(
-    primaryCamera: CameraStack,
-    floor: Floor,
-  ) {
+  public constructor( { width, height, primaryCamera, floor }: FloorCameraOptions ) {
     super();
 
     // -- https://www.nicovideo.jp/watch/sm21005672 ------------------------------------------------
@@ -35,6 +38,8 @@ export class FloorCamera extends SceneNode {
     if ( process.env.DEV ) { this.mirrorTarget.name = `${ this.name }/mirrorTarget`; }
 
     const mirrorCamera = this.mirrorCamera = new CameraStack( {
+      width,
+      height,
       scene: primaryCamera.deferredCamera.scene!,
       target: this.mirrorTarget,
       name: process.env.DEV && 'floorCameraStack',
@@ -57,6 +62,7 @@ export class FloorCamera extends SceneNode {
           primaryCamera.deferredCamera.projectionMatrix.concat() as RawMatrix4
         );
         mirrorCamera.deferredCamera.projectionMatrix[ 5 ] *= -1.0;
+        mirrorCamera.deferredCamera.projectionMatrix[ 9 ] *= -1.0;
         mirrorCamera.forwardCamera.projectionMatrix = mirrorCamera.deferredCamera.projectionMatrix;
       },
     } ) );
@@ -65,20 +71,20 @@ export class FloorCamera extends SceneNode {
     // -- create mipmaps ---------------------------------------------------------------------------
     const swapMirrorDownsampleTarget = new Swap(
       new BufferRenderTarget( {
-        width: RESOLUTION[ 0 ],
-        height: RESOLUTION[ 1 ],
+        width,
+        height,
         name: process.env.DEV && `${ this.name }/mirrorDownsampleTarget/swap0`,
       } ),
       new BufferRenderTarget( {
-        width: RESOLUTION[ 0 ],
-        height: RESOLUTION[ 1 ],
+        width,
+        height,
         name: process.env.DEV && `${ this.name }/mirrorDownsampleTarget/swap1`,
       } ),
     );
 
     this.mipmapMirrorTarget = new BufferRenderTarget( {
-      width: RESOLUTION[ 0 ] / 2,
-      height: RESOLUTION[ 1 ] / 2,
+      width: width / 2,
+      height: height / 2,
       levels: 6,
       name: process.env.DEV && `${ this.name }/mipmapMirrorTarget`,
     } );
@@ -118,10 +124,10 @@ export class FloorCamera extends SceneNode {
       srcRange = range;
 
       const srcRect: [ number, number, number, number ] = [
-        RESOLUTION[ 0 ] * ONE_SUB_ONE_POINT_FIVE_POW_I[ i ],
-        RESOLUTION[ 1 ] * ONE_SUB_ONE_POINT_FIVE_POW_I[ i ],
-        RESOLUTION[ 0 ] * ONE_SUB_ONE_POINT_FIVE_POW_I[ i + 1 ],
-        RESOLUTION[ 1 ] * ONE_SUB_ONE_POINT_FIVE_POW_I[ i + 1 ],
+        width * ONE_SUB_ONE_POINT_FIVE_POW_I[ i ],
+        height * ONE_SUB_ONE_POINT_FIVE_POW_I[ i ],
+        width * ONE_SUB_ONE_POINT_FIVE_POW_I[ i + 1 ],
+        height * ONE_SUB_ONE_POINT_FIVE_POW_I[ i + 1 ],
       ];
 
       this.children.push( new Blit( {

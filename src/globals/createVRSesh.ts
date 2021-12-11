@@ -8,10 +8,7 @@ export async function createVRSesh(): Promise<VRSesh> {
   const session = await xr.requestSession(
     'immersive-vr',
     { requiredFeatures: [ 'local-floor' ] },
-  ).catch( ( error ) => {
-    console.error( error );
-    throw new Error( 'Something went wrong while doing VR stuff' );
-  } );
+  );
 
   await ( gl as any ).makeXRCompatible();
 

@@ -1,4 +1,4 @@
-import { add, assign, build, def, defIn, defOutNamed, defUniformNamed, div, divAssign, glPointSize, glPosition, main, mix, mul, pow, sin, sw, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { GLSLExpression, add, assign, build, def, defIn, defOutNamed, defUniformNamed, div, divAssign, glPointSize, glPosition, main, mix, mul, pow, sin, sw, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { glslDefRandom } from './modules/glslDefRandom';
 import { uniformSphere } from './modules/uniformSphere';
 
@@ -43,7 +43,8 @@ export const oscilloscopeVert = build( () => {
 
     assign( glPointSize, mul(
       sw( resolution, 'y' ),
-      div( 0.04, sw( glPosition, 'w' ) ),
+      ( ( projectionMatrix ) + '[0][0]' ) as GLSLExpression<'float'>,
+      div( 0.02, sw( glPosition, 'w' ) ),
     ) );
   } );
 } );

@@ -1,5 +1,5 @@
+import { GLSLExpression, assign, build, def, defIn, defOutNamed, defUniformNamed, div, divAssign, glPointSize, glPosition, main, mul, sin, sw, texture, vec4 } from '../shader-builder/shaderBuilder';
 import { PI } from '../utils/constants';
-import { assign, build, def, defIn, defOutNamed, defUniformNamed, div, divAssign, glPointSize, glPosition, main, mul, sin, sw, texture, vec4 } from '../shader-builder/shaderBuilder';
 
 export const dustRenderVert = build( () => {
   const computeUV = defIn( 'vec2' );
@@ -37,7 +37,8 @@ export const dustRenderVert = build( () => {
 
     assign( glPointSize, mul(
       sw( resolution, 'y' ),
-      div( 0.01, sw( glPosition, 'w' ) ),
+      ( ( projectionMatrix ) + '[0][0]' ) as GLSLExpression<'float'>,
+      div( 0.004, sw( glPosition, 'w' ) ),
     ) );
   } );
 } );

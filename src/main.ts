@@ -2,7 +2,7 @@ import { AutomatonWithGUI } from '@0b5vr/automaton-with-gui';
 import { Material } from './heck/Material';
 import { automaton } from './globals/automaton';
 import { canvas } from './globals/canvas';
-import { dog } from './scene';
+import { dog, initDesktop, initVR } from './scene';
 import { getDivCanvasContainer } from './globals/dom';
 import { gui } from './globals/gui';
 import { music } from './globals/music';
@@ -25,45 +25,47 @@ if ( process.env.DEV ) {
 }
 
 // == dev kickstarter ==============================================================================
-async function kickstartDev(): Promise<void> {
-  console.info( dog );
-
-  [
-    Material.d3dSucks(),
-    music.prepare(),
-  ].map( ( task, i ) => {
-    const taskname = [ 'shaders', 'music' ][ i ];
-    task.onProgress = ( progress ) => {
-      const gui_ = gui;
-      gui_?.monitor( `tasks/${ taskname }`, `${ Math.floor( progress * 100.0 ) }%` );
-    };
-    return task.promise;
-  } );
-
-  ( automaton as AutomatonWithGUI ).play();
-}
-
 if ( process.env.DEV ) {
+  const kickstartDev = async (): Promise<void> => {
+    console.info( dog );
+
+    [
+      Material.d3dSucks(),
+      music.prepare(),
+    ].map( ( task, i ) => {
+      const taskname = [ 'shaders', 'music' ][ i ];
+      task.onProgress = ( progress ) => {
+        const gui_ = gui;
+        gui_?.monitor( `tasks/${ taskname }`, `${ Math.floor( progress * 100.0 ) }%` );
+      };
+      return task.promise;
+    } );
+
+    initDesktop( 1280, 720 );
+    dog.active = true;
+    ( automaton as AutomatonWithGUI ).play();
+  };
+
   kickstartDev();
 }
 
 // == prod kickstarter =============================================================================
 if ( !process.env.DEV ) {
-  document.write( '<a>fullscreen</a><a>wait a moment</a><a></a><a></a><style>a{display:block}canvas{position:fixed;left:0;top:0;width:100%;height:100%;cursor:none}</style>' );
+  document.body.innerHTML = '<select><option>640x360</option><option>1280x720</option><option selected>1920x1080</option><option>2560x1440</option><option>3840x2160</option><option>vr</option></select><button>fullscreen (click this first)</button><button disabled>start</button><a></a><a></a><style>a,button{display:block}canvas{position:fixed;left:0;top:0;width:100%;height:100%;cursor:none}</style>';
 
+  const selects = document.querySelectorAll( 'select' );
   const anchors = document.querySelectorAll( 'a' );
-  const fsAnchor = anchors[ 0 ];
-  const mainAnchor = anchors[ 1 ];
+  const buttons = document.querySelectorAll( 'button' );
 
-  fsAnchor.onclick = () => {
+  buttons[ 0 ].addEventListener( 'click', () => {
     document.documentElement.requestFullscreen();
-  };
+  } );
 
   Promise.all( [
     Material.d3dSucks(),
     music.prepare(),
   ].map( ( task, i ) => {
-    const a = anchors[ i + 2 ];
+    const a = anchors[ i ];
     const taskname = [ 'shaders', 'music' ][ i ];
     a.textContent = `${ taskname }: 0%`;
     task.onProgress = ( progress ) => (
@@ -71,19 +73,27 @@ if ( !process.env.DEV ) {
     );
     return task.promise;
   } ) ).then( () => {
-    mainAnchor.textContent = 'click';
+    buttons[ 1 ].disabled = false;
+    buttons[ 1 ].addEventListener( 'click', async () => {
+      const resostr = selects[ 0 ].value.split( 'x' );
+      const isVR = resostr[ 0 ] === 'vr';
 
-    mainAnchor.onclick = () => {
-      document.body.appendChild( canvas );
+      if ( isVR ) {
+        await initVR();
+      } else {
+        document.body.appendChild( canvas );
+        await initDesktop( parseInt( resostr[ 0 ] ), parseInt( resostr[ 1 ] ) );
+      }
 
-      music.isPlaying = true;
-    };
+      dog.active = true;
+      music.rewindAndPlay();
+    } );
 
     window.addEventListener( 'keydown', ( event ) => {
       if ( event.code === 'Escape' ) {
         music.isPlaying = false;
         music.update();
-        dog.root.active = false;
+        dog.active = false;
       }
     } );
 

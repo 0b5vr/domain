@@ -1,7 +1,6 @@
 import { TAU } from '../utils/constants';
-import { add, addAssign, assign, build, cos, def, defInNamed, defOut, defUniformNamed, discard, div, divAssign, dot, ifThen, insert, length, lt, main, max, min, mix, mul, normalize, retFn, sq, sub, sw, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { add, addAssign, assign, build, cos, def, defInNamed, defOut, defUniformNamed, div, divAssign, dot, insert, main, max, min, mix, mul, normalize, sq, sub, sw, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcAlbedoF0 } from './modules/calcAlbedoF0';
-import { calcDepth } from './modules/calcDepth';
 import { calcL } from './modules/calcL';
 import { cyclicNoise } from './modules/cyclicNoise';
 import { defIBL } from './modules/defIBL';
@@ -9,7 +8,7 @@ import { doAnalyticLighting } from './modules/doAnalyticLighting';
 import { forEachLights } from './modules/forEachLights';
 import { glslLinearstep } from './modules/glslLinearstep';
 
-export const oscilloscopeFrontFrag = ( tag: 'forward' | 'depth' ): string => build( () => {
+export const oscilloscopeFrontFrag = build( () => {
   insert( 'precision highp float;' );
 
   const vPosition = defInNamed( 'vec4', 'vPosition' );
@@ -20,7 +19,6 @@ export const oscilloscopeFrontFrag = ( tag: 'forward' | 'depth' ): string => bui
   const fragColor = defOut( 'vec4' );
 
   const cameraPos = defUniformNamed( 'vec3', 'cameraPos' );
-  const cameraNearFar = defUniformNamed( 'vec2', 'cameraNearFar' );
   // const samplerShadow = defUniformArrayNamed( 'sampler2D', 'samplerShadow', 8 );
 
   // const doSomethingUsingSamplerShadow = defDoSomethingUsingSamplerArray( samplerShadow, 8 );
@@ -46,15 +44,6 @@ export const oscilloscopeFrontFrag = ( tag: 'forward' | 'depth' ): string => bui
         min( sw( measureSmallGrid, 'y' ), sw( measureSmallGridClip, 'x' ) ),
       ),
     );
-
-    if ( tag === 'depth' ) {
-      ifThen( lt( measure, 0.5 ), () => discard() );
-
-      const len = length( sub( cameraPos, posXYZ ) );
-      assign( fragColor, calcDepth( cameraNearFar, len ) );
-      retFn();
-
-    }
 
     const V = normalize( sub( cameraPos, posXYZ ) );
 

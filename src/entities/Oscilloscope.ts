@@ -77,14 +77,6 @@ export class Oscilloscope extends SceneNode {
       },
     );
 
-    const depthMeasure = new Material(
-      objectVert,
-      depthFrag,
-      {
-        initOptions: { geometry: geometryMeasure, target: dummyRenderTarget },
-      },
-    );
-
     if ( process.env.DEV ) {
       module.hot?.accept(
         [
@@ -98,7 +90,7 @@ export class Oscilloscope extends SceneNode {
 
     const meshMeasure = new Mesh( {
       geometry: geometryMeasure,
-      materials: { deferred: deferredMeasure, depth: depthMeasure },
+      materials: { deferred: deferredMeasure },
     } );
 
     // -- front ------------------------------------------------------------------------------------
@@ -106,7 +98,7 @@ export class Oscilloscope extends SceneNode {
 
     const forwardFront = new Material(
       objectVert,
-      oscilloscopeFrontFrag( 'forward' ),
+      oscilloscopeFrontFrag,
       {
         initOptions: { geometry: geometryFront, target: dummyRenderTarget },
         blend: [ gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA ],
@@ -115,7 +107,7 @@ export class Oscilloscope extends SceneNode {
 
     const depthFront = new Material(
       objectVert,
-      oscilloscopeFrontFrag( 'depth' ),
+      depthFrag,
       {
         initOptions: { geometry: geometryFront, target: dummyRenderTarget },
       },
@@ -127,8 +119,8 @@ export class Oscilloscope extends SceneNode {
           '../shaders/oscilloscopeFrontFrag',
         ],
         () => {
-          forwardFront.replaceShader( objectVert, oscilloscopeFrontFrag( 'forward' ) );
-          depthFront.replaceShader( objectVert, oscilloscopeFrontFrag( 'depth' ) );
+          forwardFront.replaceShader( objectVert, oscilloscopeFrontFrag );
+          depthFront.replaceShader( objectVert, depthFrag );
         },
       );
     }

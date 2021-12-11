@@ -17,16 +17,15 @@ import { Stuff } from './entities/Stuff';
 import { VRCameraStack } from './entities/VRCameraStack';
 import { Walls } from './entities/Walls';
 import { auto, automaton } from './globals/automaton';
+import { canvas, gl } from './globals/canvas';
 import { createVRSesh } from './globals/createVRSesh';
-import { gl } from './globals/canvas';
 import { music } from './globals/music';
 import { promiseGui } from './globals/gui';
 import { randomTexture } from './globals/randomTexture';
 
 // == dog ==========================================================================================
 export const dog = new Dog();
-
-const canvasRenderTarget = new CanvasRenderTarget();
+dog.active = false;
 
 // Mr. Update Everything
 if ( process.env.DEV ) {
@@ -185,60 +184,6 @@ const cameraStackOptions = {
   tags: [ tagMainCamera ],
 };
 
-const cameraStack = new CameraStack( {
-  ...cameraStackOptions,
-  target: canvasRenderTarget,
-} );
-
-const cameraLambda = new Lambda( {
-  onUpdate: ( { time } ) => {
-    const shake = auto( 'camera/shake' );
-
-    const posR = auto( 'camera/pos/r' );
-    const posP = auto( 'camera/pos/p' );
-    const posT = auto( 'camera/pos/t' );
-    const pos = vecAdd(
-      [
-        auto( 'camera/pos/x' ),
-        auto( 'camera/pos/y' ),
-        auto( 'camera/pos/z' ),
-      ],
-      [
-        posR * Math.cos( posT ) * Math.sin( posP ),
-        posR * Math.sin( posT ),
-        posR * Math.cos( posT ) * Math.cos( posP ),
-      ],
-      [
-        0.04 * shake * Math.sin( time * 2.4 ),
-        0.04 * shake * Math.sin( time * 3.4 ),
-        0.04 * shake * Math.sin( time * 2.7 ),
-      ],
-    ) as RawVector3;
-
-    const tar = vecAdd(
-      [
-        auto( 'camera/tar/x' ),
-        auto( 'camera/tar/y' ),
-        auto( 'camera/tar/z' ),
-      ],
-      [
-        0.04 * shake * Math.sin( time * 2.8 ),
-        0.04 * shake * Math.sin( time * 2.5 ),
-        0.04 * shake * Math.sin( time * 3.1 ),
-      ],
-    ) as RawVector3;
-
-    const roll = auto( 'camera/roll' ) + 0.01 * shake * Math.sin( time * 1.1 );
-
-    cameraStack.fov = auto( 'camera/fov' );
-    cameraStack.transform.lookAt( pos, tar, [ 0.0, 1.0, 0.0 ], roll );
-  },
-} );
-
-if ( process.env.DEV ) {
-  cameraStack.name = 'cameraStack';
-}
-
 // const plane = new Plane();
 // if ( process.env.DEV && module.hot ) {
 //   const replacer = new NodeReplacer( plane, () => new Plane() );
@@ -265,21 +210,6 @@ if ( process.env.DEV && module.hot ) {
   } );
 }
 
-// this sucks
-const crtVideoSender = new Lambda( {
-  onUpdate: ( { componentsByTag } ) => {
-    const cameraStack =
-      Array.from( componentsByTag.get( tagMainCamera ) )[ 0 ] as CameraStack | undefined;
-    const texture = cameraStack?.postStack?.swap?.o.texture;
-
-    if ( texture ) {
-      Array.from( componentsByTag.get( tagCRT ) ).map( ( crt ) => {
-        ( crt as CRT ).input = texture;
-      } );
-    }
-  },
-} );
-
 dog.root.children.push(
   iblLutCalc,
   fui,
@@ -291,44 +221,151 @@ dog.root.children.push(
   dust,
   cubemapNode,
   // plane,
-  cameraLambda,
-  cameraStack,
-  crtVideoSender,
 );
 
-if ( process.env.DEV ) {
-  import( './entities/RTInspector' ).then( ( { RTInspector } ) => {
-    const rtInspector = new RTInspector( {
-      target: canvasRenderTarget,
-    } );
-    dog.root.children.push( rtInspector );
-  } );
-}
-
 // -- desktop --------------------------------------------------------------------------------------
-function update(): void {
-  if ( cameraStack.active ) {
-    dog.update();
+export async function initDesktop( width: number, height: number ): Promise<void> {
+  canvas.width = width;
+  canvas.height = height;
+
+  const canvasRenderTarget = new CanvasRenderTarget();
+
+  const cameraStack = new CameraStack( {
+    width,
+    height,
+    ...cameraStackOptions,
+    target: canvasRenderTarget,
+  } );
+
+  if ( process.env.DEV ) {
+    cameraStack.name = 'cameraStack';
   }
 
-  requestAnimationFrame( update );
+  dog.root.children.push(
+    new Lambda( {
+      name: process.env.DEV ? 'cameraLambda' : undefined,
+      onUpdate: ( { time } ) => {
+        const shake = auto( 'camera/shake' );
+
+        const posR = auto( 'camera/pos/r' );
+        const posP = auto( 'camera/pos/p' );
+        const posT = auto( 'camera/pos/t' );
+        const pos = vecAdd(
+          [
+            auto( 'camera/pos/x' ),
+            auto( 'camera/pos/y' ),
+            auto( 'camera/pos/z' ),
+          ],
+          [
+            posR * Math.cos( posT ) * Math.sin( posP ),
+            posR * Math.sin( posT ),
+            posR * Math.cos( posT ) * Math.cos( posP ),
+          ],
+          [
+            0.04 * shake * Math.sin( time * 2.4 ),
+            0.04 * shake * Math.sin( time * 3.4 ),
+            0.04 * shake * Math.sin( time * 2.7 ),
+          ],
+        ) as RawVector3;
+
+        const tar = vecAdd(
+          [
+            auto( 'camera/tar/x' ),
+            auto( 'camera/tar/y' ),
+            auto( 'camera/tar/z' ),
+          ],
+          [
+            0.04 * shake * Math.sin( time * 2.8 ),
+            0.04 * shake * Math.sin( time * 2.5 ),
+            0.04 * shake * Math.sin( time * 3.1 ),
+          ],
+        ) as RawVector3;
+
+        const roll = auto( 'camera/roll' ) + 0.01 * shake * Math.sin( time * 1.1 );
+
+        cameraStack.fov = auto( 'camera/fov' );
+        cameraStack.transform.lookAt( pos, tar, [ 0.0, 1.0, 0.0 ], roll );
+      },
+    } ),
+    cameraStack,
+    new Lambda( {
+      name: process.env.DEV ? 'crtVideoSender' : undefined,
+      onUpdate: ( { componentsByTag } ) => {
+        const texture = cameraStack.postStack?.swap?.o.texture;
+        if ( texture ) {
+          Array.from( componentsByTag.get( tagCRT ) ).map( ( crt ) => {
+            ( crt as CRT ).input = texture;
+          } );
+        }
+      }
+    } ),
+  );
+
+  if ( process.env.DEV ) {
+    import( './entities/RTInspector' ).then( ( { RTInspector } ) => {
+      const rtInspector = new RTInspector( {
+        width,
+        height,
+        target: canvasRenderTarget,
+      } );
+      dog.root.children.push( rtInspector );
+    } );
+  }
+
+  const update = function(): void {
+    if ( process.env.DEV ) {
+      // vr
+      if ( !cameraStack.active ) {
+        return;
+      }
+    }
+
+    dog.update();
+
+    requestAnimationFrame( update );
+  };
+
+  update();
 }
-update();
 
 // -- vr -------------------------------------------------------------------------------------------
-promiseGui.then( ( gui ) => {
-  gui.button( 'vr (what)' ).on( 'click', async () => {
-    const vrSesh = await createVRSesh();
+export async function initVR(): Promise<void> {
+  const vrSesh = await createVRSesh();
 
-    const vrCameraStack = new VRCameraStack( {
-      ...cameraStackOptions,
-      vrSesh,
-      dog,
-    } );
-    vrCameraStack.transform.position = [ 0.0, 0.0, 5.0 ];
-
-    dog.root.children.push( vrCameraStack );
-
-    cameraStack.active = false;
+  const vrCameraStack = new VRCameraStack( {
+    ...cameraStackOptions,
+    vrSesh,
+    dog,
   } );
-} );
+  vrCameraStack.transform.position = [ 0.0, 0.0, 5.0 ];
+
+  if ( process.env.DEV ) {
+    vrCameraStack.name = 'vrCameraStack';
+
+    const existingCameraStack = dog.root.children.find( ( compo ) => compo.name === 'cameraStack' );
+    if ( existingCameraStack ) {
+      existingCameraStack.active = false;
+    }
+  }
+
+  dog.root.children.push(
+    vrCameraStack,
+    new Lambda( {
+      name: process.env.DEV ? 'crtVideoSender' : undefined,
+      onUpdate: ( { componentsByTag } ) => {
+        const texture = vrCameraStack.cameraStacks[ 0 ].postStack?.swap?.o.texture;
+        if ( texture ) {
+          Array.from( componentsByTag.get( tagCRT ) ).map( ( crt ) => {
+            ( crt as CRT ).input = texture;
+          } );
+        }
+      }
+    } ),
+  );
+}
+
+if ( process.env.DEV ) {
+  promiseGui.then( ( gui ) => {
+    gui.button( 'vr (what)' ).on( 'click', initVR );
+  } );
+}

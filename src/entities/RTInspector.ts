@@ -3,7 +3,6 @@ import { BufferRenderTarget } from '../heck/BufferRenderTarget';
 import { Lambda } from '../heck/components/Lambda';
 import { Material } from '../heck/Material';
 import { Quad } from '../heck/components/Quad';
-import { RESOLUTION } from '../config';
 import { RenderTarget } from '../heck/RenderTarget';
 import { SceneNode } from '../heck/components/SceneNode';
 import { canvas, gl, glCat } from '../globals/canvas';
@@ -15,6 +14,8 @@ import { quadVert } from '../shaders/quadVert';
 import inspectorFrag from '../shaders/inspector.frag';
 
 export interface RTInspectorOptions {
+  width: number;
+  height: number;
   target: RenderTarget;
 }
 
@@ -132,22 +133,22 @@ export class RTInspector extends SceneNode {
     const textureText = glCat.createTexture();
 
     const textCanvas = document.createElement( 'canvas' );
-    textCanvas.width = RESOLUTION[ 0 ];
-    textCanvas.height = RESOLUTION[ 1 ];
+    textCanvas.width = width;
+    textCanvas.height = height;
 
     const textContext = textCanvas.getContext( '2d' )!;
 
     this.nodeMultiple.children.push( new Lambda( {
       onUpdate: () => {
-        textContext.clearRect( 0, 0, RESOLUTION[ 0 ], RESOLUTION[ 1 ] );
+        textContext.clearRect( 0, 0, width, height );
 
         textContext.font = '500 10px Wt-Position';
         textContext.fillStyle = '#fff';
         textContext.strokeStyle = '#000';
 
         for ( const { dstRect, name } of entries ) {
-          textContext.strokeText( name, dstRect[ 0 ], RESOLUTION[ 1 ] - dstRect[ 1 ] );
-          textContext.fillText( name, dstRect[ 0 ], RESOLUTION[ 1 ] - dstRect[ 1 ] );
+          textContext.strokeText( name, dstRect[ 0 ], height - dstRect[ 1 ] );
+          textContext.fillText( name, dstRect[ 0 ], height - dstRect[ 1 ] );
         }
 
         textureText.setTexture( textCanvas );

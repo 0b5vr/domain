@@ -1,7 +1,7 @@
 import { Component, ComponentDrawEvent, ComponentOptions } from './Component';
 import { Geometry } from '../Geometry';
 import { MaterialMap } from '../Material';
-import { glCat } from '../../globals/canvas';
+import { gl, glCat } from '../../globals/canvas';
 import { mat3FromMat4Transpose, mat3Inverse } from '@0b5vr/experimental';
 
 export enum MeshCull {
@@ -40,8 +40,6 @@ export class Mesh extends Component {
   }
 
   protected __drawImpl( event: ComponentDrawEvent ): void {
-    const gl = glCat.renderingContext;
-
     const material = this.materials[ event.materialTag ];
     if ( material == null ) {
       return;

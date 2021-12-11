@@ -2,7 +2,6 @@ import { add, addAssign, and, assign, build, def, defInNamed, defOut, defUniform
 import { cyclicNoise } from './modules/cyclicNoise';
 import { glslDefRandom } from './modules/glslDefRandom';
 import { glslLofi } from './modules/glslLofi';
-import { uniformSphere } from './modules/uniformSphere';
 
 export const dustComputeFrag = (
   { particlesSqrt, particleSpawnLength }: {
@@ -59,8 +58,8 @@ export const dustComputeFrag = (
       assign( dt, sub( time, spawnTime ) );
 
       assign( pos, mix(
-        vec3( -8.0, 0.0, -8.0 ),
-        vec3( 8.0, 8.0, 8.0 ),
+        vec3( -10.0, 0.0, -10.0 ),
+        vec3( 10.0, 10.0, 10.0 ),
         vec3( random(), random(), random() ),
       ) );
       assign( vel, vec3( 0.0 ) );

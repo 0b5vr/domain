@@ -16,6 +16,7 @@ export interface VRCameraStackOptions extends ComponentOptions {
 
 export class VRCameraStack extends SceneNode {
   public vrSesh: VRSesh;
+  public cameraStacks: [ CameraStack, CameraStack ];
 
   public constructor( options: VRCameraStackOptions ) {
     super();
@@ -37,11 +38,14 @@ export class VRCameraStack extends SceneNode {
       } ),
     ];
 
-    const cameraStacks = renderTargets.map( ( target ) => new CameraStack( {
-      ...options,
-      target,
-      active: false,
-    } ) );
+    const cameraStacks = this.cameraStacks = renderTargets.map(
+      ( target ) => new CameraStack( {
+        ...options,
+        width,
+        height,
+        target,
+      } )
+    ) as [ CameraStack, CameraStack ];
 
     if ( process.env.DEV ) {
       cameraStacks[ 0 ].name = 'cameraStackL';
@@ -67,7 +71,6 @@ export class VRCameraStack extends SceneNode {
         ];
         cameraStacks[ i ].deferredCamera.projectionMatrix = view.projectionMatrix;
         cameraStacks[ i ].forwardCamera.projectionMatrix = view.projectionMatrix;
-        cameraStacks[ i ].active = true;
       } );
 
       dog.update();

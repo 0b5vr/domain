@@ -29,9 +29,9 @@ export class MusicOffline extends Music {
 
       await new Promise<void>( ( resolve ) => {
         const render = (): void => {
-          setProgress( head / numBuffer );
+          for ( const _ of Array( 5 ) ) {
+            setProgress( head / numBuffer );
 
-          [ ...Array( 5 ) ].map( () => {
             if ( numBuffer <= head ) {
               resolve();
               return;
@@ -48,7 +48,7 @@ export class MusicOffline extends Music {
             } );
 
             head += BUFFER_LENGTH;
-          } );
+          }
 
           setTimeout( render, 1 );
         };
