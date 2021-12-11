@@ -26,8 +26,8 @@ export const wallTextureFrag = build( () => {
     const uvHole2 = sub( abs( sub(
       mod( vUv, vec2( 1.0 / 8.0, 1.0 / 6.0 ) ),
       vec2( 1.0 / 16.0, 1.0 / 12.0 ),
-    ) ), vec2( 1.0 / 16.0 - 0.03, 1.0 / 12.0 - 0.03 ) );
-    const hole2 = step( length( uvHole2 ), 0.003 );
+    ) ), vec2( 1.0 / 16.0 - 0.02, 1.0 / 12.0 - 0.02 ) );
+    const hole2 = step( length( uvHole2 ), 0.0015 );
 
     const gapptn = add(
       glslTri( add( 0.25, mul( vec2( 8.0, 6.0 ), vUv ) ) ),
