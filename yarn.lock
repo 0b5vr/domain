@@ -19,10 +19,10 @@
   resolved "https://registry.yarnpkg.com/@0b5vr/experimental/-/experimental-0.7.1.tgz#87594a6fa2e03f0e9fb96f41ea65480258e24f69"
   integrity sha512-nXfuNWXL2sIy7VMYJ6k3ybP7TaRs5ni6vXF5Qt823NhTUR56nnmSVxV8yywH/yhV1MhpP9+DM6emtSrTcepbkg==
 
-"@0b5vr/glcat-ts@^0.15.0":
-  version "0.15.1"
-  resolved "https://registry.yarnpkg.com/@0b5vr/glcat-ts/-/glcat-ts-0.15.1.tgz#c56103e931a83b243eae1d205cc7c6d3902256bb"
-  integrity sha512-xacrQkzRFEtJUvMzgmuPXlmPmCuotQ3vOoiSAFMu4UeRv2BcCzl6Vc6kG4a4AvvapK/4v7ag8HLA0demoHwncg==
+"@0b5vr/glcat-ts@^0.15.2":
+  version "0.15.2"
+  resolved "https://registry.yarnpkg.com/@0b5vr/glcat-ts/-/glcat-ts-0.15.2.tgz#a5ec2b1bcd6c189a790478c955dbeeb9d148f882"
+  integrity sha512-K3x2atmf53bY30nz6V0dOA3tleW2gQZz8umprgtdIc29ompn+6Z0z0MjXYPuxtuZ1ga7SS9DSOwh9Codt0OMFA==
 
 "@0b5vr/imtweakpane@^0.1.3":
   version "0.1.3"
