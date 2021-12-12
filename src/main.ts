@@ -51,7 +51,7 @@ if ( process.env.DEV ) {
 
 // == prod kickstarter =============================================================================
 if ( !process.env.DEV ) {
-  document.body.innerHTML = '<select><option>640x360</option><option>1280x720</option><option selected>1920x1080</option><option>2560x1440</option><option>3840x2160</option><option>vr</option></select><button>fullscreen (click this first)</button><button disabled>start</button><a></a><a></a><style>a,button{display:block}canvas{position:fixed;left:0;top:0;width:100%;height:100%;cursor:none}</style>';
+  document.body.innerHTML = '<select><option>640x360</option><option>1280x720</option><option selected>1920x1080</option><option>2560x1440</option><option>3840x2160</option><option>vr</option></select><button>fullscreen (click this first)</button><button disabled>start</button><a></a><a></a>1920x1080 is intended<br>vr is experimental. expect nothing. Turning asw off is recommended if you are using oculus<style>a,button{display:block}canvas{position:fixed;left:0;top:0;width:100%;height:100%;cursor:none}</style>';
 
   const selects = document.querySelectorAll( 'select' );
   const anchors = document.querySelectorAll( 'a' );
