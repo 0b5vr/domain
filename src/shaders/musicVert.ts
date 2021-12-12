@@ -284,7 +284,10 @@ export const musicVert = build( () => {
       eq( sectionIndex, 3.0 ),
     ), () => {
       const t = timeX;
-      const wave = sample( num( 4.0 ), glslSaturate( mul( 4.0, t ) ) );
+      const wave = vec2(
+        sample( num( 4.0 ), glslSaturate( mul( 4.0, add( t, 0.01 ) ) ) ),
+        sample( num( 4.0 ), glslSaturate( mul( 4.0, t ) ) ),
+      );
       const amp = mul( 0.5, zcross( t, beatLength ) );
       addAssign( dest, mul( amp, wave ) );
     } );
