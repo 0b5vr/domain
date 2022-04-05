@@ -29,10 +29,10 @@
   resolved "https://registry.yarnpkg.com/@0b5vr/imtweakpane/-/imtweakpane-0.1.3.tgz#101f4ed43ae2d782f817b078d981c08a1ed7ddcd"
   integrity sha512-sD8qOF40s5+4ekpkhMBgTZcGwSoKzjCfbwAyP6tG42nfki7Gaq6tZqi5GMIy+7lCPmk2VPZ1siSMCpgN7uGU8g==
 
-"@0b5vr/tweakpane-plugin-profiler@v0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@0b5vr/tweakpane-plugin-profiler/-/tweakpane-plugin-profiler-0.2.0.tgz#11421b8497582962b8de14e0e1dcfce361874ad9"
-  integrity sha512-gJDI/7NaKxwf1QKkz3ntOrqWlhnskEAJUkrKSZiQkPgWWK5ydPf0bsHWRZuPMjLIpCa8n40zbFac2x0pF1DXJA==
+"@0b5vr/tweakpane-plugin-profiler@^0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@0b5vr/tweakpane-plugin-profiler/-/tweakpane-plugin-profiler-0.3.0.tgz#757bf14f24f7a5ccf128e11a4f01dbd447542d2e"
+  integrity sha512-+Gpwada4KlsjPY+bJVCCVT+Oz3rRzsK9EOmJWgSAgF/6qoe1xG87KBMHZLQUWnutvHwuwaevBluwOx9Vpdu7Rw==
 
 "@babel/code-frame@7.12.11":
   version "7.12.11"

@@ -304,8 +304,6 @@ export async function initDesktop( width: number, height: number ): Promise<void
   if ( process.env.DEV ) {
     import( './entities/RTInspector' ).then( ( { RTInspector } ) => {
       const rtInspector = new RTInspector( {
-        width,
-        height,
         target: canvasRenderTarget,
       } );
       dog.root.children.push( rtInspector );

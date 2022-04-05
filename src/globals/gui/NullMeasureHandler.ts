@@ -1,5 +1,5 @@
 export class NullMeasureHandler {
-  public measure( path: string, fn: () => void ): number {
+  public measure( fn: () => void ): number {
     fn();
     return 0.0;
   }

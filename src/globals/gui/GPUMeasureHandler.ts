@@ -7,7 +7,7 @@ export class GPUMeasureHandler {
     this.gpuTimer = gpuTimer;
   }
 
-  public async measure( path: string, fn: () => void ): Promise<number> {
+  public async measure( fn: () => void ): Promise<number> {
     return this.gpuTimer.measure( fn );
   }
 }

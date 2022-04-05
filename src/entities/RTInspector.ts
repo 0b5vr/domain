@@ -14,8 +14,6 @@ import { quadVert } from '../shaders/quadVert';
 import inspectorFrag from '../shaders/inspector.frag';
 
 export interface RTInspectorOptions {
-  width: number;
-  height: number;
   target: RenderTarget;
 }
 
@@ -26,7 +24,7 @@ export class RTInspector extends SceneNode {
   public quadSingle: Quad;
   public blitsMultiple: Blit[];
 
-  public constructor( options: RTInspectorOptions ) {
+  public constructor( { target }: RTInspectorOptions ) {
     super();
 
     this.visible = false;
@@ -44,7 +42,7 @@ export class RTInspector extends SceneNode {
     );
 
     this.quadSingle = new Quad( {
-      target: options.target,
+      target: target,
       material: this.materialSingle,
       name: 'quadSingle',
       ignoreBreakpoints: true,
@@ -74,8 +72,8 @@ export class RTInspector extends SceneNode {
 
     // grid
     const grid = Math.ceil( Math.sqrt( count ) );
-    const width = Math.floor( options.target.width / grid );
-    const height = Math.floor( options.target.height / grid );
+    const width = Math.floor( target.width / grid );
+    const height = Math.floor( target.height / grid );
 
     // determine grid positions
     const entries: {
@@ -118,7 +116,7 @@ export class RTInspector extends SceneNode {
     for ( const { src, attachment, dstRect, name } of entries ) {
       const blit = new Blit( {
         src,
-        dst: options.target,
+        dst: target,
         attachment,
         dstRect,
         name,
@@ -133,8 +131,8 @@ export class RTInspector extends SceneNode {
     const textureText = glCat.createTexture();
 
     const textCanvas = document.createElement( 'canvas' );
-    textCanvas.width = width;
-    textCanvas.height = height;
+    textCanvas.width = target.width;
+    textCanvas.height = target.height;
 
     const textContext = textCanvas.getContext( '2d' )!;
 
@@ -147,8 +145,8 @@ export class RTInspector extends SceneNode {
         textContext.strokeStyle = '#000';
 
         for ( const { dstRect, name } of entries ) {
-          textContext.strokeText( name, dstRect[ 0 ], height - dstRect[ 1 ] );
-          textContext.fillText( name, dstRect[ 0 ], height - dstRect[ 1 ] );
+          textContext.strokeText( name, dstRect[ 0 ], target.height - dstRect[ 1 ] );
+          textContext.fillText( name, dstRect[ 0 ], target.height - dstRect[ 1 ] );
         }
 
         textureText.setTexture( textCanvas );
@@ -168,7 +166,7 @@ export class RTInspector extends SceneNode {
     materialMultipleText.addUniformTextures( 'sampler0', textureText );
 
     const quadMultipleText = new Quad( {
-      target: options.target,
+      target: target,
       material: materialMultipleText,
       name: 'quadMultipleText',
       ignoreBreakpoints: true,
