@@ -1,5 +1,6 @@
-import { abs, add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, div, eq, forBreak, forLoop, glFragCoord, gt, ifThen, insert, length, lt, main, mix, mul, mulAssign, retFn, smoothstep, sq, sub, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { abs, add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, div, eq, forBreak, forLoop, glFragCoord, gt, ifThen, insert, length, lt, main, mix, mul, mulAssign, retFn, smoothstep, sub, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcL } from './modules/calcL';
+import { calcLightFalloff } from './modules/calcLightFalloff';
 import { forEachLights } from './modules/forEachLights';
 import { glslDefRandom } from './modules/glslDefRandom';
 import { glslSaturate } from './modules/glslSaturate';
@@ -71,7 +72,7 @@ export const skyFrag = build( () => {
 
           addAssign( accumRGB, mul(
             glslSaturate( mix( 1.0, -5.0, shadow ) ),
-            div( 1.0, sq( lenL ) ),
+            calcLightFalloff( lenL ),
             0.5,
             lightColor,
             density,

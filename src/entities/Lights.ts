@@ -27,7 +27,7 @@ export class Lights extends SceneNode {
     lightRight.children.push( shaftRight );
 
     auto( 'lightRight/intensity', ( { value } ) => {
-      lightRight.color = vecScale( [ 100.0, 100.0, 100.0 ], value ) as [ number, number, number ];
+      lightRight.color = vecScale( [ 50.0, 50.0, 50.0 ], value ) as [ number, number, number ];
     } );
 
     const lightLeft = new PointLightNode( {
@@ -48,7 +48,7 @@ export class Lights extends SceneNode {
     lightLeft.children.push( shaftLeft );
 
     auto( 'lightLeft/intensity', ( { value } ) => {
-      lightLeft.color = vecScale( [ 100.0, 100.0, 100.0 ], value ) as [ number, number, number ];
+      lightLeft.color = vecScale( [ 50.0, 50.0, 50.0 ], value ) as [ number, number, number ];
     } );
 
     const lightTop = new PointLightNode( {

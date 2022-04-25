@@ -1,5 +1,6 @@
 import { abs, add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, div, eq, forBreak, forLoop, glFragCoord, gt, ifThen, insert, length, lt, main, mix, mul, mulAssign, retFn, smoothstep, sq, sub, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcL } from './modules/calcL';
+import { calcLightFalloff } from './modules/calcLightFalloff';
 import { defFluidSampleLinear3D } from './modules/defFluidSampleLinear3D';
 import { forEachLights } from './modules/forEachLights';
 import { glslDefRandom } from './modules/glslDefRandom';
@@ -73,7 +74,7 @@ export const fluidRenderFrag = (
           const col = mix( vec3( 1.1, 0.1, 0.25 ), vec3( 0.1, 0.8, 4.0 ), density );
           addAssign( accumRGB, mul(
             glslSaturate( mix( 1.0, -2.0, shadow ) ),
-            div( 1.0, sq( lenL ) ),
+            calcLightFalloff( lenL ),
             lightColor,
             density,
             col,

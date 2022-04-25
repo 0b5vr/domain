@@ -1,7 +1,8 @@
 import { TAU } from '../utils/constants';
-import { add, addAssign, assign, build, cos, def, defInNamed, defOut, defUniformNamed, div, divAssign, dot, insert, main, max, min, mix, mul, normalize, sq, sub, sw, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { add, addAssign, assign, build, cos, def, defInNamed, defOut, defUniformNamed, divAssign, dot, glslFalse, insert, main, max, min, mix, mul, normalize, sub, sw, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcAlbedoF0 } from './modules/calcAlbedoF0';
 import { calcL } from './modules/calcL';
+import { calcLightFalloff } from './modules/calcLightFalloff';
 import { cyclicNoise } from './modules/cyclicNoise';
 import { defIBL } from './modules/defIBL';
 import { doAnalyticLighting } from './modules/doAnalyticLighting';
@@ -75,7 +76,7 @@ export const oscilloscopeFrontFrag = build( () => {
       const dotNL = def( 'float', max( dot( vNormal, L ), 0.0 ) );
 
       const lightCol = lightColor;
-      const lightDecay = div( 1.0, sq( lenL ) );
+      const lightFalloff = calcLightFalloff( lenL );
 
       // fetch shadowmap + spot lighting
       // const lightProj = mul( lightPV, vPosition );
@@ -89,8 +90,8 @@ export const oscilloscopeFrontFrag = build( () => {
       //   lightParams,
       // );
 
-      // const irradiance = def( 'vec3', mul( lightCol, dotNL, lightDecay, shadow ) );
-      const irradiance = def( 'vec3', mul( lightCol, dotNL, lightDecay ) );
+      // const irradiance = def( 'vec3', mul( lightCol, dotNL, lightFalloff, shadow ) );
+      const irradiance = def( 'vec3', mul( lightCol, dotNL, lightFalloff ) );
 
       // lighting
       const lightShaded = def( 'vec3', mul(

@@ -1,4 +1,5 @@
-import { add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, discard, div, forBreak, forLoop, glFragCoord, gt, ifThen, insert, length, lt, main, mix, mul, mulAssign, normalize, num, or, retFn, smoothstep, sq, sub, sw, texture, vec4 } from '../shader-builder/shaderBuilder';
+import { add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, discard, div, forBreak, forLoop, glFragCoord, gt, ifThen, insert, length, lt, main, mix, mul, mulAssign, normalize, num, or, retFn, smoothstep, sub, sw, texture, vec4 } from '../shader-builder/shaderBuilder';
+import { calcLightFalloff } from './modules/calcLightFalloff';
 import { doShadowMapping } from './modules/doShadowMapping';
 import { glslDefRandom } from './modules/glslDefRandom';
 
@@ -52,8 +53,7 @@ export const lightShaftFrag = build( () => {
       vec4( 1.0, sw( lightParams, 'yzw' ) ),
     );
 
-    const invSqLenL = div( 1.0, sq( lenL ) );
-    retFn( mul( tooNear, shadow, invSqLenL ) );
+    retFn( mul( tooNear, shadow, calcLightFalloff( lenL ) ) );
   } );
 
   main( () => {

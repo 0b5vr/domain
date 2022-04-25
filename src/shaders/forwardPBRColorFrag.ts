@@ -1,6 +1,7 @@
-import { add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformArrayNamed, defUniformNamed, div, divAssign, dot, insert, main, max, mul, normalize, retFn, sq, sub, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformArrayNamed, defUniformNamed, div, divAssign, dot, glslFalse, insert, main, max, mul, normalize, retFn, sub, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcAlbedoF0 } from './modules/calcAlbedoF0';
 import { calcL } from './modules/calcL';
+import { calcLightFalloff } from './modules/calcLightFalloff';
 import { cyclicNoise } from './modules/cyclicNoise';
 import { defDoSomethingUsingSamplerArray } from './modules/defDoSomethingUsingSamplerArray';
 import { defIBL } from './modules/defIBL';
@@ -65,7 +66,7 @@ export const forwardPBRColorFrag = build( () => {
       const dotNL = def( 'float', max( dot( vNormal, L ), 0.0 ) );
 
       const lightCol = lightColor;
-      const lightDecay = div( 1.0, sq( lenL ) );
+      const lightFalloff = calcLightFalloff( lenL );
 
       // fetch shadowmap + spot lighting
       const lightProj = mul( lightPV, vPosition );
@@ -78,7 +79,7 @@ export const forwardPBRColorFrag = build( () => {
         lightNearFar,
         lightParams,
       );
-      const irradiance = def( 'vec3', mul( lightCol, dotNL, lightDecay, shadow ) );
+      const irradiance = def( 'vec3', mul( lightCol, dotNL, lightFalloff, shadow ) );
 
       // lighting
       const lightShaded = def( 'vec3', mul(

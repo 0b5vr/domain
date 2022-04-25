@@ -4,6 +4,7 @@ import { MTL_IRIDESCENT, MTL_NONE, MTL_PBR_EMISSIVE3_ROUGHNESS, MTL_PBR_ROUGHNES
 import { brdfSheen } from './modules/brdfSheen';
 import { calcAlbedoF0 } from './modules/calcAlbedoF0';
 import { calcL } from './modules/calcL';
+import { calcLightFalloff } from './modules/calcLightFalloff';
 import { defDoSomethingUsingSamplerArray } from './modules/defDoSomethingUsingSamplerArray';
 import { defIBL } from './modules/defIBL';
 import { doAnalyticLighting } from './modules/doAnalyticLighting';
@@ -70,7 +71,7 @@ export const deferredShadeFrag = ( { withAO }: {
       forEachLights( ( { iLight, lightPos, lightColor, lightNearFar, lightParams, lightPV } ) => {
         const [ L, lenL ] = calcL( lightPos, position );
 
-        const dotNL = max( dot( normal, L ), 1E-3 );
+        const dotNL = max( dot( normal, L ), 0.0 );
 
         const { albedo, f0 } = calcAlbedoF0( color, metallic );
 
@@ -90,7 +91,7 @@ export const deferredShadeFrag = ( { withAO }: {
 
         const irradiance = mul(
           lightColor,
-          div( 1.0, sq( lenL ) ),
+          calcLightFalloff( lenL ),
           dotNL,
         );
 

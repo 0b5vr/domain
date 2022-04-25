@@ -1,6 +1,7 @@
-import { add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformArrayNamed, defUniformNamed, div, dot, glFragCoord, insert, main, max, mix, mul, normalize, pow, retFn, sq, sub, sw, texture, textureLod, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformArrayNamed, defUniformNamed, div, dot, glFragCoord, glslFalse, insert, main, max, mix, mul, normalize, pow, retFn, sub, sw, texture, textureLod, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcAlbedoF0 } from './modules/calcAlbedoF0';
 import { calcL } from './modules/calcL';
+import { calcLightFalloff } from './modules/calcLightFalloff';
 import { defDoSomethingUsingSamplerArray } from './modules/defDoSomethingUsingSamplerArray';
 import { doAnalyticLighting } from './modules/doAnalyticLighting';
 import { doShadowMapping } from './modules/doShadowMapping';
@@ -69,7 +70,7 @@ export const floorFrag = build( () => {
       const dotNL = def( 'float', max( dot( vNormal, L ), 0.0 ) );
 
       const lightCol = lightColor;
-      const lightDecay = div( 1.0, sq( lenL ) );
+      const lightFalloff = calcLightFalloff( lenL );
 
       // fetch shadowmap + spot lighting
       const lightProj = mul( lightPV, vPosition );
@@ -82,7 +83,7 @@ export const floorFrag = build( () => {
         lightNearFar,
         lightParams,
       );
-      const irradiance = def( 'vec3', mul( lightCol, dotNL, lightDecay, shadow ) );
+      const irradiance = def( 'vec3', mul( lightCol, dotNL, lightFalloff, shadow ) );
 
       // lighting
       const lightShaded = def( 'vec3', mul(

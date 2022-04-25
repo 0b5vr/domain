@@ -1,5 +1,6 @@
-import { add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformArrayNamed, div, glPointCoord, insert, length, main, max, mul, mulAssign, num, retFn, smoothstep, sq, sub, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformArrayNamed, div, glPointCoord, insert, length, main, max, mul, mulAssign, num, retFn, smoothstep, sub, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcL } from './modules/calcL';
+import { calcLightFalloff } from './modules/calcLightFalloff';
 import { defDoSomethingUsingSamplerArray } from './modules/defDoSomethingUsingSamplerArray';
 import { doShadowMapping } from './modules/doShadowMapping';
 import { forEachLights } from './modules/forEachLights';
@@ -34,7 +35,7 @@ export const dustRenderFrag = build( () => {
 
       const irradiance = def( 'vec3', mul(
         lightColor,
-        div( 1.0, sq( lenL ) ),
+        calcLightFalloff( lenL ),
       ) );
 
       // fetch shadowmap + spot lighting

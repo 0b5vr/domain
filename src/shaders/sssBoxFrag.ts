@@ -1,8 +1,9 @@
 import { DIELECTRIC_SPECULAR, INV_PI } from '../utils/constants';
 import { MTL_PBR_EMISSIVE3_ROUGHNESS } from './deferredConstants';
-import { add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, discard, div, dot, glFragCoord, glFragDepth, glslFalse, glslTrue, gt, ifThen, insert, length, main, max, mix, mul, neg, normalize, retFn, sq, sub, subAssign, sw, tern, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, discard, div, dot, glFragCoord, glFragDepth, glslFalse, glslTrue, gt, ifThen, insert, length, main, max, mix, mul, neg, normalize, retFn, sub, subAssign, sw, tern, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcDepth } from './modules/calcDepth';
 import { calcL } from './modules/calcL';
+import { calcLightFalloff } from './modules/calcLightFalloff';
 import { calcNormal } from './modules/calcNormal';
 import { calcSS } from './modules/calcSS';
 import { cyclicNoise } from './modules/cyclicNoise';
@@ -124,7 +125,7 @@ export const sssBoxFrag = ( tag: 'deferred' | 'depth' ): string => build( () => 
         lightPos,
         sw( mul( modelMatrix, vec4( rp, 1.0 ) ), 'xyz' ),
       );
-      const lightDecay = div( 1.0, sq( lenL ) );
+      const lightFalloff = calcLightFalloff( lenL );
 
       const H = def( 'vec3', normalize( add( L, V ) ) );
       const dotVH = def( 'float', max( dot( V, H ), 0.0 ) );
@@ -132,7 +133,7 @@ export const sssBoxFrag = ( tag: 'deferred' | 'depth' ): string => build( () => 
 
       addAssign( ssAccum, mul(
         lightColor,
-        lightDecay,
+        lightFalloff,
         subsurfaceColor,
         calcSS( { rp, V, L, N, map, intensity: 2.0 } ),
         INV_PI,
