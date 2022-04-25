@@ -34,6 +34,7 @@
     "eslint-plugin-sort-imports-es6-autofix": "^0.6.0",
     "html-webpack-plugin": "^5.4.0",
     "loader-utils": "^2.0.0",
+    "node-zopfli": "^2.1.4",
     "schema-utils": "^3.1.1",
     "shx": "^0.3.3",
     "source-map-loader": "^3.0.0",
