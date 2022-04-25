@@ -1,5 +1,5 @@
 import { DIELECTRIC_SPECULAR, INV_PI } from '../utils/constants';
-import { MTL_PBR_EMISSIVE3_ROUGHNESS } from './deferredShadeFrag';
+import { MTL_PBR_EMISSIVE3_ROUGHNESS } from './deferredConstants';
 import { add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, discard, div, dot, glFragCoord, glFragDepth, glslFalse, glslTrue, gt, ifThen, insert, length, main, max, mix, mul, neg, normalize, retFn, sq, sub, subAssign, sw, tern, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcDepth } from './modules/calcDepth';
 import { calcL } from './modules/calcL';

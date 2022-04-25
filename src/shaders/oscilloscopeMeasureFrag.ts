@@ -1,4 +1,4 @@
-import { MTL_PBR_ROUGHNESS_METALLIC } from './deferredShadeFrag';
+import { MTL_PBR_ROUGHNESS_METALLIC } from './deferredConstants';
 import { TAU } from '../utils/constants';
 import { add, assign, build, cos, defInNamed, defOut, div, insert, main, max, min, mix, mul, normalize, sw, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { glslLinearstep } from './modules/glslLinearstep';

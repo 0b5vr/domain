@@ -1,4 +1,4 @@
-import { MTL_PBR_ROUGHNESS_METALLIC } from './deferredShadeFrag';
+import { MTL_PBR_ROUGHNESS_METALLIC } from './deferredConstants';
 import { TAU } from '../utils/constants';
 import { add, assign, build, defInNamed, defOut, div, insert, main, mix, mul, normalize, sin, step, sw, vec3, vec4 } from '../shader-builder/shaderBuilder';
 

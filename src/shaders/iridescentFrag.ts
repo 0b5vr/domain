@@ -1,4 +1,4 @@
-import { MTL_IRIDESCENT } from './deferredShadeFrag';
+import { MTL_IRIDESCENT } from './deferredConstants';
 import { abs, add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, discard, div, glFragCoord, glFragDepth, glslFalse, glslTrue, gt, ifThen, insert, length, main, mul, normalize, retFn, smoothstep, sub, sw, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcDepth } from './modules/calcDepth';
 import { calcNormal } from './modules/calcNormal';

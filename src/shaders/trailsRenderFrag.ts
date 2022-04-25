@@ -1,4 +1,4 @@
-import { MTL_PBR_EMISSIVE3_ROUGHNESS } from './deferredShadeFrag';
+import { MTL_PBR_EMISSIVE3_ROUGHNESS } from './deferredConstants';
 import { assign, build, defInNamed, defOut, defUniformNamed, discard, div, fract, gt, ifThen, insert, length, main, mix, mul, normalize, retFn, step, sub, sw, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcDepth } from './modules/calcDepth';
 

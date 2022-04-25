@@ -1,5 +1,5 @@
 import { GLSLExpression, abs, add, addAssign, assign, build, cos, def, defInNamed, defOut, defUniformNamed, div, dot, exp, float, forLoop, glFragCoord, insert, main, min, mix, mul, neg, normalize, refract, smoothstep, sub, sw, vec3, vec4 } from '../shader-builder/shaderBuilder';
-import { MTL_UNLIT } from './deferredShadeFrag';
+import { MTL_UNLIT } from './deferredConstants';
 import { TAU } from '../utils/constants';
 import { depthFrag } from './depthFrag';
 import { glslSaturate } from './modules/glslSaturate';

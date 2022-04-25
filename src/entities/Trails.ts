@@ -1,6 +1,6 @@
 import { GPUParticles } from './utils/GPUParticles';
 import { Lambda } from '../heck/components/Lambda';
-import { MTL_PBR_ROUGHNESS_METALLIC } from '../shaders/deferredShadeFrag';
+import { MTL_PBR_ROUGHNESS_METALLIC } from '../shaders/deferredConstants';
 import { Material } from '../heck/Material';
 import { TransparentShell } from './TransparentShell';
 import { auto } from '../globals/automaton';

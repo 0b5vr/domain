@@ -1,4 +1,4 @@
-import { MTL_PBR_EMISSIVE3_ROUGHNESS } from './deferredShadeFrag';
+import { MTL_PBR_EMISSIVE3_ROUGHNESS } from './deferredConstants';
 import { Swizzle2ComponentsVec3, abs, add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, discard, div, forLoop, fract, glFragCoord, glFragDepth, glslFalse, glslTrue, gt, ifThen, insert, length, main, max, min, mul, mulAssign, normalize, retFn, sub, sw, vec2, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcDepth } from './modules/calcDepth';
 import { calcNormal } from './modules/calcNormal';

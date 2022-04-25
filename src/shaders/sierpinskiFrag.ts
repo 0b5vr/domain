@@ -1,4 +1,4 @@
-import { MTL_PBR_SHEEN } from './deferredShadeFrag';
+import { MTL_PBR_SHEEN } from './deferredConstants';
 import { PI } from '../utils/constants';
 import { abs, add, addAssign, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, discard, div, glFragCoord, glFragDepth, glslFalse, glslTrue, gt, ifThen, insert, length, main, max, mul, normalize, retFn, sin, sq, sub, subAssign, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcDepth } from './modules/calcDepth';

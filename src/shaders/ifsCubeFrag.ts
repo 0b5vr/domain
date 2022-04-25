@@ -1,4 +1,4 @@
-import { MTL_PBR_ROUGHNESS_METALLIC } from './deferredShadeFrag';
+import { MTL_PBR_ROUGHNESS_METALLIC } from './deferredConstants';
 import { abs, add, assign, build, def, defFn, defInNamed, defOut, defUniformNamed, discard, div, floor, forLoop, glFragCoord, glFragDepth, gt, ifThen, insert, length, main, max, min, mix, mul, mulAssign, neg, normalize, retFn, step, sub, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { calcDepth } from './modules/calcDepth';
 import { calcNormal } from './modules/calcNormal';

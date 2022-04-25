@@ -1,5 +1,6 @@
 import { DIELECTRIC_SPECULAR, ONE_SUB_DIELECTRIC_SPECULAR, TAU } from '../utils/constants';
 import { GLSLExpression, GLSLFloatExpression, abs, add, addAssign, assign, build, clamp, cos, def, defFn, defInNamed, defOut, defUniformArrayNamed, defUniformNamed, div, dot, eq, glFragDepth, gt, ifChain, ifThen, insert, length, main, max, mix, mul, mulAssign, normalize, num, pow, retFn, smoothstep, sq, step, sub, sw, texture, vec3, vec4 } from '../shader-builder/shaderBuilder';
+import { MTL_IRIDESCENT, MTL_NONE, MTL_PBR_EMISSIVE3_ROUGHNESS, MTL_PBR_ROUGHNESS_METALLIC, MTL_PBR_SHEEN, MTL_UNLIT } from './deferredConstants';
 import { brdfSheen } from './modules/brdfSheen';
 import { calcAlbedoF0 } from './modules/calcAlbedoF0';
 import { calcL } from './modules/calcL';
@@ -9,34 +10,6 @@ import { doAnalyticLighting } from './modules/doAnalyticLighting';
 import { doShadowMapping } from './modules/doShadowMapping';
 import { forEachLights } from './modules/forEachLights';
 import { glslSaturate } from './modules/glslSaturate';
-
-export const MTL_NONE = 0;
-
-/**
- * no need to set params
- */
-export const MTL_UNLIT = 1;
-
-/**
- * vec4( roughness, metallic, emissive, reserved )
- */
-export const MTL_PBR_ROUGHNESS_METALLIC = 2;
-
-/**
- * vec4( emissiveRGB, roughness )
- * if roughness is negative, use full metallic
- */
-export const MTL_PBR_EMISSIVE3_ROUGHNESS = 3;
-
-/**
- * vec4( sheenTint, sheenRoughness )
- */
-export const MTL_PBR_SHEEN = 4;
-
-/**
- * vec4( roughness, metallic, mix, reserved )
- */
-export const MTL_IRIDESCENT = 5;
 
 const EPSILON = 1E-3;
 

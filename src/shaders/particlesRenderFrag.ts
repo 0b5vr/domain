@@ -1,4 +1,4 @@
-import { MTL_PBR_ROUGHNESS_METALLIC } from './deferredShadeFrag';
+import { MTL_PBR_ROUGHNESS_METALLIC } from './deferredConstants';
 import { assign, build, defInNamed, defOut, div, fract, insert, main, mul, normalize, sw, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { glslGradient } from './modules/glslGradient';
 

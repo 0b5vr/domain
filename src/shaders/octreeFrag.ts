@@ -1,6 +1,6 @@
 import { FAR } from '../config';
 import { GLSLExpression, GLSLToken, abs, add, addAssign, assign, build, def, defFn, defOut, defUniformNamed, discard, div, divAssign, eq, floor, forBreak, forLoop, glFragCoord, glFragDepth, glslFalse, glslTrue, gt, ifThen, insert, length, lt, main, min, mul, neg, normalize, not, or, retFn, smoothstep, sub, sw, tern, ternChain, vec3, vec4 } from '../shader-builder/shaderBuilder';
-import { MTL_PBR_ROUGHNESS_METALLIC } from './deferredShadeFrag';
+import { MTL_PBR_ROUGHNESS_METALLIC } from './deferredConstants';
 import { calcDepth } from './modules/calcDepth';
 import { cyclicNoise } from './modules/cyclicNoise';
 import { glslLofi } from './modules/glslLofi';

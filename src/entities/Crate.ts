@@ -1,4 +1,4 @@
-import { MTL_PBR_ROUGHNESS_METALLIC } from '../shaders/deferredShadeFrag';
+import { MTL_PBR_ROUGHNESS_METALLIC } from '../shaders/deferredConstants';
 import { Material } from '../heck/Material';
 import { Mesh } from '../heck/components/Mesh';
 import { SceneNode } from '../heck/components/SceneNode';

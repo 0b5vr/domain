@@ -1,4 +1,4 @@
-import { MTL_PBR_ROUGHNESS_METALLIC } from './deferredShadeFrag';
+import { MTL_PBR_ROUGHNESS_METALLIC } from './deferredConstants';
 import { assign, build, defInNamed, defOut, div, insert, main, mul, sin, smoothstep, sw, vec4 } from '../shader-builder/shaderBuilder';
 
 export const psxFrag = build( () => {

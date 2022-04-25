@@ -1,4 +1,4 @@
-import { MTL_PBR_ROUGHNESS_METALLIC } from './deferredShadeFrag';
+import { MTL_PBR_ROUGHNESS_METALLIC } from './deferredConstants';
 import { abs, assign, build, def, defInNamed, defOut, defUniformNamed, div, insert, length, main, max, mix, mul, step, sub, sw, texture, vec2, vec3, vec4 } from '../shader-builder/shaderBuilder';
 import { sdbox2 } from './modules/sdbox2';
 
