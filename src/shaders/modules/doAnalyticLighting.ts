@@ -1,4 +1,4 @@
-import { GLSLExpression, GLSLFloatExpression, add, cache, def, defFn, dot, max, mix, mul, normalize, num, retFn, vec3 } from '../../shader-builder/shaderBuilder';
+import { GLSLExpression, GLSLFloatExpression, add, cache, def, defFn, dot, max, mix, mul, normalize, num, retFn, tern, vec3 } from '../../shader-builder/shaderBuilder';
 import { INV_PI } from '../../utils/constants';
 import { dGGX } from './dGGX';
 import { fresnelSchlick } from './fresnelSchlick';
@@ -13,13 +13,14 @@ export function doAnalyticLighting(
   roughness: GLSLFloatExpression,
   albedo: GLSLExpression<'vec3'>,
   f0: GLSLExpression<'vec3'>,
+  noSchlick: GLSLExpression<'bool'>,
 ): GLSLExpression<'vec3'> {
   const f = cache(
     symbol,
     () => defFn(
       'vec3',
-      [ 'vec3', 'vec3', 'vec3', 'float', 'vec3', 'vec3' ],
-      ( L, V, N, roughness, albedo, f0 ) => {
+      [ 'vec3', 'vec3', 'vec3', 'float', 'vec3', 'vec3', 'bool' ],
+      ( L, V, N, roughness, albedo, f0, noSchlick ) => {
         const H = def( 'vec3', normalize( add( L, V ) ) );
 
         const dotNL = def( 'float', max( dot( N, L ), 1E-3 ) );
@@ -32,7 +33,11 @@ export function doAnalyticLighting(
         const Vis = vGGX( dotNL, dotNV, roughnessSq );
         const D = dGGX( dotNH, roughnessSq );
 
-        const FSpec = fresnelSchlick( dotVH, f0, vec3( 1.0 ) );
+        const FSpec = tern(
+          noSchlick,
+          f0,
+          fresnelSchlick( dotVH, f0, vec3( 1.0 ) )
+        );
         const diffuse = mul( albedo, INV_PI );
         const specular = vec3( mul( Vis, D ) );
 
@@ -47,5 +52,5 @@ export function doAnalyticLighting(
     )
   );
 
-  return f( L, V, N, num( roughness ), albedo, f0 );
+  return f( L, V, N, num( roughness ), albedo, f0, noSchlick );
 }

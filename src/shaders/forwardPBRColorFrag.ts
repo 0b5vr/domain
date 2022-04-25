@@ -83,7 +83,7 @@ export const forwardPBRColorFrag = build( () => {
       // lighting
       const lightShaded = def( 'vec3', mul(
         irradiance,
-        doAnalyticLighting( L, V, vNormal, roughnessComputed, albedo, f0 ),
+        doAnalyticLighting( L, V, vNormal, roughnessComputed, albedo, f0, glslFalse ),
       ) );
 
       addAssign( col, lightShaded );

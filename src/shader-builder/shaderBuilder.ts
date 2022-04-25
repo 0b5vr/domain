@@ -895,6 +895,11 @@ export function defFn<T extends string, TArg1 extends string, TArg2 extends stri
   argsType: [ TArg1, TArg2, TArg3, TArg4, TArg5, TArg6 ],
   build: ( arg1: Tok<TArg1>, arg2: Tok<TArg2>, arg3: Tok<TArg3>, arg4: Tok<TArg4>, arg5: Tok<TArg5>, arg6: Tok<TArg6> ) => void
 ): ( arg1: Ex<TArg1>, arg2: Ex<TArg2>, arg3: Ex<TArg3>, arg4: Ex<TArg4>, arg5: Ex<TArg5>, arg6: Ex<TArg6> ) => Ex<T>;
+export function defFn<T extends string, TArg1 extends string, TArg2 extends string, TArg3 extends string, TArg4 extends string, TArg5 extends string, TArg6 extends string, TArg7 extends string>(
+  returnType: T,
+  argsType: [ TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7 ],
+  build: ( arg1: Tok<TArg1>, arg2: Tok<TArg2>, arg3: Tok<TArg3>, arg4: Tok<TArg4>, arg5: Tok<TArg5>, arg6: Tok<TArg6>, arg7: Tok<TArg7> ) => void
+): ( arg1: Ex<TArg1>, arg2: Ex<TArg2>, arg3: Ex<TArg3>, arg4: Ex<TArg4>, arg5: Ex<TArg5>, arg6: Ex<TArg6>, arg7: Ex<TArg7> ) => Ex<T>;
 /* eslint-enable max-len */
 export function defFn<T extends string, TArgs extends string[]>(
   returnType: T,

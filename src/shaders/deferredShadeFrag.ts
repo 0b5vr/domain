@@ -97,7 +97,7 @@ export const deferredShadeFrag = ( { withAO }: {
         // shading
         const lightShaded = def( 'vec3', mul(
           irradiance,
-          doAnalyticLighting( V, L, normal, roughness, albedo, f0 ),
+          doAnalyticLighting( V, L, normal, roughness, albedo, f0, eq( mtlId, MTL_IRIDESCENT ) ),
           ao, // cringe
         ) );
 
